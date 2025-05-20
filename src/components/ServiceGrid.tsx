@@ -13,6 +13,7 @@ interface Service {
   fullDescription: string;
   path?: string;
   imageSrc?: string;
+  avatarSrc?: string;
 }
 
 const services: Service[] = [
@@ -23,7 +24,8 @@ const services: Service[] = [
     icon: "📝",
     fullDescription: "Genera anuncios inmobiliarios profesionales completos con título optimizado para SEO, descripción detallada, 5 puntos destacados y hashtags relevantes para aumentar la visibilidad de tu propiedad.",
     path: "/generador-anuncios",
-    imageSrc: "/lovable-uploads/1be00a47-bae5-4c4e-954d-bbb23c7bfe7d.png"
+    imageSrc: "/lovable-uploads/1be00a47-bae5-4c4e-954d-bbb23c7bfe7d.png",
+    avatarSrc: "/lovable-uploads/f14e4265-ded1-48b8-b808-f29510c8dc2c.png"
   },
   {
     id: "images",
@@ -31,7 +33,8 @@ const services: Service[] = [
     description: "Mejora tus fotos y visualiza reformas virtuales.",
     icon: "🖼️",
     fullDescription: "Transforma tus fotografías con nuestro editor profesional y crea impactantes visualizaciones de home staging virtual para mostrar todo el potencial de tu propiedad.",
-    imageSrc: "/lovable-uploads/062b1d1c-ade1-443e-805c-6590cbadd48b.png"
+    imageSrc: "/lovable-uploads/062b1d1c-ade1-443e-805c-6590cbadd48b.png",
+    avatarSrc: "/lovable-uploads/795a6714-8663-48d5-aa7f-aadf33b4e6eb.png"
   },
   {
     id: "calculator",
@@ -61,14 +64,16 @@ const services: Service[] = [
     title: "Valorador de Inmuebles",
     description: "Obtén una estimación del valor de mercado de tu propiedad.",
     icon: "💰",
-    fullDescription: "Calcula el valor estimado de mercado de tu propiedad basado en datos actualizados y comparables de la zona, con un rango de valoración y análisis detallado."
+    fullDescription: "Calcula el valor estimado de mercado de tu propiedad basado en datos actualizados y comparables de la zona, con un rango de valoración y análisis detallado.",
+    avatarSrc: "/lovable-uploads/1f78db89-f403-42e7-a98d-9b8a00ed72e5.png"
   },
   {
     id: "social",
     title: "Creador de Posts para RRSS",
     description: "Diseña publicaciones atractivas para redes sociales.",
     icon: "📱",
-    fullDescription: "Genera contenido optimizado para diferentes redes sociales con textos persuasivos e imágenes profesionales que aumentarán la visibilidad de tu propiedad."
+    fullDescription: "Genera contenido optimizado para diferentes redes sociales con textos persuasivos e imágenes profesionales que aumentarán la visibilidad de tu propiedad.",
+    avatarSrc: "/lovable-uploads/0656bf9c-aa81-4225-ad15-51739465433b.png"
   },
   {
     id: "advisor",
@@ -123,6 +128,7 @@ export function ServiceGrid() {
               delay={index}
               onClick={() => handleServiceClick(service)}
               imageSrc={service.imageSrc}
+              avatarSrc={service.avatarSrc}
             />
           ))}
         </div>
