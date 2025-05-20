@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -24,6 +23,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { toast } from "sonner";
+import { PropertyAdFormData } from "@/utils/openaiService";
 
 const propertyTypes = [
   { value: "piso", label: "Piso" },
@@ -66,10 +66,11 @@ const formSchema = z.object({
   useEmojis: z.boolean().default(false),
 });
 
+// Make sure the form data type matches the PropertyAdFormData interface
 type FormData = z.infer<typeof formSchema>;
 
 interface PropertyAdFormProps {
-  onSubmit: (data: FormData) => void;
+  onSubmit: (data: PropertyAdFormData) => void;
   isGenerating: boolean;
 }
 
@@ -86,7 +87,23 @@ export function PropertyAdForm({ onSubmit, isGenerating }: PropertyAdFormProps) 
   const handleSubmit = (data: FormData) => {
     if (isGenerating) return;
     
-    onSubmit(data);
+    // Ensure all required fields are provided as non-optional
+    const formattedData: PropertyAdFormData = {
+      propertyType: data.propertyType,
+      operation: data.operation,
+      location: data.location,
+      area: data.area,
+      rooms: data.rooms,
+      price: data.price,
+      tone: data.tone,
+      useEmojis: data.useEmojis,
+      bathrooms: data.bathrooms,
+      condition: data.condition,
+      features: data.features,
+      description: data.description,
+    };
+    
+    onSubmit(formattedData);
   };
 
   return (

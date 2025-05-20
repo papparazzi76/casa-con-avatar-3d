@@ -12,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { PropertyAdForm } from "@/components/PropertyAdForm";
 import { PropertyAdResult } from "@/components/PropertyAdResult";
 import { generatePropertyAd } from "@/utils/openaiService";
-import type { PropertyAdResult as PropertyAdResultType } from "@/utils/openaiService";
+import type { PropertyAdFormData, PropertyAdResult as PropertyAdResultType } from "@/utils/openaiService";
 
 const AdGenerator = () => {
   const [adResult, setAdResult] = useState<PropertyAdResultType | null>(null);

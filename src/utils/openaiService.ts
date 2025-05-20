@@ -7,9 +7,9 @@ export interface PropertyAdFormData {
   location: string;
   area: string;
   rooms: string;
+  price: string;
   bathrooms?: string;
   condition?: string;
-  price: string;
   features?: string;
   description?: string;
   tone: string;
