@@ -17,9 +17,9 @@ export function Footer() {
           </p>
         </div>
         <div className="flex gap-4">
-          <a href="#" className="text-sm text-muted-foreground underline underline-offset-4">
+          <Link to="/terminos" className="text-sm text-muted-foreground underline underline-offset-4">
             Términos de Servicio
-          </a>
+          </Link>
           <Link to="/privacidad" className="text-sm text-muted-foreground underline underline-offset-4">
             Política de Privacidad
           </Link>
