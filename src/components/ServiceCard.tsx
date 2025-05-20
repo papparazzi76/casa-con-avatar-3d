@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Calculator } from "lucide-react";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 interface ServiceCardProps {
   title: string;
@@ -10,6 +11,7 @@ interface ServiceCardProps {
   icon: string;
   delay?: number;
   onClick: () => void;
+  imageSrc?: string;
 }
 
 export function ServiceCard({
@@ -17,7 +19,8 @@ export function ServiceCard({
   description,
   icon,
   delay = 0,
-  onClick
+  onClick,
+  imageSrc
 }: ServiceCardProps) {
   // Helper function to render calculator icon for the calculator service
   const renderIcon = () => {
@@ -48,7 +51,17 @@ export function ServiceCard({
           <CardDescription className="text-base">{description}</CardDescription>
         </CardHeader>
         <CardContent className="flex-grow">
-          {/* Content will be added as needed */}
+          {imageSrc && (
+            <div className="w-[90%] mx-auto">
+              <AspectRatio ratio={1 / 1} className="bg-muted rounded-lg overflow-hidden">
+                <img
+                  src={imageSrc}
+                  alt={title}
+                  className="object-cover w-full h-full"
+                />
+              </AspectRatio>
+            </div>
+          )}
         </CardContent>
         <CardFooter>
           <Button onClick={onClick} className="w-full bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90">

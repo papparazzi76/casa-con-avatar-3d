@@ -13,6 +13,7 @@ interface Service {
   icon: string;
   fullDescription: string;
   path?: string;
+  imageSrc?: string;
 }
 
 const services: Service[] = [
@@ -22,7 +23,8 @@ const services: Service[] = [
     description: "Crea anuncios profesionales con títulos SEO, descripciones y destacados.",
     icon: "📝",
     fullDescription: "Genera anuncios inmobiliarios profesionales completos con título optimizado para SEO, descripción detallada, 5 puntos destacados y hashtags relevantes para aumentar la visibilidad de tu propiedad.",
-    path: "/generador-anuncios"
+    path: "/generador-anuncios",
+    imageSrc: "/lovable-uploads/1be00a47-bae5-4c4e-954d-bbb23c7bfe7d.png"
   },
   {
     id: "images",
@@ -118,6 +120,7 @@ export function ServiceGrid() {
               icon={service.icon}
               delay={index}
               onClick={() => handleServiceClick(service)}
+              imageSrc={service.imageSrc}
             />
           ))}
         </div>
@@ -136,8 +139,15 @@ export function ServiceGrid() {
           </DialogHeader>
           
           <div className="h-60 flex items-center justify-center rounded-xl bg-secondary">
-            <div className="text-6xl">{selectedService?.icon}</div>
-            {/* This will be replaced with the 3D avatar in a future implementation */}
+            {selectedService?.imageSrc ? (
+              <img 
+                src={selectedService.imageSrc} 
+                alt={selectedService.title}
+                className="object-contain h-full w-full rounded-xl"
+              />
+            ) : (
+              <div className="text-6xl">{selectedService?.icon}</div>
+            )}
           </div>
           
           <div className="flex justify-end">
