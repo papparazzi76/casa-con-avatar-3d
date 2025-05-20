@@ -50,7 +50,7 @@ export function ServiceCard({
                 <img 
                   src={imageSrc} 
                   alt={title} 
-                  className="object-cover w-full h-full" 
+                  className="object-contain w-full h-full" 
                 />
               </AspectRatio>
             </div>
