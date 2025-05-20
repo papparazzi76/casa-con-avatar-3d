@@ -4,6 +4,7 @@ import { ServiceCard } from "./ServiceCard";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 interface Service {
   id: string;
@@ -11,6 +12,7 @@ interface Service {
   description: string;
   icon: string;
   fullDescription: string;
+  path?: string;
 }
 
 const services: Service[] = [
@@ -19,7 +21,8 @@ const services: Service[] = [
     title: "Elaboración de Anuncios",
     description: "Crea anuncios profesionales con títulos SEO, descripciones y destacados.",
     icon: "📝",
-    fullDescription: "Genera anuncios inmobiliarios profesionales completos con título optimizado para SEO, descripción detallada, 5 puntos destacados y hashtags relevantes para aumentar la visibilidad de tu propiedad."
+    fullDescription: "Genera anuncios inmobiliarios profesionales completos con título optimizado para SEO, descripción detallada, 5 puntos destacados y hashtags relevantes para aumentar la visibilidad de tu propiedad.",
+    path: "/generador-anuncios"
   },
   {
     id: "images",
@@ -75,10 +78,18 @@ const services: Service[] = [
 export function ServiceGrid() {
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleServiceClick = (service: Service) => {
     setSelectedService(service);
-    setIsDialogOpen(true);
+    
+    // Si el servicio tiene una ruta directa, navegar a ella
+    if (service.path) {
+      navigate(service.path);
+    } else {
+      // Si no tiene ruta, mostrar el diálogo
+      setIsDialogOpen(true);
+    }
   };
 
   return (
