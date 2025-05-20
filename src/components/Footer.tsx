@@ -1,5 +1,6 @@
 
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 export function Footer() {
   return (
@@ -19,9 +20,9 @@ export function Footer() {
           <a href="#" className="text-sm text-muted-foreground underline underline-offset-4">
             Términos de Servicio
           </a>
-          <a href="#" className="text-sm text-muted-foreground underline underline-offset-4">
+          <Link to="/privacidad" className="text-sm text-muted-foreground underline underline-offset-4">
             Política de Privacidad
-          </a>
+          </Link>
         </div>
       </motion.div>
     </footer>
