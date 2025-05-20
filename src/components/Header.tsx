@@ -24,7 +24,12 @@ export function Header() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <Link to="/" className="flex items-center gap-2">
+          <Link to="/" className="flex flex-col items-center gap-2">
+            <img 
+              src="/lovable-uploads/decaba66-d5e7-4933-937d-a36c6f9fd765.png" 
+              alt="PropTools Team" 
+              className="w-full max-w-[180px] mb-1 rounded-lg" 
+            />
             <span className="text-2xl font-bold font-heading gradient-text">PropTools</span>
           </Link>
         </motion.div>
