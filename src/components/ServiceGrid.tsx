@@ -65,7 +65,7 @@ const services: Service[] = [
     description: "Obtén una estimación del valor de mercado de tu propiedad.",
     icon: "💰",
     fullDescription: "Calcula el valor estimado de mercado de tu propiedad basado en datos actualizados y comparables de la zona, con un rango de valoración y análisis detallado.",
-    avatarSrc: "/lovable-uploads/1f78db89-f403-42e7-a98d-9b8a00ed72e5.png"
+    avatarSrc: "/lovable-uploads/50954e18-038d-4a17-95e6-f620345997bd.png"
   },
   {
     id: "social",
