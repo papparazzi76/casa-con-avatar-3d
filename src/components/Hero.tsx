@@ -40,10 +40,16 @@ export function Hero() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <div className="h-[400px] w-full max-w-[400px] overflow-hidden rounded-2xl bg-gradient-to-br from-realestate-purple to-realestate-turquoise p-1 shadow-lg">
-              <div className="h-full w-full rounded-xl bg-white p-4 dark:bg-gray-950 flex items-center justify-center">
-                <div className="text-8xl animate-float">🏠</div>
-                {/* This will be replaced with the 3D avatar in a future implementation */}
+            <div className="h-[400px] w-full max-w-[400px] overflow-hidden rounded-2xl bg-gradient-to-br from-realestate-purple to-realestate-turquoise p-1 shadow-lg flex flex-col">
+              <div className="flex justify-center items-center bg-white dark:bg-gray-950 p-2 rounded-t-xl">
+                <div className="text-2xl font-bold font-heading gradient-text">PropTools</div>
+              </div>
+              <div className="h-full w-full rounded-b-xl bg-white dark:bg-gray-950 flex items-center justify-center overflow-hidden">
+                <img 
+                  src="/lovable-uploads/e97eadbf-d056-4bb2-a4f6-1330520fcb27.png" 
+                  alt="PropTools equipo" 
+                  className="w-full h-auto object-cover"
+                />
               </div>
             </div>
           </motion.div>
