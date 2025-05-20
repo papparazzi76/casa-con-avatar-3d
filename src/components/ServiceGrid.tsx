@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { ServiceCard } from "./ServiceCard";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -35,7 +34,7 @@ const services: Service[] = [
     icon: "🖼️",
     fullDescription: "Transforma tus fotografías con nuestro editor profesional y crea impactantes visualizaciones de home staging virtual para mostrar todo el potencial de tu propiedad.",
     imageSrc: "/lovable-uploads/062b1d1c-ade1-443e-805c-6590cbadd48b.png",
-    avatarSrc: "/lovable-uploads/795a6714-8663-48d5-aa7f-aadf33b4e6eb.png"
+    avatarSrc: "/lovable-uploads/69972362-33bb-4c1d-95a4-3af6bb0c70a2.png"
   },
   {
     id: "calculator",
