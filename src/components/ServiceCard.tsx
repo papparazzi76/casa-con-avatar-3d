@@ -1,10 +1,8 @@
-
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Calculator } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-
 interface ServiceCardProps {
   title: string;
   description: string;
@@ -13,7 +11,6 @@ interface ServiceCardProps {
   onClick: () => void;
   imageSrc?: string;
 }
-
 export function ServiceCard({
   title,
   description,
@@ -27,9 +24,8 @@ export function ServiceCard({
     if (icon === "🧮") {
       return <Calculator className="w-8 h-8" />;
     }
-    return <span className="text-3xl">{icon}</span>;
+    return;
   };
-
   return <motion.div initial={{
     opacity: 0,
     y: 20
@@ -44,24 +40,16 @@ export function ServiceCard({
   }} className="h-full">
       <Card className="h-full border-2 rounded-2xl overflow-hidden card-hover flex flex-col">
         <CardHeader className="pb-2">
-          <div className="w-16 h-16 mb-4 rounded-xl bg-secondary flex items-center justify-center">
-            {renderIcon()}
-          </div>
+          
           <CardTitle className="text-xl text-center">{title}</CardTitle>
           <CardDescription className="text-base">{description}</CardDescription>
         </CardHeader>
         <CardContent className="flex-grow">
-          {imageSrc && (
-            <div className="w-[90%] mx-auto">
+          {imageSrc && <div className="w-[90%] mx-auto">
               <AspectRatio ratio={1 / 1} className="bg-muted rounded-lg overflow-hidden">
-                <img
-                  src={imageSrc}
-                  alt={title}
-                  className="object-cover w-full h-full"
-                />
+                <img src={imageSrc} alt={title} className="object-cover w-full h-full" />
               </AspectRatio>
-            </div>
-          )}
+            </div>}
         </CardContent>
         <CardFooter>
           <Button onClick={onClick} className="w-full bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90">
