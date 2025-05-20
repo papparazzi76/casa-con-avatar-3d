@@ -1,0 +1,136 @@
+
+import { useState } from "react";
+import { ServiceCard } from "./ServiceCard";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+
+interface Service {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  fullDescription: string;
+}
+
+const services: Service[] = [
+  {
+    id: "ads",
+    title: "Elaboración de Anuncios",
+    description: "Crea anuncios profesionales con títulos SEO, descripciones y destacados.",
+    icon: "📝",
+    fullDescription: "Genera anuncios inmobiliarios profesionales completos con título optimizado para SEO, descripción detallada, 5 puntos destacados y hashtags relevantes para aumentar la visibilidad de tu propiedad."
+  },
+  {
+    id: "images",
+    title: "Editor de Imágenes & Homestaging",
+    description: "Mejora tus fotos y visualiza reformas virtuales.",
+    icon: "🖼️",
+    fullDescription: "Transforma tus fotografías con nuestro editor profesional y crea impactantes visualizaciones de home staging virtual para mostrar todo el potencial de tu propiedad."
+  },
+  {
+    id: "contracts",
+    title: "Redacción de Contratos",
+    description: "Genera contratos de compraventa o alquiler personalizados.",
+    icon: "📄",
+    fullDescription: "Crea contratos legalmente válidos de compraventa o alquiler personalizados con todas las cláusulas necesarias según la legislación española vigente."
+  },
+  {
+    id: "legal",
+    title: "Dudas Legislación Inmobiliaria",
+    description: "Resuelve tus dudas sobre normativa y legislación vigente.",
+    icon: "⚖️",
+    fullDescription: "Consulta todas tus dudas sobre la normativa y legislación inmobiliaria española vigente con respuestas precisas y actualizadas."
+  },
+  {
+    id: "valuation",
+    title: "Valorador de Inmuebles",
+    description: "Obtén una estimación del valor de mercado de tu propiedad.",
+    icon: "💰",
+    fullDescription: "Calcula el valor estimado de mercado de tu propiedad basado en datos actualizados y comparables de la zona, con un rango de valoración y análisis detallado."
+  },
+  {
+    id: "social",
+    title: "Creador de Posts para RRSS",
+    description: "Diseña publicaciones atractivas para redes sociales.",
+    icon: "📱",
+    fullDescription: "Genera contenido optimizado para diferentes redes sociales con textos persuasivos e imágenes profesionales que aumentarán la visibilidad de tu propiedad."
+  },
+  {
+    id: "advisor",
+    title: "Asesor Inmobiliario Virtual",
+    description: "Guía paso a paso para todo el proceso de venta o alquiler.",
+    icon: "🧙‍♂️",
+    fullDescription: "Sigue un proceso guiado paso a paso que te ayudará en cada aspecto de la venta o alquiler de tu propiedad, desde la preparación hasta el cierre de la operación."
+  }
+];
+
+export function ServiceGrid() {
+  const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const handleServiceClick = (service: Service) => {
+    setSelectedService(service);
+    setIsDialogOpen(true);
+  };
+
+  return (
+    <section className="py-12 md:py-16">
+      <div className="container px-4 md:px-6">
+        <motion.div 
+          className="text-center mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
+            Nuestros Servicios
+          </h2>
+          <p className="mx-auto mt-4 max-w-[700px] text-gray-500 md:text-xl dark:text-gray-400">
+            Todo lo que necesitas para vender o alquilar tu propiedad como un profesional.
+          </p>
+        </motion.div>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {services.map((service, index) => (
+            <ServiceCard
+              key={service.id}
+              title={service.title}
+              description={service.description}
+              icon={service.icon}
+              delay={index}
+              onClick={() => handleServiceClick(service)}
+            />
+          ))}
+        </div>
+      </div>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[600px] rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl flex items-center gap-3">
+              <span className="text-3xl">{selectedService?.icon}</span>
+              {selectedService?.title}
+            </DialogTitle>
+            <DialogDescription className="text-base pt-2">
+              {selectedService?.fullDescription}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="h-60 flex items-center justify-center rounded-xl bg-secondary">
+            <div className="text-6xl">{selectedService?.icon}</div>
+            {/* This will be replaced with the 3D avatar in a future implementation */}
+          </div>
+          
+          <div className="flex justify-end">
+            <Button 
+              className="bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90"
+            >
+              Iniciar Servicio
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </section>
+  );
+}
