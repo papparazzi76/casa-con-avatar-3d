@@ -7,11 +7,12 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Upload } from "lucide-react";
+import { Download, Upload, Kitchen, Bath, Sofa } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 type EditMode = "enhancement" | "homestaging" | "mixto";
 type DecorStyle = "nórdico" | "moderno" | "rústico" | "contemporáneo" | "minimalista" | "industrial" | "mediterráneo" | "clásico";
+type RoomType = "cocina" | "baño" | "salon" | "dormitorio" | "oficina" | "exterior" | "otra";
 
 const ImageEditor = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -20,6 +21,7 @@ const ImageEditor = () => {
   const [editedImage, setEditedImage] = useState<string | null>(null);
   const [editMode, setEditMode] = useState<EditMode>("enhancement");
   const [decorStyle, setDecorStyle] = useState<DecorStyle>("moderno");
+  const [roomType, setRoomType] = useState<RoomType>("salon");
   const { toast } = useToast();
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -68,23 +70,41 @@ const ImageEditor = () => {
     setIsProcessing(true);
 
     try {
-      // Simulación de procesamiento
-      // En un caso real, aquí enviaríamos la imagen y parámetros a una API
-      // que procesaría la imagen con OpenAI según el system prompt
+      // En un caso real, aquí enviaríamos la imagen a la API de OpenAI
+      // con un prompt específico basado en las opciones seleccionadas
       
       toast({
         title: "Procesando imagen",
         description: "Esto puede tardar unos momentos...",
       });
 
+      // Construimos el prompt para OpenAI basado en las opciones seleccionadas
+      let prompt = "";
+      
+      if (editMode === "enhancement") {
+        prompt = `Mejora profesional de esta fotografía de ${getRoomTypeLabel(roomType)}. 
+                  Ajusta la iluminación, el contraste y corrige la distorsión.`;
+      } else if (editMode === "homestaging") {
+        prompt = `Aplica homestaging virtual a esta fotografía de ${getRoomTypeLabel(roomType)} 
+                  en estilo ${decorStyle}. Añade muebles y decoración apropiados.`;
+      } else {
+        prompt = `Mejora profesional de esta fotografía de ${getRoomTypeLabel(roomType)} 
+                  y aplica homestaging virtual en estilo ${decorStyle}. 
+                  Mejora la iluminación y añade muebles y decoración apropiados.`;
+      }
+
+      console.log("Prompt para OpenAI:", prompt);
+      
+      // Simulación de procesamiento con OpenAI (en producción, se reemplazaría con la llamada real a la API)
       await new Promise(resolve => setTimeout(resolve, 3000));
       
-      // Simulamos resultado (en producción se reemplazaría con la respuesta real de la API)
+      // En un entorno real, aquí obtendríamos la imagen procesada desde la API de OpenAI
+      // Por ahora, simplemente usamos la imagen original como simulación
       setEditedImage(imagePreview);
       
       toast({
         title: "¡Imagen procesada con éxito!",
-        description: `Modo: ${editMode}${editMode !== "enhancement" ? `, Estilo: ${decorStyle}` : ""}`,
+        description: `Modo: ${editMode}${editMode !== "enhancement" ? `, Estilo: ${decorStyle}` : ""}, Estancia: ${getRoomTypeLabel(roomType)}`,
       });
     } catch (error) {
       toast({
@@ -96,6 +116,49 @@ const ImageEditor = () => {
     } finally {
       setIsProcessing(false);
     }
+  };
+  
+  const getRoomTypeLabel = (type: RoomType): string => {
+    const labels: Record<RoomType, string> = {
+      cocina: "cocina",
+      baño: "baño",
+      salon: "salón",
+      dormitorio: "dormitorio",
+      oficina: "oficina",
+      exterior: "espacio exterior",
+      otra: "otra estancia"
+    };
+    return labels[type];
+  };
+  
+  const getRoomTypeIcon = (type: RoomType) => {
+    switch (type) {
+      case "cocina": return <Kitchen className="h-4 w-4 mr-2" />;
+      case "baño": return <Bath className="h-4 w-4 mr-2" />;
+      case "salon": 
+      case "dormitorio":
+      case "oficina": 
+      case "exterior":
+      case "otra":
+      default: return <Sofa className="h-4 w-4 mr-2" />;
+    }
+  };
+
+  const handleDownloadImage = () => {
+    if (!editedImage) return;
+    
+    // Crear un enlace temporal para descargar la imagen
+    const link = document.createElement('a');
+    link.href = editedImage;
+    link.download = `imagen_editada_${new Date().getTime()}.jpg`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast({
+      title: "Descarga iniciada",
+      description: "La imagen editada se está descargando.",
+    });
   };
 
   return (
@@ -172,6 +235,39 @@ const ImageEditor = () => {
                 </RadioGroup>
               </div>
               
+              <div>
+                <h3 className="text-md font-medium mb-3">Tipo de estancia</h3>
+                <Select value={roomType} onValueChange={(value) => setRoomType(value as RoomType)}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Selecciona el tipo de estancia" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cocina">
+                      <div className="flex items-center">
+                        <Kitchen className="h-4 w-4 mr-2" />
+                        <span>Cocina</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="baño">
+                      <div className="flex items-center">
+                        <Bath className="h-4 w-4 mr-2" />
+                        <span>Baño</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="salon">
+                      <div className="flex items-center">
+                        <Sofa className="h-4 w-4 mr-2" />
+                        <span>Salón</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="dormitorio">Dormitorio</SelectItem>
+                    <SelectItem value="oficina">Oficina</SelectItem>
+                    <SelectItem value="exterior">Espacio exterior</SelectItem>
+                    <SelectItem value="otra">Otra estancia</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
               {(editMode === "homestaging" || editMode === "mixto") && (
                 <div>
                   <h3 className="text-md font-medium mb-3">Estilo de decoración</h3>
@@ -212,10 +308,10 @@ const ImageEditor = () => {
             <CardTitle>Resultado</CardTitle>
             <CardDescription>
               {editMode === "enhancement" 
-                ? "Imagen mejorada profesionalmente" 
+                ? `Imagen mejorada profesionalmente (${getRoomTypeLabel(roomType)})` 
                 : editMode === "homestaging" 
-                  ? `Homestaging virtual en estilo ${decorStyle}` 
-                  : `Imagen mejorada con homestaging virtual en estilo ${decorStyle}`}
+                  ? `Homestaging virtual en estilo ${decorStyle} (${getRoomTypeLabel(roomType)})` 
+                  : `Imagen mejorada con homestaging virtual en estilo ${decorStyle} (${getRoomTypeLabel(roomType)})`}
             </CardDescription>
           </CardHeader>
           <CardContent className="flex justify-center">
@@ -242,6 +338,14 @@ const ImageEditor = () => {
               </TabsContent>
             </Tabs>
           </CardContent>
+          <CardFooter className="flex justify-center">
+            <Button 
+              onClick={handleDownloadImage}
+              className="bg-realestate-turquoise hover:bg-realestate-turquoise/90"
+            >
+              <Download className="mr-2 h-4 w-4" /> Descargar imagen
+            </Button>
+          </CardFooter>
         </Card>
       )}
     </div>
