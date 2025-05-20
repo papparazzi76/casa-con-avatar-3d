@@ -1,6 +1,9 @@
+
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { Calculator } from "lucide-react";
+
 interface ServiceCardProps {
   title: string;
   description: string;
@@ -8,6 +11,7 @@ interface ServiceCardProps {
   delay?: number;
   onClick: () => void;
 }
+
 export function ServiceCard({
   title,
   description,
@@ -15,6 +19,14 @@ export function ServiceCard({
   delay = 0,
   onClick
 }: ServiceCardProps) {
+  // Helper function to render calculator icon for the calculator service
+  const renderIcon = () => {
+    if (icon === "🧮") {
+      return <Calculator className="w-8 h-8" />;
+    }
+    return <span className="text-3xl">{icon}</span>;
+  };
+
   return <motion.div initial={{
     opacity: 0,
     y: 20
@@ -30,7 +42,7 @@ export function ServiceCard({
       <Card className="h-full border-2 rounded-2xl overflow-hidden card-hover flex flex-col">
         <CardHeader className="pb-2">
           <div className="w-16 h-16 mb-4 rounded-xl bg-secondary flex items-center justify-center">
-            <span className="text-3xl">{icon}</span>
+            {renderIcon()}
           </div>
           <CardTitle className="text-xl text-center">{title}</CardTitle>
           <CardDescription className="text-base">{description}</CardDescription>

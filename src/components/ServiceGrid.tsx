@@ -29,6 +29,13 @@ const services: Service[] = [
     fullDescription: "Transforma tus fotografías con nuestro editor profesional y crea impactantes visualizaciones de home staging virtual para mostrar todo el potencial de tu propiedad."
   },
   {
+    id: "calculator",
+    title: "Calculadora de Gastos e Impuestos",
+    description: "Calcula todos los costes asociados a la compraventa de inmuebles.",
+    icon: "🧮",
+    fullDescription: "Herramienta completa para calcular todos los impuestos y gastos asociados a la compraventa de inmuebles, tanto para compradores como para vendedores: IVA, ITP, AJD, plusvalía municipal, IRPF, gastos notariales y más."
+  },
+  {
     id: "contracts",
     title: "Redacción de Contratos",
     description: "Genera contratos de compraventa o alquiler personalizados.",
