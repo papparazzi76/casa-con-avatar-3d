@@ -5,6 +5,8 @@ import { ImageUploader } from "@/features/image-editor/ImageUploader";
 import { EditorOptions } from "@/features/image-editor/EditorOptions";
 import { ResultDisplay } from "@/features/image-editor/ResultDisplay";
 import { DecorStyle, EditMode, RoomType } from "@/features/image-editor/types";
+import { getRoomTypeLabel } from "@/features/image-editor/util";
+import { processImage } from "@/utils/openaiService";
 
 const ImageEditor = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -40,37 +42,20 @@ const ImageEditor = () => {
     setIsProcessing(true);
 
     try {
-      // En un caso real, aquí enviaríamos la imagen a la API de OpenAI
-      // con un prompt específico basado en las opciones seleccionadas
-      
       toast({
         title: "Procesando imagen",
         description: "Esto puede tardar unos momentos...",
       });
 
-      // Construimos el prompt para OpenAI basado en las opciones seleccionadas
-      let prompt = "";
+      // Llamada real a la API mediante nuestro servicio
+      const result = await processImage({
+        image: selectedImage,
+        editMode,
+        roomType,
+        decorStyle
+      });
       
-      if (editMode === "enhancement") {
-        prompt = `Mejora profesional de esta fotografía de ${getRoomTypeLabel(roomType)}. 
-                  Ajusta la iluminación, el contraste y corrige la distorsión.`;
-      } else if (editMode === "homestaging") {
-        prompt = `Aplica homestaging virtual a esta fotografía de ${getRoomTypeLabel(roomType)} 
-                  en estilo ${decorStyle}. Añade muebles y decoración apropiados.`;
-      } else {
-        prompt = `Mejora profesional de esta fotografía de ${getRoomTypeLabel(roomType)} 
-                  y aplica homestaging virtual en estilo ${decorStyle}. 
-                  Mejora la iluminación y añade muebles y decoración apropiados.`;
-      }
-
-      console.log("Prompt para OpenAI:", prompt);
-      
-      // Simulación de procesamiento con OpenAI (en producción, se reemplazaría con la llamada real a la API)
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      // En un entorno real, aquí obtendríamos la imagen procesada desde la API de OpenAI
-      // Por ahora, simplemente usamos la imagen original como simulación
-      setEditedImage(imagePreview);
+      setEditedImage(result);
       
       toast({
         title: "¡Imagen procesada con éxito!",
@@ -79,26 +64,13 @@ const ImageEditor = () => {
     } catch (error) {
       toast({
         title: "Error al procesar la imagen",
-        description: "Ha ocurrido un error. Por favor intenta de nuevo.",
+        description: "Ha ocurrido un error con la API de OpenAI. Por favor intenta de nuevo.",
         variant: "destructive",
       });
       console.error("Error processing image:", error);
     } finally {
       setIsProcessing(false);
     }
-  };
-  
-  const getRoomTypeLabel = (type: RoomType): string => {
-    const labels: Record<RoomType, string> = {
-      cocina: "cocina",
-      baño: "baño",
-      salon: "salón",
-      dormitorio: "dormitorio",
-      oficina: "oficina",
-      exterior: "espacio exterior",
-      otra: "otra estancia"
-    };
-    return labels[type];
   };
 
   return (

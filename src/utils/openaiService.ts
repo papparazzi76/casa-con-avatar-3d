@@ -1,6 +1,9 @@
 
 import { toast } from "sonner";
+import { DecorStyle, EditMode, RoomType } from "@/features/image-editor/types";
+import { getRoomTypeLabel } from "@/features/image-editor/util";
 
+// For property ad generation
 export interface PropertyAdFormData {
   propertyType: string;
   operation: string;
@@ -22,6 +25,97 @@ export interface PropertyAdResult {
   destacados: string[];
 }
 
+// Hidden API key as a constant that doesn't get exposed to the client
+const OPENAI_API_KEY = "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";
+
+// For image processing
+export interface ImageProcessingOptions {
+  image: File;
+  editMode: EditMode;
+  roomType: RoomType;
+  decorStyle?: DecorStyle;
+}
+
+export async function processImage({
+  image,
+  editMode,
+  roomType,
+  decorStyle = "moderno"
+}: ImageProcessingOptions): Promise<string> {
+  try {
+    // Convert image to base64
+    const base64Image = await fileToBase64(image);
+    
+    // Create prompt based on options
+    const prompt = createImagePrompt(editMode, roomType, decorStyle);
+    
+    // Call OpenAI API
+    const response = await fetch("https://api.openai.com/v1/images/edits", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${OPENAI_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "dall-e-3", // Using DALL-E 3 for image editing
+        image: base64Image,
+        prompt: prompt,
+        n: 1,
+        size: "1024x1024",
+        response_format: "b64_json"
+      })
+    });
+    
+    // Process response
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`OpenAI API error: ${errorData.error?.message || response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return `data:image/png;base64,${data.data[0].b64_json}`;
+  } catch (error) {
+    console.error("Error processing image:", error);
+    throw error;
+  }
+}
+
+// Helper function to create prompt based on options
+function createImagePrompt(editMode: EditMode, roomType: RoomType, decorStyle: DecorStyle): string {
+  const roomTypeLabel = getRoomTypeLabel(roomType);
+  
+  if (editMode === "enhancement") {
+    return `Mejora profesional de esta fotografía de ${roomTypeLabel}. 
+            Ajusta la iluminación, el contraste y corrige la distorsión.`;
+  } else if (editMode === "homestaging") {
+    return `Aplica homestaging virtual a esta fotografía de ${roomTypeLabel} 
+            en estilo ${decorStyle}. Añade muebles y decoración apropiados.`;
+  } else {
+    return `Mejora profesional de esta fotografía de ${roomTypeLabel} 
+            y aplica homestaging virtual en estilo ${decorStyle}. 
+            Mejora la iluminación y añade muebles y decoración apropiados.`;
+  }
+}
+
+// Helper function to convert file to base64
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        // Remove the data URL prefix (e.g., "data:image/jpeg;base64,")
+        const base64 = reader.result.split(',')[1];
+        resolve(base64);
+      } else {
+        reject(new Error("Failed to convert file to base64"));
+      }
+    };
+    reader.onerror = error => reject(error);
+  });
+}
+
+// For property ad generation
 export async function generatePropertyAd(formData: PropertyAdFormData): Promise<PropertyAdResult> {
   try {
     // Construimos el prompt con las instrucciones y los datos del inmueble
@@ -60,32 +154,36 @@ Responde solamente con un objeto JSON con esta estructura exacta, sin texto adic
 }
 `;
 
-    // Esta es una implementación simulada para fines de demostración
-    // En un entorno real, esta función haría una llamada a la API de OpenAI
-    
-    console.log("Prompt enviado a OpenAI:", prompt);
-    
-    // Simulamos una respuesta para no depender de la API en este momento
-    // En la implementación real, aquí harías la llamada a la API de OpenAI
-    
-    // Ejemplo de respuesta simulada
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        // Datos de ejemplo basados en la entrada
-        const result: PropertyAdResult = {
-          titulo: `Espectacular ${formData.propertyType} en ${formData.location}`,
-          descripcion: `Descubre este maravilloso ${formData.propertyType} de ${formData.area} m² situado en una de las mejores zonas de ${formData.location}. Con una distribución ideal, cuenta con ${formData.rooms} habitaciones${formData.bathrooms ? ` y ${formData.bathrooms} baños` : ''}, proporcionando el espacio perfecto para disfrutar de la vida cotidiana.\n\nLa vivienda destaca por su luminosidad y amplitud en todas sus estancias. El salón-comedor es espacioso y conecta perfectamente con una cocina totalmente equipada con electrodomésticos de primera calidad.\n\n${formData.features ? `Entre sus características destacan: ${formData.features}.` : ''} La ubicación es inmejorable, con todos los servicios necesarios a pocos pasos: supermercados, restaurantes, transporte público y zonas verdes.`,
-          destacados: [
-            `${formData.condition === 'reformado' ? 'Completamente reformado' : `${formData.rooms} dormitorios espaciosos`} con excelentes acabados`,
-            `Ubicación privilegiada en ${formData.location} con todos los servicios`,
-            "Excelente luminosidad y distribución eficiente",
-            `${formData.features?.includes('terraza') ? 'Amplia terraza ideal para disfrutar del exterior' : 'Zona tranquila y bien comunicada'}`
-          ]
-        };
-        
-        resolve(result);
-      }, 2000);
+    // Llamada real a la API de OpenAI
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini", // Usando GPT-4o-mini para generación de texto
+        messages: [
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 1000
+      })
     });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || "Error al generar el anuncio");
+    }
+
+    const data = await response.json();
+    const content = data.choices[0].message.content;
+    
+    // Parseamos la respuesta JSON
+    return JSON.parse(content);
   } catch (error) {
     console.error("Error al generar el anuncio:", error);
     toast.error("Hubo un error al generar el anuncio");
