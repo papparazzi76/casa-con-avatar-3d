@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { ServiceCard } from "./ServiceCard";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -31,21 +30,24 @@ const services: Service[] = [
     title: "Editor de Imágenes & Homestaging",
     description: "Mejora tus fotos y visualiza reformas virtuales.",
     icon: "🖼️",
-    fullDescription: "Transforma tus fotografías con nuestro editor profesional y crea impactantes visualizaciones de home staging virtual para mostrar todo el potencial de tu propiedad."
+    fullDescription: "Transforma tus fotografías con nuestro editor profesional y crea impactantes visualizaciones de home staging virtual para mostrar todo el potencial de tu propiedad.",
+    imageSrc: "/lovable-uploads/062b1d1c-ade1-443e-805c-6590cbadd48b.png"
   },
   {
     id: "calculator",
     title: "Calculadora de Gastos e Impuestos",
     description: "Calcula todos los costes asociados a la compraventa de inmuebles.",
     icon: "🧮",
-    fullDescription: "Herramienta completa para calcular todos los impuestos y gastos asociados a la compraventa de inmuebles, tanto para compradores como para vendedores: IVA, ITP, AJD, plusvalía municipal, IRPF, gastos notariales y más."
+    fullDescription: "Herramienta completa para calcular todos los impuestos y gastos asociados a la compraventa de inmuebles, tanto para compradores como para vendedores: IVA, ITP, AJD, plusvalía municipal, IRPF, gastos notariales y más.",
+    imageSrc: "/lovable-uploads/f7175729-678b-4dec-9e4f-9676b21e24ab.png"
   },
   {
     id: "contracts",
     title: "Redacción de Contratos",
     description: "Genera contratos de compraventa o alquiler personalizados.",
     icon: "📄",
-    fullDescription: "Crea contratos legalmente válidos de compraventa o alquiler personalizados con todas las cláusulas necesarias según la legislación española vigente."
+    fullDescription: "Crea contratos legalmente válidos de compraventa o alquiler personalizados con todas las cláusulas necesarias según la legislación española vigente.",
+    imageSrc: "/lovable-uploads/16fdb570-b6a7-4459-9e65-8e6845fc8b96.png"
   },
   {
     id: "legal",
