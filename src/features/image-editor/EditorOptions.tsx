@@ -1,9 +1,10 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Bath, KitchenPot, Sofa } from "lucide-react";
+import { Bath, CookingPot, Sofa } from "lucide-react";
 import { DecorStyle, EditMode, RoomType } from "./types";
 
 interface EditorOptionsProps {
@@ -32,7 +33,7 @@ export const EditorOptions = ({
 
   const getRoomTypeIcon = (type: RoomType) => {
     switch (type) {
-      case "cocina": return <KitchenPot className="h-4 w-4 mr-2" />;
+      case "cocina": return <CookingPot className="h-4 w-4 mr-2" />;
       case "baño": return <Bath className="h-4 w-4 mr-2" />;
       case "salon": 
       case "dormitorio":
@@ -84,7 +85,7 @@ export const EditorOptions = ({
               <SelectContent>
                 <SelectItem value="cocina">
                   <div className="flex items-center">
-                    <KitchenPot className="h-4 w-4 mr-2" />
+                    <CookingPot className="h-4 w-4 mr-2" />
                     <span>Cocina</span>
                   </div>
                 </SelectItem>
