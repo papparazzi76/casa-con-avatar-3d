@@ -26,7 +26,7 @@ const services: Service[] = [
     fullDescription: "Genera anuncios inmobiliarios profesionales completos con título optimizado para SEO, descripción detallada, 5 puntos destacados y hashtags relevantes para aumentar la visibilidad de tu propiedad.",
     path: "/generador-anuncios",
     imageSrc: "/lovable-uploads/1be00a47-bae5-4c4e-954d-bbb23c7bfe7d.png",
-    avatarSrc: "/lovable-uploads/f14e4265-ded1-48b8-b808-f29510c8dc2c.png"
+    avatarSrc: "/lovable-uploads/837d994e-df2d-4bff-a7da-0a16e0b146c1.png"
   },
   {
     id: "images",
