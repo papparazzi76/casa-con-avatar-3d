@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { ServiceCard } from "./ServiceCard";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -57,7 +58,8 @@ const services: Service[] = [
     title: "Dudas Legislación Inmobiliaria",
     description: "Resuelve tus dudas sobre normativa y legislación vigente.",
     icon: "⚖️",
-    fullDescription: "Consulta todas tus dudas sobre la normativa y legislación inmobiliaria española vigente con respuestas precisas y actualizadas."
+    fullDescription: "Consulta todas tus dudas sobre la normativa y legislación inmobiliaria española vigente con respuestas precisas y actualizadas.",
+    avatarSrc: "/lovable-uploads/e7be3e75-93d7-4fa1-b80f-687790b10386.png"
   },
   {
     id: "valuation",
