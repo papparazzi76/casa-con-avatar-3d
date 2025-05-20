@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { WaveText } from "./WaveText";
 
 export function Header() {
   return (
@@ -13,7 +14,9 @@ export function Header() {
           transition={{ duration: 0.5 }}
         >
           <Link to="/" className="flex items-center gap-2">
-            <span className="text-2xl font-bold font-heading gradient-text">PropTools</span>
+            <span className="text-2xl font-bold font-heading">
+              <WaveText text="PropTools" className="gradient-text" />
+            </span>
           </Link>
         </motion.div>
         
