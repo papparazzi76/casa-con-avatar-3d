@@ -13,15 +13,15 @@ export const WaveText: React.FC<WaveTextProps> = ({ text, className = "" }) => {
       {text.split('').map((char, index) => (
         <motion.span
           key={index}
-          initial={{ y: 0 }}
+          initial={{ scale: 1 }}
           animate={{ 
-            y: [0, -8, 0],
+            scale: [1, 1.5, 1],
           }}
           transition={{
-            duration: 1.5,
+            duration: 1,
             repeat: Infinity,
             repeatType: "loop",
-            delay: index * 0.08, // cada letra comienza un poco después que la anterior
+            delay: index * 0.1, // cada letra comienza un poco después que la anterior
             ease: "easeInOut"
           }}
           className="inline-block"
