@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { ServiceCard } from "./ServiceCard";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -81,7 +82,8 @@ const services: Service[] = [
     title: "Asesor Inmobiliario Virtual",
     description: "Guía paso a paso para todo el proceso de venta o alquiler.",
     icon: "🧙‍♂️",
-    fullDescription: "Sigue un proceso guiado paso a paso que te ayudará en cada aspecto de la venta o alquiler de tu propiedad, desde la preparación hasta el cierre de la operación."
+    fullDescription: "Sigue un proceso guiado paso a paso que te ayudará en cada aspecto de la venta o alquiler de tu propiedad, desde la preparación hasta el cierre de la operación.",
+    avatarSrc: "/lovable-uploads/ef5a1332-3aa5-45a2-86f9-10daf6f9a3b4.png"
   }
 ];
 
