@@ -53,7 +53,9 @@ export function ServiceCard({
     >
       <Card className="h-full border-2 rounded-2xl overflow-hidden card-hover flex flex-col">
         <CardHeader className="pb-2">
-          <CardTitle className="text-xl text-center">{title}</CardTitle>
+          <CardTitle className="text-xl text-center">
+            {icon === "📋" ? "Presupuestos de Reforma" : title}
+          </CardTitle>
           <CardDescription className="text-base">{description}</CardDescription>
         </CardHeader>
         <CardContent className="flex-grow">
