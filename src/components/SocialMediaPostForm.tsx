@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, Control, FieldValues, Path } from "react-hook-form";
 import * as z from "zod";
 import { toast } from "sonner";
 import { SocialMediaPostFormData } from "@/services/socialMediaService";
@@ -91,6 +91,23 @@ interface SocialMediaPostFormProps {
   isGenerating: boolean;
 }
 
+// Create a custom typed useFieldArray hook to fix TypeScript errors
+function TypedFieldArray<
+  TFieldValues extends FieldValues,
+  TName extends Path<TFieldValues>
+>({
+  control,
+  name,
+}: {
+  control: Control<TFieldValues>;
+  name: TName;
+}) {
+  return useFieldArray({
+    control,
+    name,
+  });
+}
+
 export function SocialMediaPostForm({ onSubmit, isGenerating }: SocialMediaPostFormProps) {
   const [featureInput, setFeatureInput] = useState("");
   const [extraInput, setExtraInput] = useState("");
@@ -107,26 +124,31 @@ export function SocialMediaPostForm({ onSubmit, isGenerating }: SocialMediaPostF
     },
   });
   
-  const { fields: caracteristicasFields, append: appendCaracteristica, remove: removeCaracteristica } = 
-    useFieldArray({ control: form.control, name: "caracteristicas_destacadas" });
-    
-  const { fields: extrasFields, append: appendExtra, remove: removeExtra } = 
-    useFieldArray({ control: form.control, name: "extras" });
+  // Use our typed version of useFieldArray
+  const caracteristicas = TypedFieldArray({
+    control: form.control,
+    name: "caracteristicas_destacadas",
+  });
+  
+  const extras = TypedFieldArray({
+    control: form.control,
+    name: "extras",
+  });
   
   const addCaracteristica = () => {
-    if (featureInput.trim() && caracteristicasFields.length < 10) {
-      appendCaracteristica(featureInput.trim());
+    if (featureInput.trim() && caracteristicas.fields.length < 10) {
+      caracteristicas.append(featureInput.trim());
       setFeatureInput("");
-    } else if (caracteristicasFields.length >= 10) {
+    } else if (caracteristicas.fields.length >= 10) {
       toast.warning("Has alcanzado el máximo de 10 características destacadas");
     }
   };
   
   const addExtra = () => {
-    if (extraInput.trim() && extrasFields.length < 10) {
-      appendExtra(extraInput.trim());
+    if (extraInput.trim() && extras.fields.length < 10) {
+      extras.append(extraInput.trim());
       setExtraInput("");
-    } else if (extrasFields.length >= 10) {
+    } else if (extras.fields.length >= 10) {
       toast.warning("Has alcanzado el máximo de 10 extras");
     }
   };
@@ -391,12 +413,12 @@ export function SocialMediaPostForm({ onSubmit, isGenerating }: SocialMediaPostF
                 </div>
                 
                 <div className="flex flex-wrap gap-2">
-                  {caracteristicasFields.map((field, index) => (
+                  {caracteristicas.fields.map((field, index) => (
                     <Badge key={field.id} variant="secondary" className="px-3 py-1.5">
                       {field.value}
                       <button 
                         type="button" 
-                        onClick={() => removeCaracteristica(index)}
+                        onClick={() => caracteristicas.remove(index)}
                         className="ml-2 text-muted-foreground hover:text-foreground"
                       >
                         <X className="h-3 w-3" />
@@ -439,12 +461,12 @@ export function SocialMediaPostForm({ onSubmit, isGenerating }: SocialMediaPostF
                 </div>
                 
                 <div className="flex flex-wrap gap-2">
-                  {extrasFields.map((field, index) => (
+                  {extras.fields.map((field, index) => (
                     <Badge key={field.id} variant="outline" className="px-3 py-1.5">
                       {field.value}
                       <button 
                         type="button" 
-                        onClick={() => removeExtra(index)}
+                        onClick={() => extras.remove(index)}
                         className="ml-2 text-muted-foreground hover:text-foreground"
                       >
                         <X className="h-3 w-3" />
