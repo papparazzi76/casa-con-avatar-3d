@@ -43,26 +43,30 @@ export async function processImage({
   decorStyle = "moderno"
 }: ImageProcessingOptions): Promise<string> {
   try {
+    // Convert image to base64
+    const base64Image = await convertFileToBase64(image);
+    
     // Create prompt based on options
     const prompt = createImagePrompt(editMode, roomType, decorStyle);
     
-    // Create FormData to properly send the multipart request
-    const formData = new FormData();
-    formData.append("model", "dall-e-3");
-    formData.append("prompt", prompt);
-    formData.append("n", "1");
-    formData.append("size", "1024x1024");
-    formData.append("image", image);
-    formData.append("response_format", "b64_json");
+    // Prepare request body as JSON
+    const requestBody = {
+      model: "dall-e-3",
+      prompt: prompt,
+      n: 1,
+      size: "1024x1024",
+      image: base64Image.split(',')[1], // Remove the data URL prefix
+      response_format: "b64_json"
+    };
     
-    // Call OpenAI API with FormData
+    // Call OpenAI API with JSON format
     const response = await fetch("https://api.openai.com/v1/images/generations", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${OPENAI_API_KEY}`,
-        // Don't set Content-Type here as the browser will set it automatically with the boundary
+        "Content-Type": "application/json"
       },
-      body: formData
+      body: JSON.stringify(requestBody)
     });
     
     // Process response
@@ -77,6 +81,16 @@ export async function processImage({
     console.error("Error processing image:", error);
     throw error;
   }
+}
+
+// Helper function to convert File to base64
+async function convertFileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 }
 
 // Helper function to create prompt based on options
