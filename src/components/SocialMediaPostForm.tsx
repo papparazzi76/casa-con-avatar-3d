@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, useFieldArray, Control } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { toast } from "sonner";
 import { SocialMediaPostFormData } from "@/services/socialMediaService";
@@ -92,6 +92,9 @@ interface SocialMediaPostFormProps {
 }
 
 export function SocialMediaPostForm({ onSubmit, isGenerating }: SocialMediaPostFormProps) {
+  // Use local state to manage arrays instead of useFieldArray
+  const [caracteristicasArray, setCaracteristicasArray] = useState<string[]>([]);
+  const [extrasArray, setExtrasArray] = useState<string[]>([]);
   const [featureInput, setFeatureInput] = useState("");
   const [extraInput, setExtraInput] = useState("");
   
@@ -107,33 +110,40 @@ export function SocialMediaPostForm({ onSubmit, isGenerating }: SocialMediaPostF
     },
   });
   
-  // Use useFieldArray directly with proper typing
-  const caracteristicas = useFieldArray({
-    control: form.control,
-    name: "caracteristicas_destacadas"
-  });
-  
-  const extras = useFieldArray({
-    control: form.control,
-    name: "extras"
-  });
-  
   const addCaracteristica = () => {
-    if (featureInput.trim() && caracteristicas.fields.length < 10) {
-      caracteristicas.append(featureInput.trim());
+    if (featureInput.trim() && caracteristicasArray.length < 10) {
+      const newCaracteristicas = [...caracteristicasArray, featureInput.trim()];
+      setCaracteristicasArray(newCaracteristicas);
+      form.setValue("caracteristicas_destacadas", newCaracteristicas);
       setFeatureInput("");
-    } else if (caracteristicas.fields.length >= 10) {
+    } else if (caracteristicasArray.length >= 10) {
       toast.warning("Has alcanzado el máximo de 10 características destacadas");
     }
   };
   
+  const removeCaracteristica = (index: number) => {
+    const newCaracteristicas = [...caracteristicasArray];
+    newCaracteristicas.splice(index, 1);
+    setCaracteristicasArray(newCaracteristicas);
+    form.setValue("caracteristicas_destacadas", newCaracteristicas);
+  };
+  
   const addExtra = () => {
-    if (extraInput.trim() && extras.fields.length < 10) {
-      extras.append(extraInput.trim());
+    if (extraInput.trim() && extrasArray.length < 10) {
+      const newExtras = [...extrasArray, extraInput.trim()];
+      setExtrasArray(newExtras);
+      form.setValue("extras", newExtras);
       setExtraInput("");
-    } else if (extras.fields.length >= 10) {
+    } else if (extrasArray.length >= 10) {
       toast.warning("Has alcanzado el máximo de 10 extras");
     }
+  };
+  
+  const removeExtra = (index: number) => {
+    const newExtras = [...extrasArray];
+    newExtras.splice(index, 1);
+    setExtrasArray(newExtras);
+    form.setValue("extras", newExtras);
   };
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -396,12 +406,12 @@ export function SocialMediaPostForm({ onSubmit, isGenerating }: SocialMediaPostF
                 </div>
                 
                 <div className="flex flex-wrap gap-2">
-                  {caracteristicas.fields.map((field, index) => (
-                    <Badge key={field.id} variant="secondary" className="px-3 py-1.5">
-                      {field.value}
+                  {caracteristicasArray.map((feature, index) => (
+                    <Badge key={index} variant="secondary" className="px-3 py-1.5">
+                      {feature}
                       <button 
                         type="button" 
-                        onClick={() => caracteristicas.remove(index)}
+                        onClick={() => removeCaracteristica(index)}
                         className="ml-2 text-muted-foreground hover:text-foreground"
                       >
                         <X className="h-3 w-3" />
@@ -444,12 +454,12 @@ export function SocialMediaPostForm({ onSubmit, isGenerating }: SocialMediaPostF
                 </div>
                 
                 <div className="flex flex-wrap gap-2">
-                  {extras.fields.map((field, index) => (
-                    <Badge key={field.id} variant="outline" className="px-3 py-1.5">
-                      {field.value}
+                  {extrasArray.map((extra, index) => (
+                    <Badge key={index} variant="outline" className="px-3 py-1.5">
+                      {extra}
                       <button 
                         type="button" 
-                        onClick={() => extras.remove(index)}
+                        onClick={() => removeExtra(index)}
                         className="ml-2 text-muted-foreground hover:text-foreground"
                       >
                         <X className="h-3 w-3" />
