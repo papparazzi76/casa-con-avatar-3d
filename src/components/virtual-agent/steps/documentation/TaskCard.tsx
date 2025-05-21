@@ -4,7 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Task } from "./TasksData";
 import ExpiryBadge from "./ExpiryBadge";
-import { Upload, Clock, Info } from "lucide-react";
+import { Clock, Info } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 
@@ -91,13 +91,6 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onStatusChange, targetDate })
             <Clock size={16} />
             <span className="ml-1">Recordatorio</span>
           </Button>
-          
-          {task.upload && (
-            <Button variant="outline" size="sm">
-              <Upload size={16} />
-              <span className="ml-1">Subir archivo</span>
-            </Button>
-          )}
         </div>
       </div>
     </div>
