@@ -1,4 +1,3 @@
-
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
 import { ServiceGrid } from "@/components/ServiceGrid";
@@ -108,15 +107,10 @@ const Index = () => {
               >
                 <div className="relative w-72 h-72 md:w-96 md:h-96 rounded-lg overflow-hidden shadow-xl">
                   <img 
-                    src="/lovable-uploads/ef5a1332-3aa5-45a2-86f9-10daf6f9a3b4.png" 
-                    alt="Escaparate inmobiliario" 
+                    src="/lovable-uploads/c1fc4661-1e22-4d83-a3ab-413b5c4f0540.png" 
+                    alt="Escaparate inmobiliario PropTools" 
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
-                    <span className="text-white text-xl font-semibold">
-                      Escaparate Inmobiliario
-                    </span>
-                  </div>
                 </div>
               </motion.div>
             </div>
