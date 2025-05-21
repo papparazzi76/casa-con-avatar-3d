@@ -7,11 +7,15 @@ import { PropertyValuatorResult } from "@/components/PropertyValuatorResult";
 import { PropertyInfo, PropertyValuation, getPropertyValuation } from "@/services/propertyValuatorService";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { ProfessionalValuationDialog } from "@/components/ProfessionalValuationDialog";
+import { FileTextIcon } from "lucide-react";
 
 const PropertyValuator = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [propertyValuation, setPropertyValuation] = useState<PropertyValuation | null>(null);
   const [missingFields, setMissingFields] = useState<string[] | undefined>(undefined);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const handleSubmit = async (propertyData: PropertyInfo) => {
     setIsLoading(true);
@@ -59,6 +63,14 @@ const PropertyValuator = () => {
           <p className="mx-auto mt-4 max-w-[700px] text-gray-500 md:text-xl dark:text-gray-400">
             Obtén una valoración estimada de tu propiedad basada en inmuebles similares del mercado.
           </p>
+          
+          <Button 
+            onClick={() => setIsDialogOpen(true)} 
+            className="mt-6 bg-realestate-purple hover:bg-realestate-purple/90"
+          >
+            <FileTextIcon className="mr-2 h-4 w-4" />
+            Solicitar valoración profesional gratuita
+          </Button>
         </motion.div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -77,6 +89,12 @@ const PropertyValuator = () => {
           </div>
         </div>
       </main>
+      
+      <ProfessionalValuationDialog 
+        isOpen={isDialogOpen} 
+        onClose={() => setIsDialogOpen(false)}
+        propertyValuation={propertyValuation}
+      />
       
       <Footer />
     </div>
