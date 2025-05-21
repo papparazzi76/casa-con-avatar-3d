@@ -17,7 +17,7 @@ import { LocationFields } from "./form/LocationFields";
 import { FeaturesField } from "./form/FeaturesField";
 import { DescriptionField } from "./form/DescriptionField";
 import { FormActions } from "./form/FormActions";
-import { formSchema, PropertyFormValues } from "./form/formSchema";
+import { propertyFormSchema, PropertyFormValues } from "./form/formSchema";
 
 interface PropertyFormProps {
   property?: Property;
@@ -30,7 +30,7 @@ export function PropertyForm({ property, isEditing = false, onSuccess }: Propert
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const form = useForm<PropertyFormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(propertyFormSchema),
     defaultValues: {
       title: property?.title || "",
       description: property?.description || "",

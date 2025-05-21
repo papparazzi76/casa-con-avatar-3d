@@ -6,6 +6,7 @@ import { deleteProperty } from "@/services/propertyService";
 import { Property, PropertyImage } from "@/types/property";
 import { PropertyStatusBadge } from "./PropertyStatusBadge";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { 
   Table, 
   TableBody, 
