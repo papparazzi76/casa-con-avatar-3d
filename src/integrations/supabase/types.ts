@@ -36,6 +36,110 @@ export type Database = {
         }
         Relationships: []
       }
+      properties: {
+        Row: {
+          address: string
+          area: number
+          bathrooms: number
+          created_at: string
+          currency: string
+          description: string
+          features: string[] | null
+          id: string
+          latitude: number | null
+          location: string
+          longitude: number | null
+          operation_type: string
+          postal_code: string | null
+          price: number
+          property_type: string
+          rooms: number
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address: string
+          area: number
+          bathrooms: number
+          created_at?: string
+          currency?: string
+          description: string
+          features?: string[] | null
+          id?: string
+          latitude?: number | null
+          location: string
+          longitude?: number | null
+          operation_type: string
+          postal_code?: string | null
+          price: number
+          property_type: string
+          rooms: number
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string
+          area?: number
+          bathrooms?: number
+          created_at?: string
+          currency?: string
+          description?: string
+          features?: string[] | null
+          id?: string
+          latitude?: number | null
+          location?: string
+          longitude?: number | null
+          operation_type?: string
+          postal_code?: string | null
+          price?: number
+          property_type?: string
+          rooms?: number
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      property_images: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string
+          is_main: boolean
+          order_num: number
+          property_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url: string
+          is_main?: boolean
+          order_num?: number
+          property_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          is_main?: boolean
+          order_num?: number
+          property_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_images_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

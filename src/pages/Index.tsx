@@ -5,6 +5,9 @@ import { ServiceGrid } from "@/components/ServiceGrid";
 import { Features } from "@/components/Features";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Home } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Index = () => {
   return (
@@ -24,6 +27,59 @@ const Index = () => {
             "Vende o alquila tu inmueble como un profesional, <span className="font-semibold">sin comisiones ni intermediarios</span>"
           </p>
         </motion.div>
+
+        {/* Nuevo banner para el escaparate inmobiliario */}
+        <section className="py-12 bg-gradient-to-r from-realestate-purple/5 to-realestate-turquoise/5">
+          <div className="container px-4 md:px-6">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+              <div className="max-w-2xl">
+                <h2 className="text-3xl font-bold tracking-tighter mb-4">
+                  Nuevo: Escaparate Inmobiliario
+                </h2>
+                <p className="text-muted-foreground mb-6">
+                  Descubre inmuebles o publica el tuyo totalmente gratis. 
+                  Sin comisiones ni intermediarios, conectamos directamente a 
+                  propietarios y compradores/inquilinos.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <Button 
+                    asChild
+                    className="bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90"
+                  >
+                    <Link to="/propiedades">
+                      <Home className="mr-2 h-4 w-4" />
+                      Ver inmuebles
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline">
+                    <Link to="/propiedades/nueva">
+                      Publicar mi inmueble
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="relative"
+              >
+                <div className="relative w-72 h-72 md:w-96 md:h-96 rounded-lg overflow-hidden shadow-xl">
+                  <img 
+                    src="/lovable-uploads/ef5a1332-3aa5-45a2-86f9-10daf6f9a3b4.png" 
+                    alt="Escaparate inmobiliario" 
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
+                    <span className="text-white text-xl font-semibold">
+                      Escaparate Inmobiliario
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </section>
 
         <ServiceGrid />
         

@@ -17,6 +17,11 @@ import ContractsGenerator from "./pages/ContractsGenerator";
 import LegalAdvisor from "./pages/LegalAdvisor";
 import PropertyValuator from "./pages/PropertyValuator";
 import SocialMediaPostGenerator from "./pages/SocialMediaPostGenerator";
+import PropertiesPage from "./pages/PropertiesPage";
+import PropertyCreatePage from "./pages/PropertyCreatePage";
+import PropertyDetailPage from "./pages/PropertyDetailPage";
+import PropertyEditPage from "./pages/PropertyEditPage";
+import UserPropertiesPage from "./pages/UserPropertiesPage";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +44,14 @@ const App = () => (
             <Route path="/asesor-legal" element={<LegalAdvisor />} />
             <Route path="/valorador-inmuebles" element={<PropertyValuator />} />
             <Route path="/generador-posts-rrss" element={<SocialMediaPostGenerator />} />
+            
+            {/* Nuevas rutas para el escaparate inmobiliario */}
+            <Route path="/propiedades" element={<PropertiesPage />} />
+            <Route path="/propiedades/nueva" element={<PropertyCreatePage />} />
+            <Route path="/propiedades/:id" element={<PropertyDetailPage />} />
+            <Route path="/propiedades/:id/editar" element={<PropertyEditPage />} />
+            <Route path="/mis-propiedades" element={<UserPropertiesPage />} />
+            
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
