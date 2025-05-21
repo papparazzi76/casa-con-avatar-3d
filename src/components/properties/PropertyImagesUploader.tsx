@@ -3,11 +3,10 @@ import { useState, useRef, useCallback } from "react";
 import { toast } from "sonner";
 import { uploadPropertyImage, deletePropertyImage, setMainImage } from "@/services/propertyService";
 import { PropertyImage } from "@/types/property";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { X, Star, Image, Upload, AlertCircle } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { EmptyImagesList } from "./images/EmptyImagesList";
+import { ImagesGrid } from "./images/ImagesGrid";
+import { UploadHeader } from "./images/UploadHeader";
+import { ErrorMessage } from "./images/ErrorMessage";
 
 interface PropertyImagesUploaderProps {
   propertyId: string;
@@ -123,6 +122,10 @@ export function PropertyImagesUploader({ propertyId, existingImages = [] }: Prop
     }
   };
 
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col space-y-4">
@@ -131,105 +134,35 @@ export function PropertyImagesUploader({ propertyId, existingImages = [] }: Prop
           Puedes subir hasta 10 imágenes por propiedad. Haz clic en la estrella para establecer la imagen principal.
         </p>
         
-        {error && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
+        {error && <ErrorMessage message={error} />}
 
-        <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center gap-4">
-          <div>
-            <p className="text-sm font-medium mb-1">
-              {images.length}/10 imágenes
-            </p>
-            {images.length < 10 && (
-              <Button 
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isUploading}
-                className="bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90"
-              >
-                <Upload className="mr-2 h-4 w-4" />
-                {isUploading ? "Subiendo..." : "Subir imágenes"}
-              </Button>
-            )}
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileSelect}
-              multiple
-              accept="image/*"
-              className="hidden"
-              disabled={isUploading || images.length >= 10}
-            />
-          </div>
-          
-          {isUploading && (
-            <div className="w-full sm:w-1/2">
-              <p className="text-sm mb-1">Subiendo imágenes: {uploadProgress}%</p>
-              <Progress value={uploadProgress} className="h-2 w-full" />
-            </div>
-          )}
-        </div>
+        <UploadHeader
+          imagesCount={images.length}
+          isUploading={isUploading}
+          uploadProgress={uploadProgress}
+          onUploadClick={handleUploadClick}
+        />
       </div>
 
       {images.length === 0 ? (
-        <div className="text-center py-12 border-2 border-dashed rounded-lg">
-          <Image className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-          <p className="text-muted-foreground">
-            No hay imágenes para este inmueble. Agrega algunas para aumentar el interés.
-          </p>
-          <Button 
-            variant="outline" 
-            onClick={() => fileInputRef.current?.click()} 
-            className="mt-4"
-            disabled={isUploading}
-          >
-            Subir imágenes
-          </Button>
-        </div>
+        <EmptyImagesList onClick={handleUploadClick} isUploading={isUploading} />
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {images.map((image) => (
-            <Card key={image.id} className="overflow-hidden group relative">
-              <div className="aspect-square w-full overflow-hidden">
-                <img 
-                  src={image.image_url} 
-                  alt="Imagen del inmueble" 
-                  className="object-cover w-full h-full"
-                />
-              </div>
-              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                <Button 
-                  variant="destructive" 
-                  size="icon" 
-                  onClick={() => handleDelete(image.id)}
-                  title="Eliminar imagen"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-                <Button 
-                  variant={image.is_main ? "default" : "secondary"}
-                  size="icon" 
-                  onClick={() => !image.is_main && handleSetMainImage(image.id)}
-                  disabled={image.is_main}
-                  title={image.is_main ? "Imagen principal" : "Establecer como principal"}
-                >
-                  <Star className="h-4 w-4" />
-                </Button>
-              </div>
-              {image.is_main && (
-                <div className="absolute top-2 right-2 z-10">
-                  <span className="bg-primary text-primary-foreground text-xs px-2 py-1 rounded-full">
-                    Principal
-                  </span>
-                </div>
-              )}
-            </Card>
-          ))}
-        </div>
+        <ImagesGrid 
+          images={images} 
+          onDelete={handleDelete} 
+          onSetMainImage={handleSetMainImage}
+        />
       )}
+
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileSelect}
+        multiple
+        accept="image/*"
+        className="hidden"
+        disabled={isUploading || images.length >= 10}
+      />
     </div>
   );
 }
