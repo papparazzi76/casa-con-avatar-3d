@@ -13,6 +13,7 @@ import TermsOfService from "./pages/TermsOfService";
 import AdGenerator from "./pages/AdGenerator";
 import ImageEditor from "./pages/ImageEditor";
 import ExpensesCalculator from "./pages/ExpensesCalculator";
+import ContractsGenerator from "./pages/ContractsGenerator";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/generador-anuncios" element={<AdGenerator />} />
             <Route path="/editor-imagenes" element={<ImageEditor />} />
             <Route path="/calculadora-gastos" element={<ExpensesCalculator />} />
+            <Route path="/generador-contratos" element={<ContractsGenerator />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

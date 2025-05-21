@@ -82,7 +82,8 @@ Devuelve SIEMPRE **solo** el JSON válido cuando dispongas de todos los datos ne
     description: "Genera contratos de compraventa o alquiler personalizados.",
     icon: "📄",
     fullDescription: "Crea contratos legalmente válidos de compraventa o alquiler personalizados con todas las cláusulas necesarias según la legislación española vigente.",
-    imageSrc: "/lovable-uploads/16fdb570-b6a7-4459-9e65-8e6845fc8b96.png"
+    imageSrc: "/lovable-uploads/16fdb570-b6a7-4459-9e65-8e6845fc8b96.png",
+    path: "/generador-contratos"
   },
   {
     id: "legal",
