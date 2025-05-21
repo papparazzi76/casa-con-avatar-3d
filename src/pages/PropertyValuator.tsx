@@ -4,7 +4,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { PropertyValuatorForm } from "@/components/PropertyValuatorForm";
 import { PropertyValuatorResult } from "@/components/PropertyValuatorResult";
-import { PropertyInfo, PropertyValuation, getPropertyValuation } from "@/services/propertyValuatorService";
+import { PropertyInfo, PropertyValuation, getPropertyValuation } from "@/services/propertyValuator";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
