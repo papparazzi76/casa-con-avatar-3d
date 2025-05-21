@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,6 +18,8 @@ import { FeaturesField } from "./form/FeaturesField";
 import { DescriptionField } from "./form/DescriptionField";
 import { FormActions } from "./form/FormActions";
 import { propertyFormSchema, PropertyFormValues } from "./form/formSchema";
+import { PropertyImagesUploader } from "./PropertyImagesUploader";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface PropertyFormProps {
   property?: Property;
@@ -27,6 +30,7 @@ interface PropertyFormProps {
 export function PropertyForm({ property, isEditing = false, onSuccess }: PropertyFormProps) {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeTab, setActiveTab] = useState("details");
   
   const form = useForm<PropertyFormValues>({
     resolver: zodResolver(propertyFormSchema),
@@ -76,26 +80,46 @@ export function PropertyForm({ property, isEditing = false, onSuccess }: Propert
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <TitleField control={form.control} />
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-2 mb-8">
+            <TabsTrigger value="details">Detalles del inmueble</TabsTrigger>
+            <TabsTrigger value="images" disabled={!isEditing}>
+              {isEditing ? "Imágenes" : "Imágenes (disponible después de guardar)"}
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="details">
+            <TitleField control={form.control} />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <PropertyTypeField control={form.control} />
-          <OperationTypeField control={form.control} />
-        </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <PropertyTypeField control={form.control} />
+              <OperationTypeField control={form.control} />
+            </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <PriceFields control={form.control} />
-        </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <PriceFields control={form.control} />
+            </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <RoomFields control={form.control} />
-        </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <RoomFields control={form.control} />
+            </div>
 
-        <LocationFields control={form.control} />
-        <FeaturesField control={form.control} />
-        <DescriptionField control={form.control} />
+            <LocationFields control={form.control} />
+            <FeaturesField control={form.control} />
+            <DescriptionField control={form.control} />
 
-        <FormActions isSubmitting={isSubmitting} isEditing={isEditing} />
+            <FormActions isSubmitting={isSubmitting} isEditing={isEditing} />
+          </TabsContent>
+          
+          {isEditing && property && (
+            <TabsContent value="images">
+              <PropertyImagesUploader 
+                propertyId={property.id} 
+                existingImages={property.property_images || []}
+              />
+            </TabsContent>
+          )}
+        </Tabs>
       </form>
     </Form>
   );
