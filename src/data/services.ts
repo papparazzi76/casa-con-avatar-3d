@@ -73,7 +73,8 @@ Devuelve SIEMPRE **solo** el JSON válido cuando dispongas de todos los datos ne
     description: "Calcula todos los costes asociados a la compraventa de inmuebles.",
     icon: "🧮",
     fullDescription: "Herramienta completa para calcular todos los impuestos y gastos asociados a la compraventa de inmuebles, tanto para compradores como para vendedores: IVA, ITP, AJD, plusvalía municipal, IRPF, gastos notariales y más.",
-    imageSrc: "/lovable-uploads/f7175729-678b-4dec-9e4f-9676b21e24ab.png"
+    imageSrc: "/lovable-uploads/f7175729-678b-4dec-9e4f-9676b21e24ab.png",
+    path: "/calculadora-gastos"
   },
   {
     id: "contracts",
