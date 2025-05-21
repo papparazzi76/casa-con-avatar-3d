@@ -31,10 +31,33 @@ export interface LegalAnswer {
   disclaimer: string;
 }
 
+// Get API key from localStorage or empty string if not set
+const getApiKey = (): string => {
+  return localStorage.getItem('openai_api_key') || '';
+};
+
+// Save API key to localStorage
+export const saveApiKey = (key: string): void => {
+  localStorage.setItem('openai_api_key', key);
+  toast.success("API key guardada correctamente.");
+};
+
+// Check if API key exists
+export const hasApiKey = (): boolean => {
+  return !!getApiKey();
+};
+
 export async function getLegalAdvice(
   questionData: LegalQuestion
 ): Promise<LegalAnswer> {
   try {
+    // Get API key from localStorage
+    const apiKey = getApiKey();
+    
+    if (!apiKey) {
+      throw new Error("API key no encontrada. Por favor, configura tu API key de OpenAI.");
+    }
+
     // The system prompt is provided in the first message, then the user query follows
     const systemPrompt = `Eres un **asistente jurídico-inmobiliario** especializado en el ordenamiento español.  
 Tu cometido exclusivo es responder, con rigor y lenguaje claro, cualquier consulta legal relacionada con el sector inmobiliario (compraventa, arrendamientos, propiedad horizontal, urbanismo, fiscalidad inmobiliaria, registral, hipotecario, etc.) conforme a la legislación **vigente en España** y la última jurisprudencia relevante.`;
@@ -46,10 +69,10 @@ Tu cometido exclusivo es responder, con rigor y lenguaje claro, cualquier consul
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${import.meta.env.VITE_OPENAI_API_KEY || ""}`
+        "Authorization": `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: "gpt-4o",
         messages: [
           {
             role: "system",
