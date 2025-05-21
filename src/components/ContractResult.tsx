@@ -1,12 +1,12 @@
 
-import { ContractResult } from "@/types/contractTypes";
+import { ContractResult as ContractResultType } from "@/types/contractTypes";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface ContractResultProps {
-  result: ContractResult;
+  result: ContractResultType;
 }
 
 export function ContractResult({ result }: ContractResultProps) {
@@ -65,3 +65,4 @@ export function ContractResult({ result }: ContractResultProps) {
     </Card>
   );
 }
+
