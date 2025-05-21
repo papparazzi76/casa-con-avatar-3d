@@ -6,8 +6,9 @@ import { EditorOptions } from "@/features/image-editor/EditorOptions";
 import { ResultDisplay } from "@/features/image-editor/ResultDisplay";
 import { DecorStyle, EditMode, RoomType } from "@/features/image-editor/types";
 import { getRoomTypeLabel } from "@/features/image-editor/util";
-import { processImage } from "@/utils/openaiService";
+import { ImageEditPlan, processImage } from "@/utils/openaiService";
 import { ContactProfessionalButtonWithDialog } from "@/components/ContactProfessionalButtonWithDialog";
+import { EditPlanDisplay } from "@/features/image-editor/EditPlanDisplay";
 
 const ImageEditor = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -17,6 +18,7 @@ const ImageEditor = () => {
   const [editMode, setEditMode] = useState<EditMode>("enhancement");
   const [decorStyle, setDecorStyle] = useState<DecorStyle>("moderno");
   const [roomType, setRoomType] = useState<RoomType>("salon");
+  const [editPlan, setEditPlan] = useState<ImageEditPlan | null>(null);
   const { toast } = useToast();
 
   const handleImageChange = (file: File) => {
@@ -41,6 +43,7 @@ const ImageEditor = () => {
     }
 
     setIsProcessing(true);
+    setEditPlan(null);
 
     try {
       toast({
@@ -107,6 +110,11 @@ const ImageEditor = () => {
           hasImage={!!selectedImage}
         />
       </div>
+
+      {/* Plan de edición */}
+      {editPlan && (
+        <EditPlanDisplay editPlan={editPlan} className="mt-8" />
+      )}
 
       {editedImage && imagePreview && (
         <ResultDisplay
