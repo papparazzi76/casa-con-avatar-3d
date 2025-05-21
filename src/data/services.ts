@@ -91,7 +91,8 @@ Devuelve SIEMPRE **solo** el JSON válido cuando dispongas de todos los datos ne
     description: "Resuelve tus dudas sobre normativa y legislación vigente.",
     icon: "⚖️",
     fullDescription: "Consulta todas tus dudas sobre la normativa y legislación inmobiliaria española vigente con respuestas precisas y actualizadas.",
-    avatarSrc: "/lovable-uploads/e7be3e75-93d7-4fa1-b80f-687790b10386.png"
+    avatarSrc: "/lovable-uploads/e7be3e75-93d7-4fa1-b80f-687790b10386.png",
+    path: "/asesor-legal"
   },
   {
     id: "valuation",
