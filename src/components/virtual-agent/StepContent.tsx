@@ -1,14 +1,9 @@
-
 import React from 'react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info } from "lucide-react";
+import { Step } from './steps/StepTypes';
 
-interface StepContentProps {
-  id: number;
-  title: string;
-  description: string;
-  content: React.ReactNode;
-}
+interface StepContentProps extends Step {}
 
 export const StepContent: React.FC<StepContentProps> = ({ id, title, description, content }) => {
   return (

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Step } from './StepsData';
+import { Step } from './steps/StepTypes';
 
 interface DetailedTabProps {
   steps: Step[];

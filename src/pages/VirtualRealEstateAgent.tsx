@@ -3,7 +3,7 @@ import React from 'react';
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getSteps } from "@/components/virtual-agent/StepsData";
+import { getSteps } from "@/components/virtual-agent/steps/StepsData";
 import FlowchartTab from "@/components/virtual-agent/FlowchartTab";
 import DetailedTab from "@/components/virtual-agent/DetailedTab";
 import BestPractices from "@/components/virtual-agent/BestPractices";
