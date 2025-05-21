@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -125,7 +124,6 @@ export default function VirtualRealEstateAgent() {
                   <td className="px-6 py-4">3 m</td>
                   <td className="px-6 py-4 text-green-600">✓</td>
                 </tr>
-                {/* Add more rows as needed */}
               </tbody>
             </table>
           </div>
@@ -381,12 +379,21 @@ export default function VirtualRealEstateAgent() {
       <main className="flex-1 py-12">
         <div className="container px-4 md:px-6">
           <div className="max-w-5xl mx-auto">
-            <h1 className="text-3xl font-bold tracking-tight text-center mb-6">
-              Agente Virtual Inmobiliario
-            </h1>
-            <p className="text-lg text-center text-muted-foreground mb-12">
-              Guía paso a paso para vender o alquilar tu propiedad como un profesional
-            </p>
+            <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-12">
+              <div>
+                <h1 className="text-3xl font-bold tracking-tight mb-3">
+                  Agente Virtual Inmobiliario
+                </h1>
+                <p className="text-lg text-muted-foreground">
+                  Guía paso a paso para vender o alquilar tu propiedad como un profesional
+                </p>
+              </div>
+              <img 
+                src="/lovable-uploads/77445524-6d1f-421d-99be-323393310d7f.png" 
+                alt="Robot agente inmobiliario" 
+                className="w-40 h-40 object-contain"
+              />
+            </div>
             
             <Tabs defaultValue="flowchart" className="mb-12">
               <TabsList className="grid w-full grid-cols-2">
