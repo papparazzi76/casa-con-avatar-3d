@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -339,13 +340,13 @@ export default function VirtualRealEstateAgent() {
                   <td className="px-6 py-4">Plusvalía Municipal (IIVTNU)</td>
                   <td className="px-6 py-4">Vendedor (salvo pacto)</td>
                   <td className="px-6 py-4">30 d hábiles desde firma</td>
-                  <td className="px-6 py-4">Opción 'objetiva' → valor catastral × coeficiente anual; <br />Opción 'real' → plusvalía efectivamente obtenida</td>
+                  <td className="px-6 py-4">Opción &apos;objetiva&apos; → valor catastral × coeficiente anual; <br />Opción &apos;real&apos; → plusvalía efectivamente obtenida</td>
                 </tr>
                 <tr>
                   <td className="px-6 py-4">IRPF (ganancia patrimonial)</td>
                   <td className="px-6 py-4">Vendedor</td>
                   <td className="px-6 py-4">Declaración anual</td>
-                  <td className="px-6 py-4">Diferencia valor escriturado compra-venta + coeficiente abatimiento si >1994</td>
+                  <td className="px-6 py-4">Diferencia valor escriturado compra-venta + coeficiente abatimiento si {'>'}1994</td>
                 </tr>
                 <tr>
                   <td className="px-6 py-4">AJD / ITP</td>
