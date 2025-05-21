@@ -15,6 +15,7 @@ import ImageEditor from "./pages/ImageEditor";
 import ExpensesCalculator from "./pages/ExpensesCalculator";
 import ContractsGenerator from "./pages/ContractsGenerator";
 import LegalAdvisor from "./pages/LegalAdvisor";
+import PropertyValuator from "./pages/PropertyValuator";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/calculadora-gastos" element={<ExpensesCalculator />} />
             <Route path="/generador-contratos" element={<ContractsGenerator />} />
             <Route path="/asesor-legal" element={<LegalAdvisor />} />
+            <Route path="/valorador-inmuebles" element={<PropertyValuator />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

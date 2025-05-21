@@ -100,7 +100,8 @@ Devuelve SIEMPRE **solo** el JSON válido cuando dispongas de todos los datos ne
     description: "Obtén una estimación del valor de mercado de tu propiedad.",
     icon: "💰",
     fullDescription: "Calcula el valor estimado de mercado de tu propiedad basado en datos actualizados y comparables de la zona, con un rango de valoración y análisis detallado.",
-    avatarSrc: "/lovable-uploads/0a39d5c4-65f6-452b-a42c-ac31b6b7b5ca.png"
+    avatarSrc: "/lovable-uploads/0a39d5c4-65f6-452b-a42c-ac31b6b7b5ca.png",
+    path: "/valorador-inmuebles"
   },
   {
     id: "social",
