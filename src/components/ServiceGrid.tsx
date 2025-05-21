@@ -25,12 +25,25 @@ export function ServiceGrid() {
     }
   };
 
+  // Añadimos el servicio de generador de posts para RRSS
+  const allServices = [
+    ...services,
+    {
+      id: "social-media-posts",
+      title: "Creador de Posts para RRSS",
+      description: "Genera contenido optimizado para Instagram y Facebook con tu propiedad",
+      fullDescription: "Crea posts atractivos y optimizados para redes sociales que maximizan la visibilidad de tu propiedad en Instagram y Facebook. Incluye textos, hashtags y sugerencias para carruseles de fotos.",
+      icon: "📱",
+      path: "/generador-posts-rrss"
+    }
+  ];
+
   return (
     <section className="py-12 md:py-16">
       <div className="container px-4 md:px-6">
         <ServiceGridHeader />
         <ServiceGridContent 
-          services={services}
+          services={allServices}
           onServiceClick={handleServiceClick}
         />
       </div>

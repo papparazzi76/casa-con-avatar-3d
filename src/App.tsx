@@ -16,6 +16,7 @@ import ExpensesCalculator from "./pages/ExpensesCalculator";
 import ContractsGenerator from "./pages/ContractsGenerator";
 import LegalAdvisor from "./pages/LegalAdvisor";
 import PropertyValuator from "./pages/PropertyValuator";
+import SocialMediaPostGenerator from "./pages/SocialMediaPostGenerator";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +38,7 @@ const App = () => (
             <Route path="/generador-contratos" element={<ContractsGenerator />} />
             <Route path="/asesor-legal" element={<LegalAdvisor />} />
             <Route path="/valorador-inmuebles" element={<PropertyValuator />} />
+            <Route path="/generador-posts-rrss" element={<SocialMediaPostGenerator />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
