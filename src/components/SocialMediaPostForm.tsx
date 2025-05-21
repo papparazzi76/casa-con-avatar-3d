@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -60,6 +59,7 @@ const conservationOptions = [
   { value: "a_reformar", label: "A reformar" },
 ];
 
+// Define form schema with proper type for the form data
 const formSchema = z.object({
   plataforma: z.enum(["instagram", "facebook", "ambas"], { 
     required_error: "Selecciona al menos una plataforma" 
@@ -75,13 +75,16 @@ const formSchema = z.object({
   precio: z.string().min(1, { message: "Indica el precio" }),
   caracteristicas_destacadas: z.array(z.string()).min(1, { message: "Añade al menos una característica destacada" }),
   url_contacto: z.string().min(3, { message: "Indica un método de contacto válido" }),
-  fotos: z.any().array().min(1, { message: "Sube al menos una foto" }).optional(),
+  fotos: z.array(z.any()).min(1, { message: "Sube al menos una foto" }),
   estado_conservacion: z.string().optional(),
   extras: z.array(z.string()).optional(),
   titulo_anuncio: z.string().optional(),
   idioma: z.string().default("ES"),
   tono: z.string().optional(),
 });
+
+// Ensure this matches the type from socialMediaService.ts
+type FormValues = z.infer<typeof formSchema>;
 
 interface SocialMediaPostFormProps {
   onSubmit: (data: SocialMediaPostFormData) => void;
@@ -92,7 +95,7 @@ export function SocialMediaPostForm({ onSubmit, isGenerating }: SocialMediaPostF
   const [featureInput, setFeatureInput] = useState("");
   const [extraInput, setExtraInput] = useState("");
   
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       plataforma: "ambas",
@@ -145,17 +148,28 @@ export function SocialMediaPostForm({ onSubmit, isGenerating }: SocialMediaPostF
     }
   };
   
-  const handleSubmit = (data: z.infer<typeof formSchema>) => {
+  const handleSubmit = (data: FormValues) => {
     if (isGenerating) return;
     
-    // Ensure fotos field is always an array
-    const fotos = data.fotos || [];
-    
+    // Convert form data to SocialMediaPostFormData
+    // All required fields are already validated by zod
     const formattedData: SocialMediaPostFormData = {
-      ...data,
-      fotos: Array.isArray(fotos) ? fotos : [fotos],
-      caracteristicas_destacadas: data.caracteristicas_destacadas || [],
-      extras: data.extras || []
+      plataforma: data.plataforma,
+      tipo_operacion: data.tipo_operacion,
+      tipo_inmueble: data.tipo_inmueble,
+      localidad: data.localidad,
+      superficie_m2: data.superficie_m2,
+      habitaciones: data.habitaciones,
+      banos: data.banos,
+      precio: data.precio,
+      caracteristicas_destacadas: data.caracteristicas_destacadas,
+      url_contacto: data.url_contacto,
+      fotos: data.fotos,
+      estado_conservacion: data.estado_conservacion,
+      extras: data.extras || [],
+      titulo_anuncio: data.titulo_anuncio,
+      idioma: data.idioma,
+      tono: data.tono
     };
     
     onSubmit(formattedData);

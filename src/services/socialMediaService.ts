@@ -15,7 +15,7 @@ export interface SocialMediaPostFormData {
   precio: string;
   caracteristicas_destacadas: string[];
   url_contacto: string;
-  fotos: File[];
+  fotos: any[]; // Using any[] as files are complex objects
   estado_conservacion?: string;
   extras?: string[];
   titulo_anuncio?: string;
@@ -65,7 +65,7 @@ DATOS DEL INMUEBLE:
 - URL/Contacto: ${formData.url_contacto}
 - Fotos: ${fotoNames.join(", ")}
 ${formData.estado_conservacion ? `- Estado de conservación: ${formData.estado_conservacion}` : ""}
-${formData.extras ? `- Extras: ${formData.extras.join(", ")}` : ""}
+${formData.extras && formData.extras.length > 0 ? `- Extras: ${formData.extras.join(", ")}` : ""}
 ${formData.titulo_anuncio ? `- Título del anuncio: ${formData.titulo_anuncio}` : ""}
 ${formData.idioma ? `- Idioma: ${formData.idioma}` : ""}
 ${formData.tono ? `- Tono: ${formData.tono}` : ""}
