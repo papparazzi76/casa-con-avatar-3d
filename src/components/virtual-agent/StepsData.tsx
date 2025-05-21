@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import Quiz from "./PropertySaleQuiz/Quiz";
 
 export interface Step {
   id: number;
@@ -80,13 +81,10 @@ export const getSteps = (): Step[] => [
           </table>
         </div>
         
-        <Alert className="mt-4">
-          <Info className="h-4 w-4" />
-          <AlertTitle>Tip interactivo</AlertTitle>
-          <AlertDescription>
-            Cuestionario de 8 preguntas que recomiende la modalidad ideal según perfil de usuario.
-          </AlertDescription>
-        </Alert>
+        <div className="mt-4">
+          <h3 className="text-xl font-semibold mb-4">Cuestionario interactivo "¿Quién debe vender mi vivienda?"</h3>
+          <Quiz />
+        </div>
       </div>
     )
   },
