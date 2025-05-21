@@ -1,14 +1,11 @@
-
 export interface Service {
   id: string;
   title: string;
   description: string;
-  icon: string;
   fullDescription: string;
+  icon: string;
   path?: string;
   imageSrc?: string;
-  avatarSrc?: string;
-  systemPrompt?: string;
 }
 
 export const services: Service[] = [
@@ -119,5 +116,13 @@ Devuelve SIEMPRE **solo** el JSON válido cuando dispongas de todos los datos ne
     icon: "🧙‍♂️",
     fullDescription: "Sigue un proceso guiado paso a paso que te ayudará en cada aspecto de la venta o alquiler de tu propiedad, desde la preparación hasta el cierre de la operación.",
     avatarSrc: "/lovable-uploads/ef5a1332-3aa5-45a2-86f9-10daf6f9a3b4.png"
-  }
+  },
+  {
+    id: "virtual-agent",
+    title: "Agente Virtual Inmobiliario",
+    description: "Guía paso a paso para vender o alquilar tu propiedad como un profesional.",
+    fullDescription: "Consulta nuestra guía completa con los 13 pasos para vender o alquilar tu propiedad con éxito. Desde la valoración inicial hasta la firma de la escritura, pasando por la documentación, marketing, y gestión de visitas.",
+    icon: "📋",
+    path: "/agente-virtual-inmobiliario",
+  },
 ];

@@ -20,6 +20,7 @@ export interface Property {
   created_at: string;
   updated_at: string;
   status: string;
+  property_images?: PropertyImage[];
 }
 
 export interface PropertyImage {

@@ -6,7 +6,7 @@ import { Features } from "@/components/Features";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Home } from "lucide-react";
+import { Home, FileText } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Index = () => {
@@ -28,13 +28,59 @@ const Index = () => {
           </p>
         </motion.div>
 
-        {/* Nuevo banner para el escaparate inmobiliario */}
+        {/* Banner para el Agente Virtual Inmobiliario */}
         <section className="py-12 bg-gradient-to-r from-realestate-purple/5 to-realestate-turquoise/5">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col md:flex-row items-center justify-between gap-8">
               <div className="max-w-2xl">
                 <h2 className="text-3xl font-bold tracking-tighter mb-4">
-                  Nuevo: Escaparate Inmobiliario
+                  Nuevo: Agente Virtual Inmobiliario
+                </h2>
+                <p className="text-muted-foreground mb-6">
+                  Consulta nuestra guía completa paso a paso para vender o alquilar tu propiedad 
+                  como un profesional. Con consejos prácticos, checklists y herramientas interactivas.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <Button 
+                    asChild
+                    className="bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90"
+                  >
+                    <Link to="/agente-virtual-inmobiliario">
+                      <FileText className="mr-2 h-4 w-4" />
+                      Consultar guía completa
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="relative"
+              >
+                <div className="relative w-72 h-72 md:w-96 md:h-96 rounded-lg overflow-hidden shadow-xl">
+                  <div className="absolute inset-0 bg-gradient-to-br from-realestate-purple to-realestate-turquoise opacity-90 flex items-center justify-center">
+                    <div className="text-white text-center p-6">
+                      <h3 className="text-2xl font-bold mb-4">13 pasos</h3>
+                      <p className="text-lg mb-4">para vender o alquilar tu propiedad con éxito</p>
+                      <p className="font-light text-sm">
+                        Desde la valoración del inmueble hasta la firma de la escritura pública
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </section>
+
+        {/* Banner para el escaparate inmobiliario */}
+        <section className="py-12 bg-gradient-to-r from-realestate-purple/5 to-realestate-turquoise/5">
+          <div className="container px-4 md:px-6">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+              <div className="max-w-2xl">
+                <h2 className="text-3xl font-bold tracking-tighter mb-4">
+                  Escaparate Inmobiliario
                 </h2>
                 <p className="text-muted-foreground mb-6">
                   Descubre inmuebles o publica el tuyo totalmente gratis. 
