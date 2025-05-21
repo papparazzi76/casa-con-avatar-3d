@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -389,7 +390,7 @@ export default function VirtualRealEstateAgent() {
                 </p>
               </div>
               <img 
-                src="/lovable-uploads/77445524-6d1f-421d-99be-323393310d7f.png" 
+                src="/lovable-uploads/f46ff66f-0563-46d3-b58a-a01637195817.png" 
                 alt="Robot agente inmobiliario" 
                 className="w-40 h-40 object-contain"
               />

@@ -6,7 +6,7 @@ import { Features } from "@/components/Features";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Home, FileText } from "lucide-react";
+import { FileText, Home } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Index = () => {
@@ -34,7 +34,7 @@ const Index = () => {
             <div className="flex flex-col md:flex-row items-center justify-between gap-8">
               <div className="max-w-2xl">
                 <h2 className="text-3xl font-bold tracking-tighter mb-4">
-                  Nuevo: Agente Virtual Inmobiliario
+                  Agente Virtual Inmobiliario
                 </h2>
                 <p className="text-muted-foreground mb-6">
                   Consulta nuestra guía completa paso a paso para vender o alquilar tu propiedad 
@@ -59,15 +59,11 @@ const Index = () => {
                 className="relative"
               >
                 <div className="relative w-72 h-72 md:w-96 md:h-96 rounded-lg overflow-hidden shadow-xl">
-                  <div className="absolute inset-0 bg-gradient-to-br from-realestate-purple to-realestate-turquoise opacity-90 flex items-center justify-center">
-                    <div className="text-white text-center p-6">
-                      <h3 className="text-2xl font-bold mb-4">13 pasos</h3>
-                      <p className="text-lg mb-4">para vender o alquilar tu propiedad con éxito</p>
-                      <p className="font-light text-sm">
-                        Desde la valoración del inmueble hasta la firma de la escritura pública
-                      </p>
-                    </div>
-                  </div>
+                  <img 
+                    src="/lovable-uploads/f46ff66f-0563-46d3-b58a-a01637195817.png" 
+                    alt="Robot agente inmobiliario" 
+                    className="w-full h-full object-contain"
+                  />
                 </div>
               </motion.div>
             </div>
