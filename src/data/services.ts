@@ -1,64 +1,118 @@
+
 export interface Service {
   id: string;
   title: string;
   description: string;
-  fullDescription?: string;
-  icon: string; 
+  icon: string;
+  fullDescription: string;
   path?: string;
   imageSrc?: string;
   avatarSrc?: string;
+  systemPrompt?: string;
 }
 
 export const services: Service[] = [
   {
-    id: "ad-generator",
-    title: "Generador de Anuncios",
-    description: "Crea anuncios profesionales para tus propiedades.",
-    fullDescription: "Nuestro generador de anuncios utiliza IA para crear textos persuasivos y atractivos para promocionar tus propiedades. Simplemente proporciona los detalles básicos de la propiedad y obtendrás un anuncio optimizado para diferentes plataformas.",
+    id: "ads",
+    title: "Elaboración de Anuncios",
+    description: "Crea anuncios profesionales con títulos SEO, descripciones y destacados.",
     icon: "📝",
+    fullDescription: "Genera anuncios inmobiliarios profesionales completos con título optimizado para SEO, descripción detallada, 5 puntos destacados y hashtags relevantes para aumentar la visibilidad de tu propiedad.",
     path: "/generador-anuncios",
-    imageSrc: "lovable-uploads/e7be3e75-93d7-4fa1-b80f-687790b10386.png"
+    imageSrc: "/lovable-uploads/1be00a47-bae5-4c4e-954d-bbb23c7bfe7d.png",
+    avatarSrc: "/lovable-uploads/837d994e-df2d-4bff-a7da-0a16e0b146c1.png"
   },
   {
-    id: "image-editor",
-    title: "Editor de Imágenes",
-    description: "Mejora las fotos de tus propiedades con IA.",
-    fullDescription: "Transforma rápidamente imágenes de propiedades con nuestra herramienta de edición potenciada por IA. Mejora la calidad, cambia el estilo de decoración o actualiza espacios como cocinas y baños con un solo clic.",
+    id: "images",
+    title: "Editor de Imágenes & Homestaging",
+    description: "Mejora tus fotos y visualiza reformas virtuales.",
     icon: "🖼️",
+    fullDescription: "Transforma tus fotografías con nuestro editor profesional y crea impactantes visualizaciones de home staging virtual para mostrar todo el potencial de tu propiedad.",
     path: "/editor-imagenes",
-    imageSrc: "lovable-uploads/69972362-33bb-4c1d-95a4-3af6bb0c70a2.png"
+    imageSrc: "/lovable-uploads/062b1d1c-ade1-443e-805c-6590cbadd48b.png",
+    avatarSrc: "/lovable-uploads/69972362-33bb-4c1d-95a4-3af6bb0c70a2.png",
+    systemPrompt: `Eres un experto retocador fotográfico y diseñador de interiores virtual especializado en inmuebles.
+Tu misión es transformar las fotos proporcionadas por el usuario para que luzcan profesionales y, si se solicita, generar una versión de homestaging virtual.
+
+MODELO
+- Debes llamar **SIEMPRE** al modelo de edición de imágenes con mejor rendimiento disponible en la API de OpenAI.
+  - A la fecha de este prompt, utiliza **\`gpt-4o-vision\`** para análisis/detección y **\`dall-e-3\`** para generación o inpainting.
+  - Si OpenAI publica un modelo más avanzado, empléalo automáticamente sin necesidad de cambiar el prompt.
+
+REQUISITOS
+1. Al menos 1 foto en JPG/PNG (≤ 8 MB).
+2. Modo de trabajo:  
+   a) **enhancement** (mejora fotográfica)  
+   b) **homestaging**  
+   c) **mixto**.
+3. Para *homestaging* indicar estilo deseado (nórdico, moderno, rústico, etc.).
+Si falta información esencial, pregunta de forma concisa antes de continuar.
+
+INSTRUCCIONES DE PROCESO
+- **Enhancement**: ajustar exposición, contraste, balance de blancos y nitidez; corregir distorsión y verticales; eliminación de ruido; resolución final ≥ 3000 px lado mayor.
+- **Homestaging**: enmascarar muebles existentes cuando obstaculicen el diseño; generar nueva decoración coherente con el estilo solicitado manteniendo la arquitectura (puertas, ventanas, suelos).
+- Sin marcas de agua salvo petición expresa.
+
+FORMATO DE SALIDA (JSON estricto)
+{
+  "modo": "enhancement" | "homestaging" | "mixto",
+  "instrucciones": [
+    "Texto breve de la edición paso a paso en español…"
+  ],
+  "prompt_dalle": "…",          // Instrucción optimizada en inglés para DALL·E (solo si hay homestaging)
+  "mascara_inpaint": "on" | "off", // "on" si es necesario enmascarar muebles
+  "estilo_homestaging": "…",     // Vacío si no aplica
+  "nota_usuario": "Mensaje breve explicativo para mostrar al usuario."
+}
+
+Devuelve SIEMPRE **solo** el JSON válido cuando dispongas de todos los datos necesarios.`
   },
   {
-    id: "expenses-calculator",
+    id: "calculator",
     title: "Calculadora de Gastos e Impuestos",
-    description: "Calcula todos los costes asociados a una compraventa.",
-    fullDescription: "Nuestra calculadora de gastos e impuestos inmobiliarios proporciona un desglose detallado de todos los costes asociados a la compraventa de una vivienda en España, tanto para el comprador como para el vendedor, incluyendo impuestos, gastos notariales, registrales y más.",
+    description: "Calcula todos los costes asociados a la compraventa de inmuebles.",
     icon: "🧮",
-    path: "/calculadora-gastos",
-    imageSrc: "lovable-uploads/f14e4265-ded1-48b8-b808-f29510c8dc2c.png"
+    fullDescription: "Herramienta completa para calcular todos los impuestos y gastos asociados a la compraventa de inmuebles, tanto para compradores como para vendedores: IVA, ITP, AJD, plusvalía municipal, IRPF, gastos notariales y más.",
+    imageSrc: "/lovable-uploads/f7175729-678b-4dec-9e4f-9676b21e24ab.png"
   },
   {
-    id: "market-analysis",
-    title: "Análisis de Mercado",
-    description: "Obtén información valiosa sobre el mercado inmobiliario.",
-    fullDescription: "Accede a análisis detallados del mercado inmobiliario local. Conoce las tendencias de precios, la demanda actual y las mejores oportunidades de inversión en tu área.",
-    icon: "📊",
-    imageSrc: "lovable-uploads/7999a98e-9d19-4349-b448-9e919938c9a9.png"
+    id: "contracts",
+    title: "Redacción de Contratos",
+    description: "Genera contratos de compraventa o alquiler personalizados.",
+    icon: "📄",
+    fullDescription: "Crea contratos legalmente válidos de compraventa o alquiler personalizados con todas las cláusulas necesarias según la legislación española vigente.",
+    imageSrc: "/lovable-uploads/16fdb570-b6a7-4459-9e65-8e6845fc8b96.png"
   },
   {
-    id: "property-valuation",
-    title: "Valoración de Propiedades",
-    description: "Estima el valor de tu propiedad con precisión.",
-    fullDescription: "Utiliza nuestra herramienta de valoración de propiedades para obtener una estimación precisa del valor de tu inmueble. Basada en datos actualizados del mercado y algoritmos avanzados, te proporcionará una valoración confiable.",
-    icon: "💰",
-    imageSrc: "lovable-uploads/69972362-33bb-4c1d-95a4-3af6bb0c70a2.png"
-  },
-  {
-    id: "legal-advice",
-    title: "Asesoramiento Legal",
-    description: "Recibe asesoramiento legal experto en temas inmobiliarios.",
-    fullDescription: "Conéctate con abogados especializados en derecho inmobiliario para resolver tus dudas legales. Obtén asesoramiento personalizado sobre contratos, herencias, impuestos y cualquier otro tema legal relacionado con tus propiedades.",
+    id: "legal",
+    title: "Dudas Legislación Inmobiliaria",
+    description: "Resuelve tus dudas sobre normativa y legislación vigente.",
     icon: "⚖️",
-    imageSrc: "lovable-uploads/e7be3e75-93d7-4fa1-b80f-687790b10386.png"
+    fullDescription: "Consulta todas tus dudas sobre la normativa y legislación inmobiliaria española vigente con respuestas precisas y actualizadas.",
+    avatarSrc: "/lovable-uploads/e7be3e75-93d7-4fa1-b80f-687790b10386.png"
   },
+  {
+    id: "valuation",
+    title: "Valorador de Inmuebles",
+    description: "Obtén una estimación del valor de mercado de tu propiedad.",
+    icon: "💰",
+    fullDescription: "Calcula el valor estimado de mercado de tu propiedad basado en datos actualizados y comparables de la zona, con un rango de valoración y análisis detallado.",
+    avatarSrc: "/lovable-uploads/0a39d5c4-65f6-452b-a42c-ac31b6b7b5ca.png"
+  },
+  {
+    id: "social",
+    title: "Creador de Posts para RRSS",
+    description: "Diseña publicaciones atractivas para redes sociales.",
+    icon: "📱",
+    fullDescription: "Genera contenido optimizado para diferentes redes sociales con textos persuasivos e imágenes profesionales que aumentarán la visibilidad de tu propiedad.",
+    avatarSrc: "/lovable-uploads/0656bf9c-aa81-4225-ad15-51739465433b.png"
+  },
+  {
+    id: "advisor",
+    title: "Asesor Inmobiliario Virtual",
+    description: "Guía paso a paso para todo el proceso de venta o alquiler.",
+    icon: "🧙‍♂️",
+    fullDescription: "Sigue un proceso guiado paso a paso que te ayudará en cada aspecto de la venta o alquiler de tu propiedad, desde la preparación hasta el cierre de la operación.",
+    avatarSrc: "/lovable-uploads/ef5a1332-3aa5-45a2-86f9-10daf6f9a3b4.png"
+  }
 ];
