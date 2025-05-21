@@ -1,7 +1,8 @@
-
 import React from 'react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 export interface Step {
   id: number;
@@ -27,13 +28,16 @@ export const getSteps = (): Step[] => [
         <h3 className="text-xl font-semibold mt-6">Criterios clave:</h3>
         <p>Superficie útil vs. construida, estado de conservación, planta, orientación, eficiencia energética.</p>
         
-        <Alert className="mt-4">
-          <Info className="h-4 w-4" />
-          <AlertTitle>Herramientas digitales sugeridas</AlertTitle>
-          <AlertDescription>
-            Calculadora AVM interactiva + gráfico de sensibilidad precio/tiempo de venta.
-          </AlertDescription>
-        </Alert>
+        <div className="mt-4">
+          <Button 
+            asChild
+            className="bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90"
+          >
+            <Link to="/valorador-inmuebles">
+              Ir al Valorador de Inmuebles
+            </Link>
+          </Button>
+        </div>
       </div>
     )
   },
