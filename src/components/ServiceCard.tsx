@@ -57,10 +57,12 @@ export function ServiceCard({
           <CardDescription className="text-base">{description}</CardDescription>
         </CardHeader>
         <CardContent className="flex-grow">
-          {imageSrc || avatarSrc ? (
+          {imageSrc || avatarSrc || icon === "📋" ? (
             <div className="w-[90%] mx-auto">
               <AspectRatio ratio={1 / 1} className="bg-muted rounded-lg overflow-hidden">
-                {avatarSrc ? (
+                {icon === "📋" ? (
+                  <img src="/lovable-uploads/d6d1386c-bbf3-439f-9e00-fdb8be9d2b8f.png" alt={title} className="object-contain w-full h-full" />
+                ) : avatarSrc ? (
                   <img src={avatarSrc} alt={title} className="object-contain w-full h-full" />
                 ) : (
                   <img src={imageSrc} alt={title} className="object-contain w-full h-full" />
