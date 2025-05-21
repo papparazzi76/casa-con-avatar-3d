@@ -1,4 +1,5 @@
 
+import { useState, useEffect } from "react";
 import {
   BarChart,
   Bar,
@@ -9,6 +10,7 @@ import {
   ResponsiveContainer,
   TooltipProps
 } from "recharts";
+import { motion } from "framer-motion";
 
 interface PriceRangeChartProps {
   priceMin: number;
@@ -23,40 +25,56 @@ export function PriceRangeChart({
   priceMax,
   formatCurrency
 }: PriceRangeChartProps) {
-  const priceRangeData = [
-    {
-      name: "Precio mínimo",
-      valor: priceMin
-    },
-    {
-      name: "Precio sugerido",
-      valor: priceSuggested
-    },
-    {
-      name: "Precio máximo",
-      valor: priceMax
-    }
+  const [animatedData, setAnimatedData] = useState([
+    { name: "Precio mínimo", valor: 0 },
+    { name: "Precio sugerido", valor: 0 },
+    { name: "Precio máximo", valor: 0 }
+  ]);
+
+  const finalData = [
+    { name: "Precio mínimo", valor: priceMin },
+    { name: "Precio sugerido", valor: priceSuggested },
+    { name: "Precio máximo", valor: priceMax }
   ];
+
+  useEffect(() => {
+    // Start animation after a small delay for better UX
+    const timer = setTimeout(() => {
+      setAnimatedData(finalData);
+    }, 300);
+    
+    return () => clearTimeout(timer);
+  }, [priceMin, priceSuggested, priceMax]);
 
   const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white p-2 border rounded-md shadow-md">
+        <motion.div 
+          className="bg-white p-2 border rounded-md shadow-md"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.2 }}
+        >
           <p className="font-medium">{label}</p>
           <p className="text-realestate-purple">{formatCurrency(payload[0].value as number)}</p>
-        </div>
+        </motion.div>
       );
     }
     return null;
   };
 
   return (
-    <div className="h-[150px]">
+    <motion.div 
+      className="h-[150px]"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
           width={500}
           height={150}
-          data={priceRangeData}
+          data={animatedData}
           margin={{
             top: 10,
             right: 10,
@@ -75,7 +93,10 @@ export function PriceRangeChart({
             dataKey="valor" 
             fill="url(#colorGradient)" 
             barSize={60} 
-            radius={[4, 4, 0, 0]} 
+            radius={[4, 4, 0, 0]}
+            animationDuration={1000}
+            animationBegin={300}
+            animationEasing="ease-out"
           />
           <defs>
             <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
@@ -85,6 +106,6 @@ export function PriceRangeChart({
           </defs>
         </BarChart>
       </ResponsiveContainer>
-    </div>
+    </motion.div>
   );
 }
