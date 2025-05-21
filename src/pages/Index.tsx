@@ -7,21 +7,20 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { FileText, Home } from "lucide-react";
 import { Link } from "react-router-dom";
-
 const Index = () => {
-  return (
-    <div className="flex min-h-screen flex-col">
+  return <div className="flex min-h-screen flex-col">
       <Header />
       
       <main className="flex-1">
         <Hero />
         
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8 }}
-          className="py-8 px-4 bg-gradient-to-r from-realestate-purple/10 to-realestate-turquoise/10 text-center"
-        >
+        <motion.div initial={{
+        opacity: 0
+      }} animate={{
+        opacity: 1
+      }} transition={{
+        duration: 0.8
+      }} className="py-8 px-4 bg-gradient-to-r from-realestate-purple/10 to-realestate-turquoise/10 text-center">
           <p className="text-lg md:text-xl italic">
             "Vende o alquila tu inmueble como un profesional, <span className="font-semibold">sin comisiones ni intermediarios</span>"
           </p>
@@ -40,10 +39,7 @@ const Index = () => {
                   como un profesional. Con consejos prácticos, checklists y herramientas interactivas.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Button 
-                    asChild
-                    className="bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90"
-                  >
+                  <Button asChild className="bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90">
                     <Link to="/agente-virtual-inmobiliario">
                       <FileText className="mr-2 h-4 w-4" />
                       Consultar guía completa
@@ -51,18 +47,17 @@ const Index = () => {
                   </Button>
                 </div>
               </div>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="relative"
-              >
+              <motion.div initial={{
+              opacity: 0,
+              y: 20
+            }} animate={{
+              opacity: 1,
+              y: 0
+            }} transition={{
+              delay: 0.3
+            }} className="relative">
                 <div className="relative w-72 h-72 md:w-96 md:h-96 rounded-lg overflow-hidden shadow-xl">
-                  <img 
-                    src="/lovable-uploads/f46ff66f-0563-46d3-b58a-a01637195817.png" 
-                    alt="Robot agente inmobiliario" 
-                    className="w-full h-full object-contain"
-                  />
+                  <img src="/lovable-uploads/f46ff66f-0563-46d3-b58a-a01637195817.png" alt="Robot agente inmobiliario" className="w-full h-full object-contain" />
                 </div>
               </motion.div>
             </div>
@@ -83,10 +78,7 @@ const Index = () => {
                   propietarios y compradores/inquilinos.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Button 
-                    asChild
-                    className="bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90"
-                  >
+                  <Button asChild className="bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90">
                     <Link to="/propiedades">
                       <Home className="mr-2 h-4 w-4" />
                       Ver inmuebles
@@ -99,18 +91,17 @@ const Index = () => {
                   </Button>
                 </div>
               </div>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="relative"
-              >
+              <motion.div initial={{
+              opacity: 0,
+              y: 20
+            }} animate={{
+              opacity: 1,
+              y: 0
+            }} transition={{
+              delay: 0.3
+            }} className="relative">
                 <div className="relative w-72 h-72 md:w-96 md:h-96 rounded-lg overflow-hidden shadow-xl">
-                  <img 
-                    src="/lovable-uploads/c1fc4661-1e22-4d83-a3ab-413b5c4f0540.png" 
-                    alt="Escaparate inmobiliario PropTools" 
-                    className="w-full h-full object-cover"
-                  />
+                  <img alt="Escaparate inmobiliario PropTools" className="w-full h-full object-cover" src="/lovable-uploads/3133eb1d-3d8b-421e-a490-af2b246054f1.png" />
                 </div>
               </motion.div>
             </div>
@@ -128,12 +119,14 @@ const Index = () => {
               <p className="mx-auto max-w-[700px] text-muted-foreground md:text-lg mb-8">
                 Descubre cómo nuestras herramientas pueden ayudarte a vender o alquilar tu propiedad de forma más rápida y profesional.
               </p>
-              <motion.button
-                className="bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90 text-white py-3 px-8 rounded-lg font-medium text-lg shadow-lg"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              >
+              <motion.button className="bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90 text-white py-3 px-8 rounded-lg font-medium text-lg shadow-lg" whileHover={{
+              scale: 1.05
+            }} whileTap={{
+              scale: 0.95
+            }} onClick={() => window.scrollTo({
+              top: 0,
+              behavior: 'smooth'
+            })}>
                 Comenzar ahora
               </motion.button>
             </div>
@@ -142,8 +135,6 @@ const Index = () => {
       </main>
       
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
