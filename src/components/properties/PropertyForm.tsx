@@ -2,49 +2,22 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { PropertyFormData, PROPERTY_TYPES, OPERATION_TYPES, CURRENCIES } from "@/types/property";
+import { PropertyFormData } from "@/types/property";
 import { createProperty, updateProperty } from "@/services/propertyService";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Property } from "@/types/property";
-
-const formSchema = z.object({
-  title: z.string().min(5, { message: "El título debe tener al menos 5 caracteres" }),
-  description: z.string().min(20, { message: "La descripción debe tener al menos 20 caracteres" }),
-  property_type: z.string({ required_error: "Selecciona un tipo de inmueble" }),
-  operation_type: z.string({ required_error: "Selecciona el tipo de operación" }),
-  price: z.coerce.number().positive({ message: "El precio debe ser un número positivo" }),
-  currency: z.string().default("EUR"),
-  area: z.coerce.number().positive({ message: "La superficie debe ser un número positivo" }),
-  rooms: z.coerce.number().int().min(0, { message: "El número de habitaciones no puede ser negativo" }),
-  bathrooms: z.coerce.number().int().min(0, { message: "El número de baños no puede ser negativo" }),
-  location: z.string().min(3, { message: "La ubicación debe tener al menos 3 caracteres" }),
-  address: z.string().min(5, { message: "La dirección debe tener al menos 5 caracteres" }),
-  postal_code: z.string().optional(),
-  features: z.string().optional().transform(val => 
-    val ? val.split(",").map(item => item.trim()) : []
-  ),
-});
+import { Form } from "@/components/ui/form";
+import { TitleField } from "./form/TitleField";
+import { PropertyTypeField } from "./form/PropertyTypeField";
+import { OperationTypeField } from "./form/OperationTypeField";
+import { PriceFields } from "./form/PriceFields";
+import { RoomFields } from "./form/RoomFields";
+import { LocationFields } from "./form/LocationFields";
+import { FeaturesField } from "./form/FeaturesField";
+import { DescriptionField } from "./form/DescriptionField";
+import { FormActions } from "./form/FormActions";
+import { formSchema, PropertyFormValues } from "./form/formSchema";
 
 interface PropertyFormProps {
   property?: Property;
@@ -56,7 +29,7 @@ export function PropertyForm({ property, isEditing = false, onSuccess }: Propert
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<PropertyFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: property?.title || "",
@@ -75,7 +48,7 @@ export function PropertyForm({ property, isEditing = false, onSuccess }: Propert
     },
   });
 
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+  const onSubmit = async (data: PropertyFormValues) => {
     try {
       setIsSubmitting(true);
       
@@ -104,272 +77,26 @@ export function PropertyForm({ property, isEditing = false, onSuccess }: Propert
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Título del anuncio*</FormLabel>
-              <FormControl>
-                <Input 
-                  placeholder="Ej: Magnífico piso en el centro de Madrid" 
-                  {...field} 
-                />
-              </FormControl>
-              <FormDescription>
-                Un título atractivo y descriptivo
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <TitleField control={form.control} />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="property_type"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Tipo de inmueble*</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecciona un tipo" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {PROPERTY_TYPES.map((type) => (
-                      <SelectItem key={type.value} value={type.value}>
-                        {type.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="operation_type"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Operación*</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Tipo de operación" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {OPERATION_TYPES.map((type) => (
-                      <SelectItem key={type.value} value={type.value}>
-                        {type.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <PropertyTypeField control={form.control} />
+          <OperationTypeField control={form.control} />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <FormField
-            control={form.control}
-            name="price"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Precio*</FormLabel>
-                <FormControl>
-                  <Input type="number" min="0" step="0.01" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="currency"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Moneda</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecciona moneda" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {CURRENCIES.map((currency) => (
-                      <SelectItem key={currency.value} value={currency.value}>
-                        {currency.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="area"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Superficie (m²)*</FormLabel>
-                <FormControl>
-                  <Input type="number" min="0" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <PriceFields control={form.control} />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="rooms"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Habitaciones*</FormLabel>
-                <FormControl>
-                  <Input type="number" min="0" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="bathrooms"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Baños*</FormLabel>
-                <FormControl>
-                  <Input type="number" min="0" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <RoomFields control={form.control} />
         </div>
 
-        <FormField
-          control={form.control}
-          name="location"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Ubicación*</FormLabel>
-              <FormControl>
-                <Input 
-                  placeholder="Ej: Centro, Madrid" 
-                  {...field} 
-                />
-              </FormControl>
-              <FormDescription>
-                Zona, barrio, ciudad...
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <LocationFields control={form.control} />
+        <FeaturesField control={form.control} />
+        <DescriptionField control={form.control} />
 
-        <FormField
-          control={form.control}
-          name="address"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Dirección*</FormLabel>
-              <FormControl>
-                <Input 
-                  placeholder="Ej: Calle Mayor, 1" 
-                  {...field} 
-                />
-              </FormControl>
-              <FormDescription>
-                Esta información no se mostrará públicamente
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="postal_code"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Código postal</FormLabel>
-              <FormControl>
-                <Input placeholder="Ej: 28001" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="features"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Características</FormLabel>
-              <FormControl>
-                <Input 
-                  placeholder="Ej: terraza, piscina, ascensor, garaje" 
-                  {...field} 
-                />
-              </FormControl>
-              <FormDescription>
-                Separa las características por comas
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Descripción*</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder="Describe el inmueble, sus características, estado, entorno..." 
-                  rows={5}
-                  {...field} 
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className="flex justify-end space-x-4 pt-4">
-          <Button 
-            type="button" 
-            variant="outline" 
-            onClick={() => navigate(-1)}
-            disabled={isSubmitting}
-          >
-            Cancelar
-          </Button>
-          <Button 
-            type="submit" 
-            className="bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Guardando..." : isEditing ? "Actualizar inmueble" : "Publicar inmueble"}
-          </Button>
-        </div>
+        <FormActions isSubmitting={isSubmitting} isEditing={isEditing} />
       </form>
     </Form>
   );
