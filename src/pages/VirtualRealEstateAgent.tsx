@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -140,7 +139,6 @@ export default function VirtualRealEstateAgent() {
         </div>
       )
     },
-    // Add more steps here...
     {
       id: 4,
       title: "Definir la estrategia de marketing y canales",
@@ -188,8 +186,187 @@ export default function VirtualRealEstateAgent() {
           </ul>
         </div>
       )
+    },
+    {
+      id: 6,
+      title: "Publicación del anuncio",
+      description: "Crea un anuncio efectivo para tu propiedad",
+      content: (
+        <div className="space-y-4">
+          <ul className="list-disc pl-5 space-y-2">
+            <li><span className="font-semibold">Titular ≤ 70 caracteres con USP:</span> Por ejemplo "Ático con terraza al sur y garaje en Parquesol".</li>
+            <li><span className="font-semibold">Descripción jerarquizada:</span> Párrafos cortos + emojis en portales que lo permitan.</li>
+            <li><span className="font-semibold">Ficha técnica:</span> Superficie, año, CEE, gastos comunitarios, IBI, orientación.</li>
+            <li><span className="font-semibold">CTA claro:</span> Botón de contacto, WhatsApp Business o formulario.</li>
+            <li><span className="font-semibold">Sincronización de datos:</span> Feed XML a varios portales para evitar incongruencias.</li>
+          </ul>
+        </div>
+      )
+    },
+    {
+      id: 7,
+      title: "Gestión de leads y agenda de visitas",
+      description: "Organiza y gestiona contactos y visitas eficientemente",
+      content: (
+        <div className="space-y-4">
+          <ul className="list-disc pl-5 space-y-2">
+            <li><span className="font-semibold">CRM inmobiliario o planilla Kanban:</span> Captado → cualificado → visita → oferta.</li>
+            <li><span className="font-semibold">Respuesta rápida:</span> En menos de 1 hora (trigger correo + WhatsApp).</li>
+            <li><span className="font-semibold">Pre-filtro:</span> Financiación aprobada, motivo de compra, fecha objetivo.</li>
+            <li><span className="font-semibold">Calendario compartido:</span> Franjas inteligentes (máximo 4 visitas seguidas).</li>
+          </ul>
+          
+          <Alert className="mt-4">
+            <Info className="h-4 w-4" />
+            <AlertTitle>Tip profesional</AlertTitle>
+            <AlertDescription>
+              Usa un CRM específico para inmobiliarias para mantener seguimiento de todas las interacciones.
+            </AlertDescription>
+          </Alert>
+        </div>
+      )
+    },
+    {
+      id: 8,
+      title: "Realizar las visitas",
+      description: "Maximiza la efectividad de las visitas presenciales",
+      content: (
+        <div className="space-y-4">
+          <ul className="list-disc pl-5 space-y-2">
+            <li><span className="font-semibold">Guion de recorrido:</span> Zona día → zona noche → extras.</li>
+            <li><span className="font-semibold">Dossier impreso/digital:</span> Con plano y desglose de gastos.</li>
+            <li><span className="font-semibold">Registro de asistencia:</span> RGPD y encuesta post-visita rápida QR.</li>
+            <li><span className="font-semibold">Reunión de recap:</span> 24h después para recoger feedback y ajustar precio si procede.</li>
+          </ul>
+        </div>
+      )
+    },
+    {
+      id: 9,
+      title: "Negociación y contrato de reserva",
+      description: "Gestiona adecuadamente las ofertas recibidas",
+      content: (
+        <div className="space-y-4">
+          <ul className="list-disc pl-5 space-y-2">
+            <li><span className="font-semibold">Documento:</span> Hoja de encargo/contrato de reserva (señal) con depósito (1%–2%).</li>
+            <li><span className="font-semibold">Puntos mínimos:</span> Datos partes, precio, plazo para firma de arras, condiciones suspensivas (préstamo, tasación).</li>
+            <li><span className="font-semibold">Depósito:</span> Retenido por el agente o ingresado en cuenta escrow.</li>
+          </ul>
+          
+          <Alert className="mt-4">
+            <Info className="h-4 w-4" />
+            <AlertTitle>Consejo legal</AlertTitle>
+            <AlertDescription>
+              Es recomendable contar con un abogado para revisar los términos del contrato de reserva.
+            </AlertDescription>
+          </Alert>
+        </div>
+      )
+    },
+    {
+      id: 10,
+      title: "Contrato de arras (arras penitenciales, art. 1454 CC)",
+      description: "Formaliza el compromiso de compraventa",
+      content: (
+        <div className="space-y-4">
+          <ul className="list-disc pl-5 space-y-2">
+            <li><span className="font-semibold">Importe habitual:</span> Suele fijarse en 10% del precio.</li>
+            <li><span className="font-semibold">Plazos:</span> Define plazo máximo para acudir a notaría y repercusiones de desistimiento.</li>
+            <li><span className="font-semibold">Reparto de gastos:</span> Ley 5/2019: vendedor asume cancelación hipotecaria y copia simple; comprador, escritura matriz.</li>
+          </ul>
+        </div>
+      )
+    },
+    {
+      id: 11,
+      title: "Preparar y coordinar la firma notarial",
+      description: "Prepara todos los documentos para la firma",
+      content: (
+        <div className="space-y-4">
+          <ul className="list-disc pl-5 space-y-2">
+            <li><span className="font-semibold">Elección de notario:</span> Libre, coste similar en toda España.</li>
+            <li><span className="font-semibold">Documentación previa:</span> Envío con 5 días de antelación de toda la documentación (punto 3) + contrato de arras.</li>
+            <li><span className="font-semibold">Verificaciones:</span> Verificación de cargas y certificado de dominio por el notario.</li>
+            <li><span className="font-semibold">Videofirma:</span> Opción de videofirma telemática desde el 9-XI-2023 gracias a la Ley 11/2023, a través del Portal Notarial del Ciudadano.</li>
+            <li><span className="font-semibold">Comunicación registral:</span> El notario envía minuta al Registro de la Propiedad mediante el sistema SIGNO en menos de 24h.</li>
+          </ul>
+          
+          <Alert className="mt-4">
+            <Info className="h-4 w-4" />
+            <AlertTitle>Novedad legal</AlertTitle>
+            <AlertDescription>
+              La videofirma telemática facilita el proceso para partes que no pueden asistir físicamente a la notaría.
+            </AlertDescription>
+          </Alert>
+        </div>
+      )
+    },
+    {
+      id: 12,
+      title: "Firma de la escritura pública",
+      description: "El momento de formalización de la compraventa",
+      content: (
+        <div className="space-y-4">
+          <ul className="list-disc pl-5 space-y-2">
+            <li><span className="font-semibold">Presencia:</span> Las partes acuden (o se conectan) con DNI/NIE y justificante de pagos.</li>
+            <li><span className="font-semibold">Pago:</span> Se liquida precio (cheque bancario, transferencia inmediata o talón conformado).</li>
+            <li><span className="font-semibold">Entrega:</span> Entrega de llaves y certificación energética.</li>
+            <li><span className="font-semibold">Documentación:</span> Obtención de copia simple electrónica inmediata; copia autorizada en 2-3 días.</li>
+          </ul>
+        </div>
+      )
+    },
+    {
+      id: 13,
+      title: "Post-venta: liquidación de plusvalía municipal e impuestos",
+      description: "Completa las obligaciones fiscales y administrativas",
+      content: (
+        <div className="space-y-4">
+          <h3 className="text-xl font-semibold">Impuestos a liquidar:</h3>
+          
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Impuesto</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quién paga</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plazo</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cómo se calcula en 2025</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                <tr>
+                  <td className="px-6 py-4">Plusvalía Municipal (IIVTNU)</td>
+                  <td className="px-6 py-4">Vendedor (salvo pacto)</td>
+                  <td className="px-6 py-4">30 d hábiles desde firma</td>
+                  <td className="px-6 py-4">Opción 'objetiva' → valor catastral × coeficiente anual; <br />Opción 'real' → plusvalía efectivamente obtenida</td>
+                </tr>
+                <tr>
+                  <td className="px-6 py-4">IRPF (ganancia patrimonial)</td>
+                  <td className="px-6 py-4">Vendedor</td>
+                  <td className="px-6 py-4">Declaración anual</td>
+                  <td className="px-6 py-4">Diferencia valor escriturado compra-venta + coeficiente abatimiento si >1994</td>
+                </tr>
+                <tr>
+                  <td className="px-6 py-4">AJD / ITP</td>
+                  <td className="px-6 py-4">Comprador</td>
+                  <td className="px-6 py-4">30 d hábiles</td>
+                  <td className="px-6 py-4">Tipo 0,5%–1,5% (AJD obra nueva) / 6%–10% (ITP)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <Alert className="mt-4">
+            <Info className="h-4 w-4" />
+            <AlertTitle>Nota fiscal 2025</AlertTitle>
+            <AlertDescription>
+              El Gobierno anuló la subida prevista de coeficientes para 2025, manteniendo los de 2024.
+            </AlertDescription>
+          </Alert>
+        </div>
+      )
     }
-    // Continue with more steps...
   ];
 
   const handleStepClick = (stepId: number) => {
