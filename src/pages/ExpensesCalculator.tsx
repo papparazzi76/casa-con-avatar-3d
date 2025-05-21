@@ -59,12 +59,10 @@ function calculateExpensesAndTaxes(data: CalculatorData): CalculatorResult {
 function calculateBuyerTotal(data: CalculatorData): number {
   // Implementar cálculo del total para el comprador
   const details = calculateBuyerDetails(data);
-  return Object.values(details).reduce((sum: number, value) => {
+  return Object.values(details).reduce((sum, value) => {
     // Ensure we're only adding numbers, not strings
-    if (typeof value === 'number') {
-      return sum + value;
-    }
-    return sum;
+    const numValue = typeof value === 'number' ? value : 0;
+    return sum + numValue;
   }, 0);
 }
 
@@ -117,12 +115,10 @@ function calculateBuyerDetails(data: CalculatorData): Record<string, number | st
 function calculateSellerTotal(data: CalculatorData): number {
   // Implementar cálculo del total para el vendedor
   const details = calculateSellerDetails(data);
-  return Object.values(details).reduce((sum: number, value) => {
+  return Object.values(details).reduce((sum, value) => {
     // Ensure we're only adding numbers, not strings
-    if (typeof value === 'number') {
-      return sum + value;
-    }
-    return sum;
+    const numValue = typeof value === 'number' ? value : 0;
+    return sum + numValue;
   }, 0);
 }
 
