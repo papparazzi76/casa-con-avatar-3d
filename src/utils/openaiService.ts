@@ -43,27 +43,26 @@ export async function processImage({
   decorStyle = "moderno"
 }: ImageProcessingOptions): Promise<string> {
   try {
-    // Convert image to base64
-    const base64Image = await fileToBase64(image);
-    
     // Create prompt based on options
     const prompt = createImagePrompt(editMode, roomType, decorStyle);
     
-    // Call OpenAI API
-    const response = await fetch("https://api.openai.com/v1/images/edits", {
+    // Create FormData to properly send the multipart request
+    const formData = new FormData();
+    formData.append("model", "dall-e-3");
+    formData.append("prompt", prompt);
+    formData.append("n", "1");
+    formData.append("size", "1024x1024");
+    formData.append("image", image);
+    formData.append("response_format", "b64_json");
+    
+    // Call OpenAI API with FormData
+    const response = await fetch("https://api.openai.com/v1/images/generations", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${OPENAI_API_KEY}`,
-        "Content-Type": "application/json"
+        // Don't set Content-Type here as the browser will set it automatically with the boundary
       },
-      body: JSON.stringify({
-        model: "dall-e-3", // Using DALL-E 3 for image editing
-        image: base64Image,
-        prompt: prompt,
-        n: 1,
-        size: "1024x1024",
-        response_format: "b64_json"
-      })
+      body: formData
     });
     
     // Process response
@@ -95,24 +94,6 @@ function createImagePrompt(editMode: EditMode, roomType: RoomType, decorStyle: D
             y aplica homestaging virtual en estilo ${decorStyle}. 
             Mejora la iluminación y añade muebles y decoración apropiados.`;
   }
-}
-
-// Helper function to convert file to base64
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        // Remove the data URL prefix (e.g., "data:image/jpeg;base64,")
-        const base64 = reader.result.split(',')[1];
-        resolve(base64);
-      } else {
-        reject(new Error("Failed to convert file to base64"));
-      }
-    };
-    reader.onerror = error => reject(error);
-  });
 }
 
 // For property ad generation

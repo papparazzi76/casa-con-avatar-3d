@@ -7,6 +7,7 @@ import { ResultDisplay } from "@/features/image-editor/ResultDisplay";
 import { DecorStyle, EditMode, RoomType } from "@/features/image-editor/types";
 import { getRoomTypeLabel } from "@/features/image-editor/util";
 import { processImage } from "@/utils/openaiService";
+import { ContactProfessionalButtonWithDialog } from "@/components/ContactProfessionalButtonWithDialog";
 
 const ImageEditor = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -47,7 +48,7 @@ const ImageEditor = () => {
         description: "Esto puede tardar unos momentos...",
       });
 
-      // Llamada real a la API mediante nuestro servicio
+      // Llamada a la API mediante nuestro servicio
       const result = await processImage({
         image: selectedImage,
         editMode,
@@ -80,6 +81,12 @@ const ImageEditor = () => {
         <p className="text-gray-500">
           Transforma tus fotografías inmobiliarias con edición profesional y visualiza reformas virtuales.
         </p>
+      </div>
+
+      <div className="flex justify-center mb-6">
+        <ContactProfessionalButtonWithDialog 
+          className="bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90" 
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
