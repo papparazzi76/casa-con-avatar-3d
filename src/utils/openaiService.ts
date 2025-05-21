@@ -53,33 +53,38 @@ export interface ImageEditResponse {
   edit_plan: ImageEditPlan | null;
 }
 
+export interface ProcessImageResult {
+  imageUrl: string;
+  editPlan: ImageEditPlan | null;
+}
+
 export async function processImage({
   image,
   editMode,
   roomType,
   decorStyle = "moderno"
-}: ImageProcessingOptions): Promise<string> {
+}: ImageProcessingOptions): Promise<ProcessImageResult> {
   try {
     // Convert image to base64
     const base64Image = await convertFileToBase64(image);
     
     // First: Generate the edit plan with GPT-4o-mini
-    const editPlan = await generateImageEditPlan({
+    const editPlanResponse = await generateImageEditPlan({
       mode: editMode,
       room_type: roomType,
       image_url: "data:image/jpeg;base64," + base64Image.split(',')[1],
       notes: `Estilo: ${decorStyle}`
     });
     
-    if (!editPlan.success) {
-      throw new Error(editPlan.error_message);
+    let editPlan: ImageEditPlan | null = null;
+    if (editPlanResponse.success && editPlanResponse.edit_plan) {
+      editPlan = editPlanResponse.edit_plan;
+      // Log the edit plan for debugging
+      console.log("Edit plan generated:", editPlan);
     }
     
-    // Log the edit plan for debugging
-    console.log("Edit plan generated:", editPlan);
-    
     // Create prompt based on options and the edit plan
-    const prompt = createImagePrompt(editMode, roomType, decorStyle, editPlan);
+    const prompt = createImagePrompt(editMode, roomType, decorStyle, editPlanResponse);
     
     // Prepare request body as JSON
     const requestBody = {
@@ -108,7 +113,10 @@ export async function processImage({
     }
     
     const data = await response.json();
-    return `data:image/png;base64,${data.data[0].b64_json}`;
+    return {
+      imageUrl: `data:image/png;base64,${data.data[0].b64_json}`,
+      editPlan: editPlan
+    };
   } catch (error) {
     console.error("Error processing image:", error);
     throw error;

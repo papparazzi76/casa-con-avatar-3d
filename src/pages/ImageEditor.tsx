@@ -59,7 +59,8 @@ const ImageEditor = () => {
         decorStyle
       });
       
-      setEditedImage(result);
+      setEditedImage(result.imageUrl);
+      setEditPlan(result.editPlan);
       
       toast({
         title: "¡Imagen procesada con éxito!",
