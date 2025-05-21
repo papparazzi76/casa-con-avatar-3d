@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -80,7 +79,7 @@ export default function UserPropertiesPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "active":
-        return <Badge variant="success">Activo</Badge>;
+        return <Badge variant="default" className="bg-green-500 hover:bg-green-600">Activo</Badge>;
       case "sold":
         return <Badge variant="destructive">Vendido</Badge>;
       case "rented":

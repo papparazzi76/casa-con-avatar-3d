@@ -42,7 +42,7 @@ const formSchema = z.object({
   address: z.string().min(5, { message: "La dirección debe tener al menos 5 caracteres" }),
   postal_code: z.string().optional(),
   features: z.string().optional().transform(val => 
-    val ? val.split(",").map(item => item.trim()) : undefined
+    val ? val.split(",").map(item => item.trim()) : []
   ),
 });
 
