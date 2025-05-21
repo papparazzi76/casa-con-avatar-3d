@@ -31,36 +31,95 @@ export interface LegalAnswer {
   disclaimer: string;
 }
 
-// Get API key from localStorage or empty string if not set
+// API key constante (permanente)
+const API_KEY = "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";
+
+// Las funciones getApiKey y saveApiKey se mantienen por compatibilidad,
+// pero ahora usaremos la API key constante
 const getApiKey = (): string => {
-  return localStorage.getItem('openai_api_key') || '';
+  return API_KEY;
 };
 
-// Save API key to localStorage
 export const saveApiKey = (key: string): void => {
-  localStorage.setItem('openai_api_key', key);
-  toast.success("API key guardada correctamente.");
+  // Esta función ya no almacena la clave en localStorage, pero se mantiene
+  // para compatibilidad con el código existente
+  toast.success("API key configurada correctamente.");
 };
 
-// Check if API key exists
+// Siempre retornamos true ya que tenemos una API key permanente
 export const hasApiKey = (): boolean => {
-  return !!getApiKey();
+  return true;
 };
 
 export async function getLegalAdvice(
   questionData: LegalQuestion
 ): Promise<LegalAnswer> {
   try {
-    // Get API key from localStorage
+    // Obtenemos la API key constante
     const apiKey = getApiKey();
-    
-    if (!apiKey) {
-      throw new Error("API key no encontrada. Por favor, configura tu API key de OpenAI.");
-    }
 
     // The system prompt is provided in the first message, then the user query follows
     const systemPrompt = `Eres un **asistente jurídico-inmobiliario** especializado en el ordenamiento español.  
-Tu cometido exclusivo es responder, con rigor y lenguaje claro, cualquier consulta legal relacionada con el sector inmobiliario (compraventa, arrendamientos, propiedad horizontal, urbanismo, fiscalidad inmobiliaria, registral, hipotecario, etc.) conforme a la legislación **vigente en España** y la última jurisprudencia relevante.`;
+Tu cometido exclusivo es responder, con rigor y lenguaje claro, cualquier consulta legal relacionada con el sector inmobiliario (compraventa, arrendamientos, propiedad horizontal, urbanismo, fiscalidad inmobiliaria, registral, hipotecario, etc.) conforme a la legislación **vigente en España** y la última jurisprudencia relevante.
+
+────────────────────────────
+🔎 1. PROCEDIMIENTO GENERAL  
+1. **Comprende la pregunta** y detecta si necesitas más contexto (-> inmueble, comunidad autónoma, fechas, valores, situación procesal, etc.).  
+2. Si falta información esencial para una respuesta precisa, **detén la contestación** y responde **solo** con \`"faltan_datos": [ …campos ]\`.  
+3. Cuando dispongas de datos suficientes, elabora la respuesta siguiendo el esquema del punto 2.
+
+────────────────────────────
+📑 2. FORMATO DE RESPUESTA (JSON)  
+Devuelve SIEMPRE un único objeto JSON con la siguiente estructura:
+
+{
+  "status": "ok",                // o "faltan_datos"
+  "question": "<pregunta original del usuario>",
+  "answer": {
+    "resumen": "<respuesta breve, 2-5 frases>",
+    "analisis_detallado": "<explicación extensa y razonada>",
+    "normativa_aplicable": [
+      {
+        "norma": "Ley / Real Decreto / Código Civil…",
+        "articulo": "Art. ___",
+        "publicacion": "BOE n.º ___, dd-mm-aaaa",
+        "enlace_boe": "https://boe.es/…"
+      }
+      // uno o varios objetos
+    ],
+    "jurisprudencia_destacada": [
+      {
+        "sentencia": "STS n.º ___/aaaa, Sala ___",
+        "fecha": "dd-mm-aaaa",
+        "resumen_fallo": "…",
+        "enlace_cendoj": "https://…"
+      }
+      // opcional
+    ],
+    "pasos_practicos": [
+      "Paso 1…",
+      "Paso 2…"
+    ]
+  },
+  "fecha_actualizacion": "aaaa-mm-dd",
+  "disclaimer": "Este contenido tiene carácter meramente informativo y no constituye asesoramiento jurídico profesional."
+}
+
+Reglas de formato:
+- Usa comillas dobles y números sin separadores de miles.
+- No incluyas Markdown ni HTML.
+- Omite claves vacías.
+- En enlace_boe y enlace_cendoj proporciona URLs oficiales cuando existan; si no, omítelas.
+
+────────────────────────────
+🗂️ 3. CRITERIOS DE ELABORACIÓN
+• Basar la respuesta en normas estatales, autonómicas y europeas vigentes a la fecha de cálculo.
+• Si la regulación difiere por comunidad autónoma, indicarlo.
+• Referenciar siempre artículos concretos; no resumas leyes sin citar.
+• Integrar los criterios doctrinales o jurisprudenciales más recientes cuando sean relevantes.
+• Explicar términos técnicos en lenguaje accesible.
+• Ser neutral: no tomar partido ni prometer resultados en procedimientos.
+• Cerrar con la advertencia de que se recomienda contrastar la información con un profesional colegiado.`;
 
     const userQuery = JSON.stringify(questionData, null, 2);
 
@@ -96,8 +155,13 @@ Tu cometido exclusivo es responder, con rigor y lenguaje claro, cualquier consul
     const data = await response.json();
     const content = data.choices[0].message.content;
     
-    // Parse the JSON response
-    return JSON.parse(content);
+    try {
+      // Parse the JSON response
+      return JSON.parse(content);
+    } catch (parseError) {
+      console.error("Error al parsear la respuesta JSON:", parseError, content);
+      throw new Error("La respuesta no tiene el formato JSON esperado");
+    }
   } catch (error) {
     console.error("Error al procesar la consulta legal:", error);
     toast.error("Hubo un error al procesar tu consulta legal. Por favor, inténtalo de nuevo.");

@@ -1,11 +1,10 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { LegalAdvisorForm } from "@/components/LegalAdvisorForm";
 import { LegalAdvisorResult } from "@/components/LegalAdvisorResult";
-import { ApiKeyConfig } from "@/components/ApiKeyConfig";
-import { LegalQuestion, LegalAnswer, getLegalAdvice, hasApiKey } from "@/services/legalAdvisorService";
+import { LegalQuestion, LegalAnswer, getLegalAdvice } from "@/services/legalAdvisorService";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 
@@ -13,22 +12,8 @@ const LegalAdvisor = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [legalAnswer, setLegalAnswer] = useState<LegalAnswer | null>(null);
   const [missingFields, setMissingFields] = useState<string[] | undefined>(undefined);
-  const [showApiKeyConfig, setShowApiKeyConfig] = useState(!hasApiKey());
-
-  useEffect(() => {
-    // Check if API key is configured
-    if (!hasApiKey()) {
-      setShowApiKeyConfig(true);
-    }
-  }, []);
 
   const handleSubmit = async (questionData: LegalQuestion) => {
-    if (!hasApiKey()) {
-      toast.error("Por favor, configura tu API key de OpenAI primero.");
-      setShowApiKeyConfig(true);
-      return;
-    }
-
     setIsLoading(true);
     setMissingFields(undefined);
     
@@ -55,10 +40,6 @@ const LegalAdvisor = () => {
     }
   };
 
-  const handleApiKeyConfigured = () => {
-    setShowApiKeyConfig(false);
-  };
-
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
@@ -78,27 +59,21 @@ const LegalAdvisor = () => {
           </p>
         </motion.div>
         
-        {showApiKeyConfig ? (
-          <div className="max-w-md mx-auto">
-            <ApiKeyConfig onConfigured={handleApiKeyConfigured} />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div>
+            <LegalAdvisorForm 
+              onSubmit={handleSubmit} 
+              isLoading={isLoading} 
+              missingFields={missingFields}
+            />
           </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div>
-              <LegalAdvisorForm 
-                onSubmit={handleSubmit} 
-                isLoading={isLoading} 
-                missingFields={missingFields}
-              />
-            </div>
-            
-            <div>
-              {legalAnswer && legalAnswer.status === "ok" && legalAnswer.answer && (
-                <LegalAdvisorResult result={legalAnswer} />
-              )}
-            </div>
+          
+          <div>
+            {legalAnswer && legalAnswer.status === "ok" && legalAnswer.answer && (
+              <LegalAdvisorResult result={legalAnswer} />
+            )}
           </div>
-        )}
+        </div>
       </main>
       
       <Footer />
