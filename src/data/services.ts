@@ -6,6 +6,8 @@ export interface Service {
   icon: string;
   path?: string;
   imageSrc?: string;
+  avatarSrc?: string;
+  systemPrompt?: string;
 }
 
 export const services: Service[] = [

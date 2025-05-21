@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -47,7 +46,7 @@ export function PropertyForm({ property, isEditing = false, onSuccess }: Propert
       location: property?.location || "",
       address: property?.address || "",
       postal_code: property?.postal_code || "",
-      features: property?.features ? property.features.join(", ") : "",
+      features: property?.features || [], // Changed from string to array to match expected type
     },
   });
 
