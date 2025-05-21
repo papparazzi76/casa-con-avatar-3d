@@ -104,12 +104,13 @@ Devuelve SIEMPRE **solo** el JSON válido cuando dispongas de todos los datos ne
     path: "/valorador-inmuebles"
   },
   {
-    id: "social",
+    id: "social-media-posts",
     title: "Creador de Posts para RRSS",
-    description: "Diseña publicaciones atractivas para redes sociales.",
+    description: "Genera contenido optimizado para Instagram y Facebook con tu propiedad",
     icon: "📱",
-    fullDescription: "Genera contenido optimizado para diferentes redes sociales con textos persuasivos e imágenes profesionales que aumentarán la visibilidad de tu propiedad.",
-    avatarSrc: "/lovable-uploads/0656bf9c-aa81-4225-ad15-51739465433b.png"
+    fullDescription: "Crea posts atractivos y optimizados para redes sociales que maximizan la visibilidad de tu propiedad en Instagram y Facebook. Incluye textos, hashtags y sugerencias para carruseles de fotos.",
+    path: "/generador-posts-rrss",
+    imageSrc: "/lovable-uploads/997f4d9a-f63e-46d1-9479-fd0c92c977a7.png"
   },
   {
     id: "advisor",
