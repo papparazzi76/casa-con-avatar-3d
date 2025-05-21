@@ -6,7 +6,7 @@ import { SocialMediaPostForm } from "@/components/SocialMediaPostForm";
 import { SocialMediaPostResult } from "@/components/SocialMediaPostResult";
 import { SocialMediaPostFormData, SocialMediaPostResult as ResultType, generateSocialMediaPosts } from "@/services/socialMediaService";
 import { toast } from "sonner";
-import { ContactProfessionalButton } from "@/components/ContactProfessionalButton";
+import { ContactProfessionalButtonWithDialog } from "@/components/ContactProfessionalButtonWithDialog";
 
 export default function SocialMediaPostGenerator() {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -57,7 +57,9 @@ export default function SocialMediaPostGenerator() {
               Genera contenido profesional para Instagram y Facebook que destaque tu propiedad
             </p>
             <div className="flex justify-center mb-6">
-              <ContactProfessionalButton className="bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90" />
+              <ContactProfessionalButtonWithDialog 
+                className="bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90" 
+              />
             </div>
             <div className="flex justify-center mb-8">
               <img 
