@@ -56,7 +56,9 @@ export function ServiceCard({
           <CardTitle className="text-xl text-center">
             {icon === "📋" ? "Presupuestos de Reforma" : title}
           </CardTitle>
-          <CardDescription className="text-base">{description}</CardDescription>
+          <CardDescription className="text-base">
+            {icon === "📋" ? "Calcula el coste aproximado de la reforma de tu vivienda." : description}
+          </CardDescription>
         </CardHeader>
         <CardContent className="flex-grow">
           {imageSrc || avatarSrc || icon === "📋" ? (
