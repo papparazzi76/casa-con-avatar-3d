@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, useFieldArray, Control, FieldValues, Path } from "react-hook-form";
+import { useForm, useFieldArray, Control } from "react-hook-form";
 import * as z from "zod";
 import { toast } from "sonner";
 import { SocialMediaPostFormData } from "@/services/socialMediaService";
@@ -91,23 +91,6 @@ interface SocialMediaPostFormProps {
   isGenerating: boolean;
 }
 
-// Create a custom typed useFieldArray hook to fix TypeScript errors
-function TypedFieldArray<
-  TFieldValues extends FieldValues,
-  TName extends Path<TFieldValues>
->({
-  control,
-  name,
-}: {
-  control: Control<TFieldValues>;
-  name: TName;
-}) {
-  return useFieldArray({
-    control,
-    name,
-  });
-}
-
 export function SocialMediaPostForm({ onSubmit, isGenerating }: SocialMediaPostFormProps) {
   const [featureInput, setFeatureInput] = useState("");
   const [extraInput, setExtraInput] = useState("");
@@ -124,15 +107,15 @@ export function SocialMediaPostForm({ onSubmit, isGenerating }: SocialMediaPostF
     },
   });
   
-  // Use our typed version of useFieldArray
-  const caracteristicas = TypedFieldArray({
+  // Use useFieldArray directly with proper typing
+  const caracteristicas = useFieldArray({
     control: form.control,
-    name: "caracteristicas_destacadas",
+    name: "caracteristicas_destacadas"
   });
   
-  const extras = TypedFieldArray({
+  const extras = useFieldArray({
     control: form.control,
-    name: "extras",
+    name: "extras"
   });
   
   const addCaracteristica = () => {
@@ -271,7 +254,7 @@ export function SocialMediaPostForm({ onSubmit, isGenerating }: SocialMediaPostF
             )}
           />
         </div>
-
+        
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
