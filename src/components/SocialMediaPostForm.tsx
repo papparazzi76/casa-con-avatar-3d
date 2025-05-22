@@ -87,7 +87,7 @@ export function SocialMediaPostForm({ onSubmit, isGenerating }: SocialMediaPostF
         <ContactField form={form} />
         <PhotoUploader form={form} handleFileChange={handleFileChange} />
         <ToneField form={form} />
-        <SubmitButton isGenerating={isGenerating} />
+        <SubmitButton form={form} onSubmit={handleSubmit} isGenerating={isGenerating} />
       </form>
     </Form>
   );

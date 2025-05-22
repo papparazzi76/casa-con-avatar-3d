@@ -9,9 +9,10 @@ import { useNotification } from "@/context/AuthContext";
 type SubmitButtonProps = {
   form: UseFormReturn<FormValues>;
   onSubmit: (data: FormValues) => void;
+  isGenerating?: boolean;  // Added this prop
 };
 
-export function SubmitButton({ form, onSubmit }: SubmitButtonProps) {
+export function SubmitButton({ form, onSubmit, isGenerating = false }: SubmitButtonProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
   const { sendFormNotification } = useNotification();
@@ -29,12 +30,12 @@ export function SubmitButton({ form, onSubmit }: SubmitButtonProps) {
           tipo_inmueble: data.tipo_inmueble,
           localidad: data.localidad,
           precio: data.precio,
-          superficie: data.superficie,
+          superficie: data.superficie_m2, // Fixed property name
           habitaciones: data.habitaciones,
           banos: data.banos,
           caracteristicas_destacadas: data.caracteristicas_destacadas,
           estado_conservacion: data.estado_conservacion,
-          tono_comunicacion: data.tono_comunicacion
+          tono_comunicacion: data.tono // Fixed property name
         }
       );
       
@@ -49,9 +50,9 @@ export function SubmitButton({ form, onSubmit }: SubmitButtonProps) {
       type="submit"
       className="w-full bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90 mt-6 h-12"
       onClick={form.handleSubmit(handleSubmit)}
-      disabled={isSubmitting || form.formState.isSubmitting}
+      disabled={isSubmitting || form.formState.isSubmitting || isGenerating}
     >
-      {isSubmitting ? "Generando..." : "Generar Posts"}
+      {isSubmitting || isGenerating ? "Generando..." : "Generar Posts"}
     </Button>
   );
 }
