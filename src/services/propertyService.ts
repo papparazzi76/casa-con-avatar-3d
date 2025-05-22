@@ -42,11 +42,19 @@ export const fetchPropertyById = async (id: string) => {
 
 // Crear un nuevo inmueble
 export const createProperty = async (property: Omit<Property, "id" | "created_at" | "updated_at" | "user_id" | "status">) => {
+  // Obtener el ID del usuario actual
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    throw new Error("No estás autenticado.");
+  }
+  
   const { data, error } = await supabase
     .from("properties")
     .insert({
       ...property,
-      user_id: (await supabase.auth.getUser()).data.user?.id,
+      user_id: user.id,
+      status: 'active'
     })
     .select()
     .single();
@@ -96,42 +104,73 @@ export const deleteProperty = async (id: string) => {
 
 // Subir una imagen para un inmueble
 export const uploadPropertyImage = async (propertyId: string, file: File, isMain: boolean = false) => {
-  const fileExt = file.name.split('.').pop();
-  const fileName = `${Date.now()}.${fileExt}`;
-  const filePath = `${propertyId}/${fileName}`;
+  console.log(`Iniciando carga de imagen para propiedad ${propertyId}, isMain: ${isMain}`);
+  
+  try {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}.${fileExt}`;
+    const filePath = `${propertyId}/${fileName}`;
 
-  // Subir archivo a storage
-  const { error: uploadError } = await supabase.storage
-    .from("property_images")
-    .upload(filePath, file);
+    console.log(`Preparando carga a storage: bucket=property_images, path=${filePath}`);
+    
+    // Verificar si existe el bucket
+    const { data: buckets } = await supabase.storage.listBuckets();
+    const bucketExists = buckets?.some(b => b.name === 'property_images');
+    
+    if (!bucketExists) {
+      console.log('El bucket property_images no existe, creándolo...');
+      // Crear el bucket si no existe
+      const { data, error: createBucketError } = await supabase.storage.createBucket('property_images', {
+        public: true,
+        fileSizeLimit: 5242880, // 5MB
+      });
+      
+      if (createBucketError) {
+        console.error("Error creando el bucket:", createBucketError);
+        throw new Error(`Error al crear el bucket: ${createBucketError.message}`);
+      }
+    }
 
-  if (uploadError) {
-    console.error("Error uploading image:", uploadError);
-    throw new Error(uploadError.message);
+    // Subir archivo a storage
+    const { error: uploadError } = await supabase.storage
+      .from("property_images")
+      .upload(filePath, file);
+
+    if (uploadError) {
+      console.error("Error uploading image:", uploadError);
+      throw new Error(uploadError.message);
+    }
+
+    // Obtener URL pública
+    const { data: publicUrlData } = supabase.storage
+      .from("property_images")
+      .getPublicUrl(filePath);
+    
+    console.log(`Imagen subida correctamente. URL pública: ${publicUrlData.publicUrl}`);
+
+    // Guardar referencia en BD
+    const { data, error } = await supabase
+      .from("property_images")
+      .insert({
+        property_id: propertyId,
+        image_url: publicUrlData.publicUrl,
+        is_main: isMain,
+        order_num: 0,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error saving image reference:", error);
+      throw new Error(error.message);
+    }
+
+    console.log("Referencia de imagen guardada en BD:", data);
+    return data as PropertyImage;
+  } catch (error) {
+    console.error("Error completo al subir la imagen:", error);
+    throw error;
   }
-
-  // Obtener URL pública
-  const { data: publicUrlData } = supabase.storage
-    .from("property_images")
-    .getPublicUrl(filePath);
-
-  // Guardar referencia en BD
-  const { data, error } = await supabase
-    .from("property_images")
-    .insert({
-      property_id: propertyId,
-      image_url: publicUrlData.publicUrl,
-      is_main: isMain,
-    })
-    .select()
-    .single();
-
-  if (error) {
-    console.error("Error saving image reference:", error);
-    throw new Error(error.message);
-  }
-
-  return data as PropertyImage;
 };
 
 // Eliminar una imagen
@@ -148,19 +187,26 @@ export const deletePropertyImage = async (imageId: string) => {
     throw new Error(fetchError.message);
   }
 
-  // Extraer la ruta relativa de la URL
-  const imageUrl = new URL(image.image_url);
-  const pathParts = imageUrl.pathname.split('/');
-  const path = pathParts.slice(pathParts.indexOf('property_images') + 1).join('/');
+  try {
+    // Extraer la ruta relativa de la URL
+    const imageUrl = new URL(image.image_url);
+    const pathParts = imageUrl.pathname.split('/');
+    const path = pathParts.slice(pathParts.indexOf('property_images') + 1).join('/');
 
-  // Eliminar el archivo del storage
-  const { error: storageError } = await supabase.storage
-    .from("property_images")
-    .remove([path]);
+    console.log(`Eliminando archivo de storage: ${path}`);
+    
+    // Eliminar el archivo del storage
+    const { error: storageError } = await supabase.storage
+      .from("property_images")
+      .remove([path]);
 
-  if (storageError) {
-    console.error("Error deleting image from storage:", storageError);
-    // Continuamos para eliminar la referencia aunque falle el storage
+    if (storageError) {
+      console.error("Error deleting image from storage:", storageError);
+      // Continuamos para eliminar la referencia aunque falle el storage
+    }
+  } catch (error) {
+    console.error("Error al extraer la ruta del archivo:", error);
+    // Continuamos para eliminar la referencia
   }
 
   // Eliminar referencia de la BD
@@ -208,12 +254,20 @@ export const setMainImage = async (propertyId: string, imageId: string) => {
 
 // Obtener las propiedades del usuario actual
 export const fetchUserProperties = async () => {
+  // Obtener el ID del usuario actual
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    throw new Error("No estás autenticado.");
+  }
+  
   const { data, error } = await supabase
     .from("properties")
     .select(`
       *,
       property_images(*)
     `)
+    .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
   if (error) {

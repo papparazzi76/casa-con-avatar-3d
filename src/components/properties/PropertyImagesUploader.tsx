@@ -29,7 +29,7 @@ export function PropertyImagesUploader({ propertyId, existingImages = [] }: Prop
       console.error("Error al actualizar las imágenes:", error);
       setError("No se pudieron cargar las imágenes más recientes.");
     }
-  }, [propertyId]);
+  }, []);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -49,31 +49,43 @@ export function PropertyImagesUploader({ propertyId, existingImages = [] }: Prop
       // Convertir FileList a Array para poder iterarlo
       const fileArray = Array.from(files);
       let completedUploads = 0;
+      let errors = 0;
 
       for (const file of fileArray) {
         // Verificar el tipo de archivo (solo imágenes)
         if (!file.type.startsWith('image/')) {
           toast.error(`El archivo "${file.name}" no es una imagen válida.`);
+          errors++;
           continue;
         }
 
         // Verificar el tamaño del archivo (máximo 5MB)
         if (file.size > 5 * 1024 * 1024) {
           toast.error(`El archivo "${file.name}" es demasiado grande. El tamaño máximo es 5MB.`);
+          errors++;
           continue;
         }
 
         try {
+          console.log(`Subiendo imagen: ${file.name}, tamaño: ${file.size} bytes, tipo: ${file.type}`);
+          
           // Determinar si es la primera imagen (se establecerá como principal)
           const isFirst = images.length === 0;
           const uploadedImage = await uploadPropertyImage(propertyId, file, isFirst);
+          
+          if (!uploadedImage) {
+            throw new Error(`Error al subir la imagen ${file.name}`);
+          }
+          
+          console.log(`Imagen subida exitosamente:`, uploadedImage);
           
           setImages(prev => [...prev, uploadedImage]);
           completedUploads++;
           setUploadProgress(Math.round((completedUploads / fileArray.length) * 100));
         } catch (error) {
           console.error(`Error al subir la imagen ${file.name}:`, error);
-          toast.error(`Error al subir la imagen "${file.name}".`);
+          toast.error(`Error al subir la imagen "${file.name}". Por favor, inténtalo de nuevo.`);
+          errors++;
         }
       }
 
@@ -82,7 +94,14 @@ export function PropertyImagesUploader({ propertyId, existingImages = [] }: Prop
         fileInputRef.current.value = "";
       }
 
-      toast.success(`${completedUploads} imagen(es) subidas correctamente`);
+      if (completedUploads > 0) {
+        toast.success(`${completedUploads} imagen(es) subidas correctamente`);
+      }
+      
+      if (errors > 0) {
+        toast.error(`${errors} imagen(es) no pudieron ser subidas`);
+      }
+
       refreshImages();
     } catch (error) {
       console.error("Error general en la subida de imágenes:", error);
@@ -96,6 +115,8 @@ export function PropertyImagesUploader({ propertyId, existingImages = [] }: Prop
     if (!window.confirm("¿Estás seguro de que quieres eliminar esta imagen?")) return;
 
     try {
+      console.log(`Eliminando imagen con ID: ${imageId}`);
+      
       await deletePropertyImage(imageId);
       setImages(images.filter(img => img.id !== imageId));
       toast.success("Imagen eliminada correctamente");
@@ -107,6 +128,8 @@ export function PropertyImagesUploader({ propertyId, existingImages = [] }: Prop
 
   const handleSetMainImage = async (imageId: string) => {
     try {
+      console.log(`Estableciendo imagen principal con ID: ${imageId}`);
+      
       await setMainImage(propertyId, imageId);
       
       // Actualizar el estado local para reflejar el cambio
