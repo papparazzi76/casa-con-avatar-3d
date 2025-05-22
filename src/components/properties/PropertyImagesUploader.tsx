@@ -82,9 +82,9 @@ export function PropertyImagesUploader({ propertyId, existingImages = [] }: Prop
           setImages(prev => [...prev, uploadedImage]);
           completedUploads++;
           setUploadProgress(Math.round((completedUploads / fileArray.length) * 100));
-        } catch (error) {
+        } catch (error: any) {
           console.error(`Error al subir la imagen ${file.name}:`, error);
-          toast.error(`Error al subir la imagen "${file.name}". Por favor, inténtalo de nuevo.`);
+          toast.error(`Error al subir la imagen "${file.name}": ${error.message || 'Por favor, inténtalo de nuevo.'}`);
           errors++;
         }
       }
@@ -103,9 +103,9 @@ export function PropertyImagesUploader({ propertyId, existingImages = [] }: Prop
       }
 
       refreshImages();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error general en la subida de imágenes:", error);
-      setError("Ha ocurrido un error al subir las imágenes. Por favor, inténtalo de nuevo.");
+      setError(`Ha ocurrido un error al subir las imágenes: ${error.message || 'Por favor, inténtalo de nuevo.'}`);
     } finally {
       setIsUploading(false);
     }
@@ -120,9 +120,9 @@ export function PropertyImagesUploader({ propertyId, existingImages = [] }: Prop
       await deletePropertyImage(imageId);
       setImages(images.filter(img => img.id !== imageId));
       toast.success("Imagen eliminada correctamente");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error al eliminar la imagen:", error);
-      toast.error("Error al eliminar la imagen. Inténtalo de nuevo.");
+      toast.error(`Error al eliminar la imagen: ${error.message || 'Inténtalo de nuevo.'}`);
     }
   };
 
@@ -139,9 +139,9 @@ export function PropertyImagesUploader({ propertyId, existingImages = [] }: Prop
       })));
       
       toast.success("Imagen principal actualizada");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error al establecer la imagen principal:", error);
-      toast.error("Error al establecer la imagen principal. Inténtalo de nuevo.");
+      toast.error(`Error al establecer la imagen principal: ${error.message || 'Inténtalo de nuevo.'}`);
     }
   };
 

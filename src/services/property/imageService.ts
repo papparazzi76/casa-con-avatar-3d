@@ -13,32 +13,44 @@ export const uploadPropertyImage = async (propertyId: string, file: File, isMain
 
     console.log(`Preparando carga a storage: bucket=property_images, path=${filePath}`);
     
-    // Verificar si existe el bucket
+    // Verificar si existe el bucket y crearlo si no existe
     const { data: buckets } = await supabase.storage.listBuckets();
     const bucketExists = buckets?.some(b => b.name === 'property_images');
     
     if (!bucketExists) {
-      console.log('El bucket property_images no existe, creándolo...');
-      // Crear el bucket si no existe
-      const { data, error: createBucketError } = await supabase.storage.createBucket('property_images', {
-        public: true,
-        fileSizeLimit: 5242880, // 5MB
-      });
+      console.log('El bucket property_images no existe, intentando crearlo...');
       
-      if (createBucketError) {
-        console.error("Error creando el bucket:", createBucketError);
-        throw new Error(`Error al crear el bucket: ${createBucketError.message}`);
+      // Intentar crear bucket pero manejar el caso en que no tenga permisos
+      try {
+        const { data, error: createBucketError } = await supabase.storage.createBucket('property_images', {
+          public: true,
+          fileSizeLimit: 5242880, // 5MB
+        });
+        
+        if (createBucketError) {
+          console.error("Error creando el bucket:", createBucketError);
+          if (createBucketError.message.includes("policy")) {
+            console.log("Error de política de seguridad, intentando subir archivo de todas formas...");
+            // Continuamos aunque no podamos crear el bucket, ya que puede que ya exista
+            // pero el usuario actual no tenga permisos para verlo o crearlo
+          } else {
+            throw new Error(`Error al crear el bucket: ${createBucketError.message}`);
+          }
+        }
+      } catch (err) {
+        console.log("Error capturado al crear bucket, intentando subir archivo de todas formas...", err);
+        // Continuamos aunque no podamos crear el bucket
       }
     }
 
     // Subir archivo a storage
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError, data: uploadData } = await supabase.storage
       .from("property_images")
       .upload(filePath, file);
 
     if (uploadError) {
       console.error("Error uploading image:", uploadError);
-      throw new Error(uploadError.message);
+      throw new Error(`Error al subir la imagen: ${uploadError.message}`);
     }
 
     // Obtener URL pública
@@ -62,7 +74,7 @@ export const uploadPropertyImage = async (propertyId: string, file: File, isMain
 
     if (error) {
       console.error("Error saving image reference:", error);
-      throw new Error(error.message);
+      throw new Error(`Error al guardar referencia de imagen: ${error.message}`);
     }
 
     console.log("Referencia de imagen guardada en BD:", data);
