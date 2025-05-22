@@ -12,9 +12,11 @@ export function Footer() {
         transition={{ duration: 0.5, delay: 0.2 }}
       >
         <div className="flex flex-col items-center gap-4 px-8 md:flex-row md:gap-2 md:px-0">
-          <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
-            © 2025 PropTools. Todos los derechos reservados.
-          </p>
+          <img 
+            src="/lovable-uploads/85a8b51f-c876-4980-ac9f-c27ef2ecb43a.png" 
+            alt="Iadomus Logo" 
+            className="h-12 md:h-10" 
+          />
         </div>
         <div className="flex gap-4">
           <Link to="/terminos" className="text-sm text-muted-foreground underline underline-offset-4">
