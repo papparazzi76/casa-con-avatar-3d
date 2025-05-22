@@ -42,6 +42,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Función para enviar notificación
+  const sendNotification = async (type: 'registration' | 'form_submission', email?: string, formType?: string, formData?: Record<string, any>) => {
+    try {
+      const response = await fetch("https://axkfeoivkpsvjmewqndu.supabase.co/functions/v1/send-notification", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type,
+          email,
+          formType,
+          formData
+        }),
+      });
+
+      if (!response.ok) {
+        console.error("Error sending notification:", await response.text());
+      }
+    } catch (error) {
+      console.error("Failed to send notification:", error);
+    }
+  };
+
   async function signUp(email: string, password: string) {
     try {
       const { error } = await supabase.auth.signUp({
@@ -52,6 +76,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) {
         throw error;
       }
+
+      // Enviar notificación de registro
+      await sendNotification('registration', email);
 
       toast({
         title: "Registro exitoso",
@@ -150,3 +177,31 @@ export function useAuth() {
   }
   return context;
 }
+
+// Exportar la función sendNotification para usarla en otros componentes
+export const useNotification = () => {
+  const sendFormNotification = async (formType: string, email?: string, formData?: Record<string, any>) => {
+    try {
+      const response = await fetch("https://axkfeoivkpsvjmewqndu.supabase.co/functions/v1/send-notification", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type: 'form_submission',
+          email,
+          formType,
+          formData
+        }),
+      });
+
+      if (!response.ok) {
+        console.error("Error sending form notification:", await response.text());
+      }
+    } catch (error) {
+      console.error("Failed to send form notification:", error);
+    }
+  };
+
+  return { sendFormNotification };
+};

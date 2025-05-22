@@ -6,6 +6,8 @@ import { PartialItemsList } from "./PartialItemsList";
 import { RoomEditDialog } from "./RoomEditDialog";
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useAuth } from "@/context/AuthContext";
+import { useNotification } from "@/context/AuthContext";
 
 interface RoomsConfigurationStepProps {
   reformType: ReformType;
@@ -27,6 +29,8 @@ export function RoomsConfigurationStep({
   onNext,
 }: RoomsConfigurationStepProps) {
   const [currentEditingRoom, setCurrentEditingRoom] = useState<Room | null>(null);
+  const { user } = useAuth();
+  const { sendFormNotification } = useNotification();
 
   const handleRoomEdit = (room: Room) => {
     setCurrentEditingRoom(room);
@@ -51,6 +55,26 @@ export function RoomsConfigurationStep({
 
     onRoomsChange(rooms.filter((room) => room.id !== roomId));
     setCurrentEditingRoom(null);
+  };
+
+  const handleNext = async () => {
+    // Enviar notificación sobre la configuración de habitaciones
+    await sendFormNotification(
+      "Reforma Budget - Habitaciones Configuradas",
+      user?.email,
+      {
+        tipo_reforma: reformType,
+        habitaciones: rooms.map(room => ({
+          id: room.id,
+          nombre: room.name,
+          area: room.area,
+          tipoTrabajo: room.workType,
+          calidad: room.quality
+        }))
+      }
+    );
+    
+    onNext();
   };
 
   const containerVariants = {
@@ -143,7 +167,7 @@ export function RoomsConfigurationStep({
           Anterior
         </Button>
         <Button
-          onClick={onNext}
+          onClick={handleNext}
           className="bg-gradient-to-r from-realestate-purple to-realestate-turquoise"
           disabled={rooms.length === 0}
         >

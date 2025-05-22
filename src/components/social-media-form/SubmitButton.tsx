@@ -1,19 +1,57 @@
 
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { UseFormReturn } from "react-hook-form";
+import { FormValues } from "./formSchema";
+import { useAuth } from "@/context/AuthContext";
+import { useNotification } from "@/context/AuthContext";
 
 type SubmitButtonProps = {
-  isGenerating: boolean;
+  form: UseFormReturn<FormValues>;
+  onSubmit: (data: FormValues) => void;
 };
 
-export function SubmitButton({ isGenerating }: SubmitButtonProps) {
+export function SubmitButton({ form, onSubmit }: SubmitButtonProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user } = useAuth();
+  const { sendFormNotification } = useNotification();
+  
+  const handleSubmit = async (data: FormValues) => {
+    setIsSubmitting(true);
+    try {
+      // Enviar notificación
+      await sendFormNotification(
+        "Social Media Post Generator", 
+        user?.email, 
+        {
+          plataforma: data.plataforma,
+          tipo_operacion: data.tipo_operacion,
+          tipo_inmueble: data.tipo_inmueble,
+          localidad: data.localidad,
+          precio: data.precio,
+          superficie: data.superficie,
+          habitaciones: data.habitaciones,
+          banos: data.banos,
+          caracteristicas_destacadas: data.caracteristicas_destacadas,
+          estado_conservacion: data.estado_conservacion,
+          tono_comunicacion: data.tono_comunicacion
+        }
+      );
+      
+      onSubmit(data);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
   return (
-    <Button 
-      type="submit" 
-      className="w-full bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90"
-      disabled={isGenerating}
-      size="lg"
+    <Button
+      type="submit"
+      className="w-full bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90 mt-6 h-12"
+      onClick={form.handleSubmit(handleSubmit)}
+      disabled={isSubmitting || form.formState.isSubmitting}
     >
-      {isGenerating ? "Generando posts..." : "Generar Posts para Redes Sociales"}
+      {isSubmitting ? "Generando..." : "Generar Posts"}
     </Button>
   );
 }

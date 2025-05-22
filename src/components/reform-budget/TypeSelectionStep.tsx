@@ -2,6 +2,8 @@
 import { Button } from "@/components/ui/button";
 import { ReformType } from "./types";
 import { motion } from "framer-motion";
+import { useAuth } from "@/context/AuthContext";
+import { useNotification } from "@/context/AuthContext";
 
 interface TypeSelectionStepProps {
   reformType: ReformType;
@@ -16,6 +18,9 @@ export function TypeSelectionStep({
   onNext, 
   onCancel 
 }: TypeSelectionStepProps) {
+  const { user } = useAuth();
+  const { sendFormNotification } = useNotification();
+  
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -29,6 +34,19 @@ export function TypeSelectionStep({
   const itemVariants = {
     hidden: { y: 20, opacity: 0 },
     visible: { y: 0, opacity: 1 }
+  };
+  
+  const handleNext = async () => {
+    // Enviar notificación
+    await sendFormNotification(
+      "Reforma Budget - Tipo Seleccionado",
+      user?.email,
+      {
+        tipo_reforma: reformType
+      }
+    );
+    
+    onNext();
   };
 
   return (
@@ -81,7 +99,7 @@ export function TypeSelectionStep({
           Cancelar
         </Button>
         <Button 
-          onClick={onNext}
+          onClick={handleNext}
           className="bg-gradient-to-r from-realestate-purple to-realestate-turquoise"
         >
           Continuar
