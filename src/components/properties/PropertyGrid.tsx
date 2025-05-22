@@ -4,6 +4,7 @@ import { fetchProperties } from "@/services/propertyService";
 import { PropertyCard } from "./PropertyCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Property, PropertyImage } from "@/types/property";
+import { toast } from "sonner";
 
 interface PropertyGridProps {
   properties?: (Property & { property_images: PropertyImage[] })[];
@@ -12,7 +13,18 @@ interface PropertyGridProps {
 export function PropertyGrid({ properties }: PropertyGridProps) {
   const { data: fetchedProperties, isLoading, error } = useQuery({
     queryKey: ["properties"],
-    queryFn: fetchProperties,
+    queryFn: async () => {
+      try {
+        console.log("Ejecutando fetchProperties en PropertyGrid");
+        const result = await fetchProperties();
+        console.log(`Propiedades obtenidas en PropertyGrid: ${result?.length || 0}`);
+        return result;
+      } catch (err) {
+        console.error("Error en PropertyGrid:", err);
+        toast.error("Error al cargar las propiedades. Inténtalo de nuevo.");
+        throw err;
+      }
+    },
     // No ejecutar la consulta si se pasaron propiedades como prop
     enabled: !properties
   });
@@ -40,6 +52,7 @@ export function PropertyGrid({ properties }: PropertyGridProps) {
   }
 
   if (error && !properties) {
+    console.error("Error en PropertyGrid mostrado al usuario:", error);
     return (
       <div className="py-12 text-center">
         <p className="text-destructive text-lg">
@@ -60,6 +73,7 @@ export function PropertyGrid({ properties }: PropertyGridProps) {
     );
   }
 
+  console.log(`Renderizando ${displayProperties.length} propiedades en PropertyGrid`);
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {displayProperties.map(property => (

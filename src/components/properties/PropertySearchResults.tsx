@@ -5,6 +5,7 @@ import { PropertyGrid } from "./PropertyGrid";
 import { searchProperties } from "@/services/property";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "sonner";
 
 export function PropertySearchResults() {
   const [searchParams] = useSearchParams();
@@ -18,7 +19,18 @@ export function PropertySearchResults() {
   // Realizar la búsqueda usando el servicio
   const { data: properties, isLoading, error } = useQuery({
     queryKey: ["properties", queryParams],
-    queryFn: () => searchProperties(queryParams),
+    queryFn: async () => {
+      try {
+        console.log("Ejecutando búsqueda de propiedades con parámetros:", queryParams);
+        const result = await searchProperties(queryParams);
+        console.log(`Resultado de búsqueda: ${result?.length || 0} propiedades`);
+        return result;
+      } catch (err) {
+        console.error("Error en búsqueda de propiedades:", err);
+        toast.error("Error al cargar las propiedades. Inténtalo de nuevo.");
+        throw err;
+      }
+    },
   });
   
   if (isLoading) {
@@ -42,6 +54,7 @@ export function PropertySearchResults() {
   }
 
   if (error) {
+    console.error("Error mostrado al usuario:", error);
     return (
       <Alert variant="destructive" className="mb-6">
         <AlertDescription>
