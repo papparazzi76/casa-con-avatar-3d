@@ -6,6 +6,9 @@ import { Calculator } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { useState } from "react";
 import { ReformBudgetDialog } from "./ReformBudgetDialog";
+import { useAuth } from "@/context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 interface ServiceCardProps {
   title: string;
@@ -27,6 +30,8 @@ export function ServiceCard({
   avatarSrc
 }: ServiceCardProps) {
   const [isReformBudgetOpen, setIsReformBudgetOpen] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   // Helper function to render calculator icon for the calculator service
   const renderIcon = () => {
@@ -38,6 +43,13 @@ export function ServiceCard({
 
   // Handler for the click event
   const handleClick = () => {
+    // Check if user is authenticated
+    if (!user) {
+      toast.error("Debes iniciar sesión para utilizar este servicio");
+      navigate("/auth?redirect=" + window.location.pathname);
+      return;
+    }
+
     if (icon === "📋") {
       setIsReformBudgetOpen(true);
     } else {
@@ -109,6 +121,7 @@ export function ServiceCard({
         <ReformBudgetDialog
           open={isReformBudgetOpen}
           onOpenChange={setIsReformBudgetOpen}
+          userId={user?.id}
         />
       )}
     </>

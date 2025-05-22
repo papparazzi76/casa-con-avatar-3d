@@ -1,897 +1,901 @@
 
 import { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
-import { FilePenLine, FileSpreadsheet, FileText, Plus, Trash2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
-// Tipos para los datos del presupuesto
-interface Room {
+// Tipos de estancias para obra integral
+const integralRooms = [
+  { id: "salon", name: "Salón / comedor", area: 20 },
+  { id: "dormitorio1", name: "Dormitorio principal", area: 12 },
+  { id: "dormitorio2", name: "Dormitorio 2", area: 10 },
+  { id: "dormitorio3", name: "Dormitorio 3", area: 8 },
+  { id: "bano", name: "Baño completo", area: 5 },
+  { id: "cocina", name: "Cocina", area: 8 },
+  { id: "pasillo", name: "Pasillo", area: 6 },
+  { id: "recibidor", name: "Recibidor / hall", area: 4 },
+];
+
+// Tipos de estancias adicionales
+const additionalRoomTypes = [
+  { id: "dormitorio", name: "Dormitorio extra" },
+  { id: "bano_completo", name: "Baño completo extra" },
+  { id: "aseo", name: "Aseo (sin ducha/bañera)" },
+  { id: "terraza", name: "Terraza o balcón" },
+  { id: "lavadero", name: "Lavadero / cuarto de lavado" },
+  { id: "vestidor", name: "Vestidor" },
+  { id: "despacho", name: "Despacho / estudio" },
+  { id: "trastero", name: "Trastero" },
+  { id: "garaje", name: "Garaje" },
+  { id: "patio", name: "Patio interior" },
+  { id: "otras", name: "Otras" },
+];
+
+// Tipos de partidas para obra parcial
+const partialItems = [
+  { id: "cocina", name: "Cocina" },
+  { id: "banos", name: "Baño(s)" },
+  { id: "salon", name: "Salón / comedor" },
+  { id: "dormitorios", name: "Dormitorio(s)" },
+  { id: "electricidad", name: "Instalación eléctrica" },
+  { id: "fontaneria", name: "Fontanería" },
+  { id: "carpinteria_interior", name: "Carpintería interior" },
+  { id: "carpinteria_exterior", name: "Carpintería exterior (ventanas / balconeras)" },
+  { id: "pintura", name: "Pintura general" },
+  { id: "suelos", name: "Suelos / pavimentos" },
+  { id: "climatizacion", name: "Climatización" },
+  { id: "fachada", name: "Fachada / envolvente" },
+  { id: "cubierta", name: "Cubierta / tejado" },
+  { id: "otra", name: "Otra" },
+];
+
+// Tipos de obra
+const workTypes = [
+  { id: "demolicion", name: "Demolición" },
+  { id: "obra_nueva", name: "Obra nueva" },
+  { id: "sustitucion", name: "Sustitución" },
+  { id: "actualizacion", name: "Actualización ligera" },
+];
+
+// Tipos de calidades
+const qualityTypes = [
+  { id: "economica", name: "Económica" },
+  { id: "estandar", name: "Estándar" },
+  { id: "alta", name: "Alta" },
+  { id: "premium", name: "Premium" },
+];
+
+// Capítulos de obra
+const chapters = [
+  { id: "albanileria", name: "Albañilería" },
+  { id: "electricidad", name: "Electricidad" },
+  { id: "fontaneria", name: "Fontanería" },
+  { id: "carpinteria", name: "Carpintería" },
+  { id: "climatizacion", name: "Climatización" },
+  { id: "pintura", name: "Pintura" },
+  { id: "otros", name: "Otros" },
+];
+
+type Room = {
   id: string;
   name: string;
   area: number;
-  workType: "demolición" | "obra nueva" | "sustitución" | "actualización ligera";
-  quality: "económica" | "estándar" | "alta" | "premium";
+  workType: string;
+  quality: string;
   chapters: {
-    albañilería: number;
-    electricidad: number;
-    fontanería: number;
-    carpintería: number;
-    climatización: number;
-    pintura: number;
-    otros: number;
-  };
-}
+    id: string;
+    name: string;
+    amount: number;
+  }[];
+  subtotal: number;
+};
 
-interface BudgetState {
-  reformType: "integral" | "parcial" | null;
-  rooms: Room[];
-  partialSelections: string[];
-  contingency: number;
-  fees: number;
-  vat: number;
-}
-
-// Opciones predefinidas
-const STANDARD_ROOMS = [
-  "Salón / comedor", 
-  "Dormitorio 1", 
-  "Dormitorio 2", 
-  "Dormitorio 3", 
-  "Baño completo", 
-  "Cocina", 
-  "Pasillo", 
-  "Recibidor / hall"
-];
-
-const EXTRA_ROOM_OPTIONS = [
-  "Dormitorio extra",
-  "Baño completo extra",
-  "Aseo (sin ducha/bañera)",
-  "Terraza o balcón",
-  "Lavadero / cuarto de lavado",
-  "Vestidor",
-  "Despacho / estudio",
-  "Trastero",
-  "Garaje",
-  "Patio interior",
-  "Otras"
-];
-
-const PARTIAL_REFORM_OPTIONS = [
-  "Cocina",
-  "Baño(s)",
-  "Salón / comedor",
-  "Dormitorio(s)",
-  "Instalación eléctrica",
-  "Fontanería",
-  "Carpintería interior",
-  "Carpintería exterior (ventanas / balconeras)",
-  "Pintura general",
-  "Suelos / pavimentos",
-  "Climatización",
-  "Fachada / envolvente",
-  "Cubierta / tejado",
-  "Otra"
-];
-
-export function ReformBudgetDialog({
-  open,
-  onOpenChange,
-}: {
+interface ReformBudgetDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-}) {
-  const { toast } = useToast();
-  const [step, setStep] = useState<number>(1);
-  const [budget, setBudget] = useState<BudgetState>({
-    reformType: null,
-    rooms: [],
-    partialSelections: [],
-    contingency: 5,
-    fees: 10,
-    vat: 21
-  });
-  const [currentRoom, setCurrentRoom] = useState<Room | null>(null);
-  const [extraRoomType, setExtraRoomType] = useState<string>("");
-  const [extraRoomName, setExtraRoomName] = useState<string>("");
-  const [otherPartialSelection, setOtherPartialSelection] = useState<string>("");
+  userId?: string;
+}
 
-  // Guardar el estado en localStorage cuando cambia
+export function ReformBudgetDialog({ open, onOpenChange, userId }: ReformBudgetDialogProps) {
+  const [step, setStep] = useState<"type" | "rooms" | "summary">("type");
+  const [reformType, setReformType] = useState<"integral" | "partial">("integral");
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [selectedPartialItems, setSelectedPartialItems] = useState<string[]>([]);
+  const [additionalRoomType, setAdditionalRoomType] = useState("");
+  const [newRoomName, setNewRoomName] = useState("");
+  const [newRoomArea, setNewRoomArea] = useState(10);
+  const [currentEditingRoom, setCurrentEditingRoom] = useState<Room | null>(null);
+  const [imprevistosPercent, setImprevistosPercent] = useState(10);
+  const [honorariosPercent, setHonorariosPercent] = useState(8);
+  const [ivaPercent, setIvaPercent] = useState(21);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+
+  // Inicializar rooms cuando cambia el tipo de reforma
   useEffect(() => {
-    if (budget.reformType) {
-      localStorage.setItem("reformBudget", JSON.stringify(budget));
-    }
-  }, [budget]);
+    if (reformType === "integral") {
+      // Pre-cargar las habitaciones básicas para obra integral
+      const baseRooms = integralRooms.map((room) => ({
+        id: room.id,
+        name: room.name,
+        area: room.area,
+        workType: "obra_nueva",
+        quality: "estandar",
+        chapters: chapters.map((chapter) => ({
+          id: chapter.id,
+          name: chapter.name,
+          amount: calculateBasePrice(room.area, "obra_nueva", "estandar", chapter.id),
+        })),
+        subtotal: 0,
+      }));
 
-  // Cargar el estado desde localStorage al inicio
-  useEffect(() => {
-    const savedBudget = localStorage.getItem("reformBudget");
-    if (savedBudget) {
-      try {
-        setBudget(JSON.parse(savedBudget));
-        if (JSON.parse(savedBudget).rooms.length > 0) {
-          setStep(3); // Ir directamente al resumen si hay datos
-        }
-      } catch (e) {
-        console.error("Error parsing saved budget:", e);
-      }
-    }
-  }, []);
+      // Calcular subtotales iniciales
+      baseRooms.forEach((room) => {
+        room.subtotal = room.chapters.reduce((sum, chapter) => sum + chapter.amount, 0);
+      });
 
-  // Generar habitaciones estándar para obra integral
-  const generateStandardRooms = () => {
-    const standardRooms: Room[] = STANDARD_ROOMS.map((name) => ({
-      id: `room-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      name,
-      area: 0,
-      workType: "sustitución",
-      quality: "estándar",
-      chapters: {
-        albañilería: 0,
-        electricidad: 0,
-        fontanería: 0,
-        carpintería: 0,
-        climatización: 0,
-        pintura: 0,
-        otros: 0
-      }
-    }));
-    
-    setBudget(prev => ({
-      ...prev,
-      rooms: standardRooms
-    }));
-    setStep(2);
-  };
-
-  // Manejar la selección del tipo de reforma
-  const handleReformTypeSelect = (type: "integral" | "parcial") => {
-    setBudget(prev => ({
-      ...prev,
-      reformType: type
-    }));
-    
-    if (type === "integral") {
-      generateStandardRooms();
+      setRooms(baseRooms);
     } else {
-      setStep(2);
+      setRooms([]);
+      setSelectedPartialItems([]);
     }
-  };
-
-  // Añadir una habitación extra
-  const handleAddExtraRoom = () => {
-    if (!extraRoomType) {
-      toast({
-        title: "Error",
-        description: "Debes seleccionar un tipo de estancia",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const name = extraRoomType === "Otras" ? extraRoomName : extraRoomType;
     
-    if (extraRoomType === "Otras" && !extraRoomName.trim()) {
-      toast({
-        title: "Error",
-        description: "Debes especificar un nombre para la estancia",
-        variant: "destructive",
-      });
-      return;
-    }
+    setIsDirty(true);
+  }, [reformType]);
 
-    const newRoom: Room = {
-      id: `room-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      name,
-      area: 0,
-      workType: "sustitución",
-      quality: "estándar",
-      chapters: {
-        albañilería: 0,
-        electricidad: 0,
-        fontanería: 0,
-        carpintería: 0,
-        climatización: 0,
-        pintura: 0,
-        otros: 0
+  // Guardar en localStorage cuando cambie el estado
+  useEffect(() => {
+    if (isDirty) {
+      const budgetData = {
+        reformType,
+        rooms,
+        selectedPartialItems,
+        imprevistosPercent,
+        honorariosPercent,
+        ivaPercent,
+      };
+      localStorage.setItem("reformBudgetData", JSON.stringify(budgetData));
+    }
+  }, [reformType, rooms, selectedPartialItems, imprevistosPercent, honorariosPercent, ivaPercent, isDirty]);
+
+  // Cargar desde localStorage al abrir
+  useEffect(() => {
+    if (open) {
+      try {
+        const savedData = localStorage.getItem("reformBudgetData");
+        if (savedData) {
+          const parsedData = JSON.parse(savedData);
+          setReformType(parsedData.reformType);
+          setRooms(parsedData.rooms);
+          setSelectedPartialItems(parsedData.selectedPartialItems);
+          setImprevistosPercent(parsedData.imprevistosPercent);
+          setHonorariosPercent(parsedData.honorariosPercent);
+          setIvaPercent(parsedData.ivaPercent);
+          setIsDirty(false);
+        }
+      } catch (error) {
+        console.error("Error loading saved data", error);
       }
+    } else {
+      // Reset form when dialog is closed
+      setStep("type");
+    }
+  }, [open]);
+
+  // Función para calcular precio base por m2 según tipo de obra y calidad
+  function calculateBasePrice(area: number, workType: string, quality: string, chapterId: string): number {
+    // Precios base por m2 según calidad
+    const baseQualityPrices: Record<string, number> = {
+      economica: 450,
+      estandar: 650,
+      alta: 900,
+      premium: 1200,
     };
 
-    setBudget(prev => ({
-      ...prev,
-      rooms: [...prev.rooms, newRoom]
-    }));
+    // Modificadores según tipo de obra
+    const workTypeModifiers: Record<string, number> = {
+      demolicion: 0.4,
+      obra_nueva: 1.0,
+      sustitucion: 0.7,
+      actualizacion: 0.5,
+    };
 
-    setExtraRoomType("");
-    setExtraRoomName("");
+    // Distribución aproximada por capítulos
+    const chapterDistribution: Record<string, number> = {
+      albanileria: 0.35,
+      electricidad: 0.15,
+      fontaneria: 0.15,
+      carpinteria: 0.15,
+      climatizacion: 0.1,
+      pintura: 0.05,
+      otros: 0.05,
+    };
 
-    toast({
-      title: "Estancia añadida",
-      description: `Se ha añadido ${name} a la lista de estancias`,
-    });
-  };
-
-  // Manejar las selecciones para reforma parcial
-  const handlePartialSelectionChange = (checked: boolean, option: string) => {
-    setBudget(prev => {
-      if (checked) {
-        return {
-          ...prev,
-          partialSelections: [...prev.partialSelections, option]
-        };
-      } else {
-        return {
-          ...prev,
-          partialSelections: prev.partialSelections.filter(item => item !== option)
-        };
-      }
-    });
-  };
-
-  // Añadir una selección personalizada para reforma parcial
-  const handleAddOtherPartialSelection = () => {
-    if (!otherPartialSelection.trim()) {
-      toast({
-        title: "Error",
-        description: "Debes especificar un nombre para la partida",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setBudget(prev => ({
-      ...prev,
-      partialSelections: [...prev.partialSelections, `Otra: ${otherPartialSelection}`]
-    }));
-
-    setOtherPartialSelection("");
-
-    toast({
-      title: "Partida añadida",
-      description: `Se ha añadido ${otherPartialSelection} a la lista de partidas`,
-    });
-  };
-
-  // Continuar al siguiente paso después de seleccionar las partidas para reforma parcial
-  const handlePartialSelectionsComplete = () => {
-    if (budget.partialSelections.length === 0) {
-      toast({
-        title: "Error",
-        description: "Debes seleccionar al menos una partida",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Convertir las selecciones parciales en habitaciones para mantener un formato uniforme
-    const partialRooms: Room[] = budget.partialSelections.map(selection => ({
-      id: `room-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      name: selection,
-      area: 0,
-      workType: "sustitución",
-      quality: "estándar",
-      chapters: {
-        albañilería: 0,
-        electricidad: 0,
-        fontanería: 0,
-        carpintería: 0,
-        climatización: 0,
-        pintura: 0,
-        otros: 0
-      }
-    }));
-
-    setBudget(prev => ({
-      ...prev,
-      rooms: partialRooms
-    }));
-
-    setStep(3);
-  };
-
-  // Editar una habitación
-  const handleEditRoom = (room: Room) => {
-    setCurrentRoom(room);
-    setStep(4);
-  };
-
-  // Eliminar una habitación
-  const handleDeleteRoom = (roomId: string) => {
-    setBudget(prev => ({
-      ...prev,
-      rooms: prev.rooms.filter(room => room.id !== roomId)
-    }));
-
-    toast({
-      title: "Estancia eliminada",
-      description: "Se ha eliminado la estancia del presupuesto",
-    });
-  };
-
-  // Guardar los cambios en una habitación
-  const handleSaveRoom = () => {
-    if (!currentRoom) return;
-
-    if (currentRoom.area <= 0) {
-      toast({
-        title: "Error",
-        description: "La superficie debe ser un número positivo",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setBudget(prev => ({
-      ...prev,
-      rooms: prev.rooms.map(room => 
-        room.id === currentRoom.id ? currentRoom : room
-      )
-    }));
-
-    setCurrentRoom(null);
-    setStep(3);
-
-    toast({
-      title: "Cambios guardados",
-      description: "Se han guardado los cambios en la estancia",
-    });
-  };
-
-  // Actualizar un campo de la habitación actual
-  const updateRoomField = (field: keyof Room, value: any) => {
-    if (!currentRoom) return;
-
-    setCurrentRoom({
-      ...currentRoom,
-      [field]: value
-    });
-  };
-
-  // Actualizar un capítulo de la habitación actual
-  const updateRoomChapter = (chapter: keyof Room["chapters"], value: number) => {
-    if (!currentRoom) return;
-
-    setCurrentRoom({
-      ...currentRoom,
-      chapters: {
-        ...currentRoom.chapters,
-        [chapter]: value
-      }
-    });
-  };
-
-  // Calcular subtotal para una habitación
-  const calculateRoomSubtotal = (room: Room): number => {
-    return Object.values(room.chapters).reduce((sum, value) => sum + value, 0);
-  };
-
-  // Calcular el total base (suma de subtotales)
-  const calculateBaseTotal = (): number => {
-    return budget.rooms.reduce((sum, room) => sum + calculateRoomSubtotal(room), 0);
-  };
-
-  // Calcular el total con contingencia y honorarios
-  const calculateTotalWithExtras = (): number => {
-    const baseTotal = calculateBaseTotal();
-    const contingencyAmount = (baseTotal * budget.contingency) / 100;
-    const feesAmount = (baseTotal * budget.fees) / 100;
-    return baseTotal + contingencyAmount + feesAmount;
-  };
-
-  // Calcular el total con IVA
-  const calculateFinalTotal = (): number => {
-    const totalWithExtras = calculateTotalWithExtras();
-    const vatAmount = (totalWithExtras * budget.vat) / 100;
-    return totalWithExtras + vatAmount;
-  };
-
-  // Exportar a PDF (simulación)
-  const handleExportPDF = () => {
-    toast({
-      title: "Exportando a PDF",
-      description: "Tu presupuesto se está exportando a PDF",
-    });
-  };
-
-  // Exportar a Excel (simulación)
-  const handleExportExcel = () => {
-    toast({
-      title: "Exportando a Excel",
-      description: "Tu presupuesto se está exportando a Excel",
-    });
-  };
-
-  // Limpiar el presupuesto y empezar de nuevo
-  const handleReset = () => {
-    localStorage.removeItem("reformBudget");
-    setBudget({
-      reformType: null,
-      rooms: [],
-      partialSelections: [],
-      contingency: 5,
-      fees: 10,
-      vat: 21
-    });
-    setStep(1);
+    // Obtener precio base según calidad
+    const basePrice = baseQualityPrices[quality] || baseQualityPrices.estandar;
     
-    toast({
-      title: "Presupuesto reiniciado",
-      description: "Se ha reiniciado el presupuesto desde cero",
-    });
+    // Aplicar modificador de tipo de obra
+    const modifiedPrice = basePrice * (workTypeModifiers[workType] || 1);
+    
+    // Aplicar distribución por capítulo
+    const chapterPrice = modifiedPrice * (chapterDistribution[chapterId] || 0.05);
+    
+    // Multiplicar por área y redondear
+    return Math.round(chapterPrice * area);
+  }
+
+  // Añadir habitación para obra integral
+  const addRoom = () => {
+    if (!additionalRoomType) return;
+
+    let roomName = "";
+    if (additionalRoomType === "otras") {
+      roomName = newRoomName || "Espacio personalizado";
+    } else {
+      const roomType = additionalRoomTypes.find((r) => r.id === additionalRoomType);
+      roomName = roomType ? roomType.name : "Nueva estancia";
+    }
+
+    const area = newRoomArea || 10;
+    
+    const newRoom: Room = {
+      id: `${additionalRoomType}_${Date.now()}`,
+      name: roomName,
+      area: area,
+      workType: "obra_nueva",
+      quality: "estandar",
+      chapters: chapters.map((chapter) => ({
+        id: chapter.id,
+        name: chapter.name,
+        amount: calculateBasePrice(area, "obra_nueva", "estandar", chapter.id),
+      })),
+      subtotal: 0,
+    };
+
+    // Calcular subtotal
+    newRoom.subtotal = newRoom.chapters.reduce((sum, chapter) => sum + chapter.amount, 0);
+
+    setRooms([...rooms, newRoom]);
+    setAdditionalRoomType("");
+    setNewRoomName("");
+    setNewRoomArea(10);
+    setIsDirty(true);
   };
+
+  // Añadir partida para obra parcial
+  const addPartialItem = (itemId: string) => {
+    const isSelected = selectedPartialItems.includes(itemId);
+    
+    if (isSelected) {
+      // Quitar la partida y la habitación correspondiente
+      setSelectedPartialItems(selectedPartialItems.filter(id => id !== itemId));
+      setRooms(rooms.filter(room => room.id !== `partial_${itemId}`));
+    } else {
+      // Añadir la partida
+      setSelectedPartialItems([...selectedPartialItems, itemId]);
+      
+      // Encontrar la información de la partida
+      const item = partialItems.find(item => item.id === itemId);
+      if (!item) return;
+      
+      // Crear una nueva habitación para esta partida
+      const newRoom: Room = {
+        id: `partial_${itemId}`,
+        name: item.name,
+        area: 10, // Valor por defecto
+        workType: "sustitucion",
+        quality: "estandar",
+        chapters: chapters.map((chapter) => ({
+          id: chapter.id,
+          name: chapter.name,
+          amount: calculateBasePrice(10, "sustitucion", "estandar", chapter.id),
+        })),
+        subtotal: 0,
+      };
+      
+      // Calcular subtotal
+      newRoom.subtotal = newRoom.chapters.reduce((sum, chapter) => sum + chapter.amount, 0);
+      
+      setRooms([...rooms, newRoom]);
+    }
+    
+    setIsDirty(true);
+  };
+
+  // Editar habitación
+  const editRoom = (room: Room) => {
+    setCurrentEditingRoom(room);
+  };
+
+  // Guardar cambios de habitación
+  const saveRoomChanges = (updatedRoom: Room) => {
+    const updatedRooms = rooms.map(room => 
+      room.id === updatedRoom.id ? updatedRoom : room
+    );
+    setRooms(updatedRooms);
+    setCurrentEditingRoom(null);
+    setIsDirty(true);
+  };
+
+  // Eliminar habitación
+  const deleteRoom = (roomId: string) => {
+    // Si es una habitación de obra parcial, actualizar también selectedPartialItems
+    if (roomId.startsWith("partial_")) {
+      const partialItemId = roomId.replace("partial_", "");
+      setSelectedPartialItems(selectedPartialItems.filter(id => id !== partialItemId));
+    }
+    
+    setRooms(rooms.filter(room => room.id !== roomId));
+    setIsDirty(true);
+  };
+
+  // Calcular totales
+  const calculateTotals = () => {
+    const subtotal = rooms.reduce((sum, room) => sum + room.subtotal, 0);
+    const imprevistos = (subtotal * imprevistosPercent) / 100;
+    const honorarios = (subtotal * honorariosPercent) / 100;
+    const baseImponible = subtotal + imprevistos + honorarios;
+    const iva = (baseImponible * ivaPercent) / 100;
+    const total = baseImponible + iva;
+    
+    return {
+      subtotal,
+      imprevistos,
+      honorarios,
+      baseImponible,
+      iva,
+      total
+    };
+  };
+
+  // Guardar datos en Supabase
+  const saveBudgetToSupabase = async () => {
+    if (!userId) {
+      toast.error("Debes iniciar sesión para guardar el presupuesto");
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      const totals = calculateTotals();
+      
+      const budgetData = {
+        user_id: userId,
+        reform_type: reformType,
+        total_amount: totals.total,
+        data: {
+          rooms,
+          selectedPartialItems,
+          imprevistosPercent,
+          honorariosPercent,
+          ivaPercent,
+          totals
+        }
+      };
+      
+      const { error } = await supabase
+        .from('reform_budgets')
+        .insert([budgetData]);
+        
+      if (error) throw error;
+      
+      toast.success("Presupuesto guardado correctamente");
+      setIsDirty(false);
+    } catch (error: any) {
+      console.error("Error saving budget", error);
+      toast.error(`Error al guardar: ${error.message || "Inténtalo de nuevo más tarde"}`);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Exportar a PDF (simulado)
+  const exportToPDF = () => {
+    toast.success("Generando PDF... Esta función estará disponible próximamente.");
+  };
+
+  // Exportar a Excel (simulado)
+  const exportToExcel = () => {
+    toast.success("Generando Excel... Esta función estará disponible próximamente.");
+  };
+
+  const totals = calculateTotals();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl flex items-center gap-2">
-            <span className="text-3xl">📋</span> Calculadora de Presupuestos de Reforma
+          <DialogTitle className="text-xl">
+            Calculadora de Presupuestos de Reforma
           </DialogTitle>
           <DialogDescription>
-            Calcula el coste aproximado de la reforma de tu vivienda
+            Calcula el coste aproximado de la reforma de tu vivienda paso a paso
           </DialogDescription>
         </DialogHeader>
 
-        {/* Paso 1: Selección del tipo de reforma */}
-        {step === 1 && (
+        {step === "type" && (
           <div className="space-y-6">
-            <h3 className="text-lg font-medium">Tipo de reforma</h3>
-            <RadioGroup 
-              defaultValue={budget.reformType || undefined}
-              onValueChange={(value) => handleReformTypeSelect(value as "integral" | "parcial")}
-              className="space-y-3"
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="integral" id="integral" />
-                <Label htmlFor="integral" className="font-medium">
-                  Obra integral
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="parcial" id="parcial" />
-                <Label htmlFor="parcial" className="font-medium">
-                  Obra parcial
-                </Label>
-              </div>
-            </RadioGroup>
-          </div>
-        )}
-
-        {/* Paso 2: Configuración según el tipo de reforma */}
-        {step === 2 && budget.reformType === "integral" && (
-          <div className="space-y-6">
-            <h3 className="text-lg font-medium">Estancias</h3>
-            <div className="space-y-2">
-              {budget.rooms.map((room) => (
-                <div key={room.id} className="flex items-center justify-between border p-2 rounded-md">
-                  <span>{room.name}</span>
+            <div className="text-center mb-6">
+              <h3 className="text-lg font-medium">¿Qué tipo de reforma quieres realizar?</h3>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Button
+                variant={reformType === "integral" ? "default" : "outline"}
+                className={`h-24 ${reformType === "integral" ? "bg-gradient-to-r from-realestate-purple to-realestate-turquoise" : ""}`}
+                onClick={() => setReformType("integral")}
+              >
+                <div className="text-center">
+                  <div className="text-xl mb-1">Obra integral</div>
+                  <div className="text-sm opacity-80">Reforma completa de la vivienda</div>
                 </div>
-              ))}
+              </Button>
+              
+              <Button
+                variant={reformType === "partial" ? "default" : "outline"}
+                className={`h-24 ${reformType === "partial" ? "bg-gradient-to-r from-realestate-purple to-realestate-turquoise" : ""}`}
+                onClick={() => setReformType("partial")}
+              >
+                <div className="text-center">
+                  <div className="text-xl mb-1">Obra parcial</div>
+                  <div className="text-sm opacity-80">Reforma de elementos específicos</div>
+                </div>
+              </Button>
             </div>
-
-            <div className="border-t pt-4">
-              <h4 className="font-medium mb-2">Añadir estancia adicional</h4>
-              <div className="flex flex-col md:flex-row gap-2">
-                <Select
-                  value={extraRoomType}
-                  onValueChange={setExtraRoomType}
-                >
-                  <SelectTrigger className="w-full md:w-[300px]">
-                    <SelectValue placeholder="Selecciona tipo de estancia" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {EXTRA_ROOM_OPTIONS.map((option) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                
-                {extraRoomType === "Otras" && (
-                  <Input 
-                    placeholder="Nombre de la estancia"
-                    value={extraRoomName}
-                    onChange={(e) => setExtraRoomName(e.target.value)}
-                    className="flex-1"
-                  />
-                )}
-                
-                <Button onClick={handleAddExtraRoom} className="shrink-0">
-                  <Plus className="h-4 w-4 mr-1" /> Añadir
-                </Button>
-              </div>
-            </div>
-
+            
             <div className="flex justify-end space-x-2 pt-4">
-              <Button onClick={() => setStep(3)}>
+              <Button onClick={() => onOpenChange(false)} variant="outline">
+                Cancelar
+              </Button>
+              <Button 
+                onClick={() => setStep("rooms")}
+                className="bg-gradient-to-r from-realestate-purple to-realestate-turquoise"
+              >
                 Continuar
               </Button>
             </div>
           </div>
         )}
 
-        {step === 2 && budget.reformType === "parcial" && (
+        {step === "rooms" && (
           <div className="space-y-6">
-            <h3 className="text-lg font-medium">Selecciona las partes a reformar</h3>
+            <div className="text-center mb-4">
+              <h3 className="text-lg font-medium">
+                {reformType === "integral" 
+                  ? "Configura los espacios de tu reforma integral" 
+                  : "Selecciona las partidas a reformar"}
+              </h3>
+            </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              {PARTIAL_REFORM_OPTIONS.filter(option => option !== "Otra").map((option) => (
-                <div key={option} className="flex items-center space-x-2">
-                  <Checkbox 
-                    id={`option-${option}`} 
-                    checked={budget.partialSelections.includes(option)}
-                    onCheckedChange={(checked: boolean) => 
-                      handlePartialSelectionChange(checked, option)
-                    }
-                  />
-                  <Label htmlFor={`option-${option}`}>{option}</Label>
+            {reformType === "integral" ? (
+              <>
+                <div className="space-y-2">
+                  <h4 className="font-medium">Espacios básicos incluidos:</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {rooms.map((room) => (
+                      <Card key={room.id} className="overflow-hidden">
+                        <CardContent className="p-3 flex justify-between items-center">
+                          <div>
+                            <div className="font-medium">{room.name}</div>
+                            <div className="text-sm text-muted-foreground">
+                              {room.area} m² - {totals ? (room.subtotal).toLocaleString('es-ES')} €
+                            </div>
+                          </div>
+                          <Button size="sm" variant="outline" onClick={() => editRoom(room)}>
+                            Editar
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
-              ))}
-            </div>
 
-            <div className="border-t pt-4">
-              <h4 className="font-medium mb-2">Añadir otra partida</h4>
-              <div className="flex flex-col md:flex-row gap-2">
-                <Input
-                  placeholder="Especifica otra partida"
-                  value={otherPartialSelection}
-                  onChange={(e) => setOtherPartialSelection(e.target.value)}
-                  className="flex-1"
-                />
-                <Button onClick={handleAddOtherPartialSelection} className="shrink-0">
-                  <Plus className="h-4 w-4 mr-1" /> Añadir
-                </Button>
-              </div>
-            </div>
+                <div className="border-t pt-4">
+                  <h4 className="font-medium mb-2">Añadir otros espacios:</h4>
+                  <div className="flex flex-col md:flex-row gap-2">
+                    <select
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      value={additionalRoomType}
+                      onChange={(e) => setAdditionalRoomType(e.target.value)}
+                    >
+                      <option value="">Selecciona un tipo de estancia</option>
+                      {additionalRoomTypes.map((type) => (
+                        <option key={type.id} value={type.id}>
+                          {type.name}
+                        </option>
+                      ))}
+                    </select>
 
-            {budget.partialSelections.filter(item => item.startsWith("Otra:")).length > 0 && (
-              <div className="border p-3 rounded-md bg-muted/30">
-                <h4 className="font-medium mb-2">Partidas personalizadas añadidas:</h4>
-                <ul className="list-disc pl-5 space-y-1">
-                  {budget.partialSelections
-                    .filter(item => item.startsWith("Otra:"))
-                    .map((item, index) => (
-                      <li key={index}>{item.replace("Otra: ", "")}</li>
-                    ))
-                  }
-                </ul>
+                    {additionalRoomType === "otras" && (
+                      <Input
+                        placeholder="Nombre del espacio"
+                        value={newRoomName}
+                        onChange={(e) => setNewRoomName(e.target.value)}
+                        className="md:w-1/3"
+                      />
+                    )}
+
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        min="1"
+                        placeholder="m²"
+                        value={newRoomArea}
+                        onChange={(e) => setNewRoomArea(Number(e.target.value))}
+                        className="w-24"
+                      />
+                      <span className="text-sm">m²</span>
+                    </div>
+
+                    <Button 
+                      type="button"
+                      disabled={!additionalRoomType}
+                      onClick={addRoom}
+                    >
+                      Añadir
+                    </Button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {partialItems.map((item) => (
+                    <div key={item.id} className="flex items-center space-x-2 border rounded-md p-2">
+                      <Checkbox 
+                        id={item.id}
+                        checked={selectedPartialItems.includes(item.id)}
+                        onCheckedChange={() => addPartialItem(item.id)}
+                      />
+                      <Label htmlFor={item.id} className="flex-grow cursor-pointer">
+                        {item.name}
+                      </Label>
+                      
+                      {selectedPartialItems.includes(item.id) && (
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          onClick={() => {
+                            const room = rooms.find(r => r.id === `partial_${item.id}`);
+                            if (room) editRoom(room);
+                          }}
+                        >
+                          Detalles
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
-            <div className="flex justify-end space-x-2 pt-4">
-              <Button onClick={handlePartialSelectionsComplete}>
-                Continuar
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Paso 3: Resumen y tabla */}
-        {step === 3 && (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-medium">Resumen del presupuesto</h3>
-              <div className="flex space-x-2">
-                <Button variant="outline" onClick={handleReset}>
-                  Reiniciar
-                </Button>
-                <Button variant="outline" onClick={handleExportExcel}>
-                  <FileSpreadsheet className="h-4 w-4 mr-1" /> Excel
-                </Button>
-                <Button variant="outline" onClick={handleExportPDF}>
-                  <FileText className="h-4 w-4 mr-1" /> PDF
-                </Button>
-              </div>
-            </div>
-
-            <Card>
-              <CardContent className="pt-6">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Estancia/Partida</TableHead>
-                      <TableHead className="text-right">Subtotal</TableHead>
-                      <TableHead className="w-[100px]">Acciones</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {budget.rooms.map((room) => (
-                      <TableRow key={room.id}>
-                        <TableCell>{room.name}</TableCell>
-                        <TableCell className="text-right">
-                          {calculateRoomSubtotal(room).toLocaleString('es-ES')} €
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex space-x-1">
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              onClick={() => handleEditRoom(room)}
-                            >
-                              <FilePenLine className="h-4 w-4" />
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => handleDeleteRoom(room.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+            {currentEditingRoom && (
+              <Dialog open={!!currentEditingRoom} onOpenChange={(open) => !open && setCurrentEditingRoom(null)}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Editar {currentEditingRoom.name}</DialogTitle>
+                  </DialogHeader>
+                  
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="room-name">Nombre</Label>
+                      <Input
+                        id="room-name"
+                        value={currentEditingRoom.name}
+                        onChange={(e) => setCurrentEditingRoom({...currentEditingRoom, name: e.target.value})}
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="room-area">Superficie (m²)</Label>
+                      <Input
+                        id="room-area"
+                        type="number"
+                        min="1"
+                        value={currentEditingRoom.area}
+                        onChange={(e) => {
+                          const newArea = Number(e.target.value);
+                          if (newArea > 0) {
+                            // Actualizar area y recalcular importes
+                            const updatedRoom = {...currentEditingRoom, area: newArea};
+                            updatedRoom.chapters = updatedRoom.chapters.map(chapter => ({
+                              ...chapter,
+                              amount: calculateBasePrice(newArea, updatedRoom.workType, updatedRoom.quality, chapter.id)
+                            }));
+                            updatedRoom.subtotal = updatedRoom.chapters.reduce((sum, ch) => sum + ch.amount, 0);
+                            setCurrentEditingRoom(updatedRoom);
+                          }
+                        }}
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label>Tipo de obra</Label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {workTypes.map((type) => (
+                          <Button
+                            key={type.id}
+                            type="button"
+                            variant={currentEditingRoom.workType === type.id ? "default" : "outline"}
+                            className={`h-auto py-2 ${
+                              currentEditingRoom.workType === type.id 
+                              ? "bg-gradient-to-r from-realestate-purple to-realestate-turquoise" 
+                              : ""
+                            }`}
+                            onClick={() => {
+                              // Actualizar tipo de obra y recalcular importes
+                              const updatedRoom = {...currentEditingRoom, workType: type.id};
+                              updatedRoom.chapters = updatedRoom.chapters.map(chapter => ({
+                                ...chapter,
+                                amount: calculateBasePrice(updatedRoom.area, type.id, updatedRoom.quality, chapter.id)
+                              }));
+                              updatedRoom.subtotal = updatedRoom.chapters.reduce((sum, ch) => sum + ch.amount, 0);
+                              setCurrentEditingRoom(updatedRoom);
+                            }}
+                          >
+                            {type.name}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label>Calidad de acabados</Label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {qualityTypes.map((type) => (
+                          <Button
+                            key={type.id}
+                            type="button"
+                            variant={currentEditingRoom.quality === type.id ? "default" : "outline"}
+                            className={`h-auto py-2 ${
+                              currentEditingRoom.quality === type.id 
+                              ? "bg-gradient-to-r from-realestate-purple to-realestate-turquoise" 
+                              : ""
+                            }`}
+                            onClick={() => {
+                              // Actualizar calidad y recalcular importes
+                              const updatedRoom = {...currentEditingRoom, quality: type.id};
+                              updatedRoom.chapters = updatedRoom.chapters.map(chapter => ({
+                                ...chapter,
+                                amount: calculateBasePrice(updatedRoom.area, updatedRoom.workType, type.id, chapter.id)
+                              }));
+                              updatedRoom.subtotal = updatedRoom.chapters.reduce((sum, ch) => sum + ch.amount, 0);
+                              setCurrentEditingRoom(updatedRoom);
+                            }}
+                          >
+                            {type.name}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label>Desglose por capítulos</Label>
+                      <div className="border rounded-md divide-y">
+                        {currentEditingRoom.chapters.map((chapter) => (
+                          <div key={chapter.id} className="flex justify-between items-center p-2">
+                            <span>{chapter.name}</span>
+                            <div className="flex items-center">
+                              <Input
+                                type="number"
+                                min="0"
+                                value={chapter.amount}
+                                onChange={(e) => {
+                                  const newAmount = Number(e.target.value);
+                                  if (newAmount >= 0) {
+                                    // Actualizar importe del capítulo
+                                    const updatedChapters = currentEditingRoom.chapters.map(ch => 
+                                      ch.id === chapter.id ? {...ch, amount: newAmount} : ch
+                                    );
+                                    
+                                    // Recalcular subtotal
+                                    const newSubtotal = updatedChapters.reduce((sum, ch) => sum + ch.amount, 0);
+                                    
+                                    setCurrentEditingRoom({
+                                      ...currentEditingRoom, 
+                                      chapters: updatedChapters,
+                                      subtotal: newSubtotal
+                                    });
+                                  }
+                                }}
+                                className="w-24 text-right"
+                              />
+                              <span className="ml-2">€</span>
+                            </div>
                           </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="contingency">% Imprevistos</Label>
-                <div className="flex items-center">
-                  <Input
-                    id="contingency"
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={budget.contingency}
-                    onChange={(e) => setBudget(prev => ({
-                      ...prev,
-                      contingency: Number(e.target.value)
-                    }))}
-                    className="w-24"
-                  />
-                  <span className="ml-2">%</span>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="fees">% Honorarios</Label>
-                <div className="flex items-center">
-                  <Input
-                    id="fees"
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={budget.fees}
-                    onChange={(e) => setBudget(prev => ({
-                      ...prev,
-                      fees: Number(e.target.value)
-                    }))}
-                    className="w-24"
-                  />
-                  <span className="ml-2">%</span>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="vat">% IVA</Label>
-                <div className="flex items-center">
-                  <Input
-                    id="vat"
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={budget.vat}
-                    onChange={(e) => setBudget(prev => ({
-                      ...prev,
-                      vat: Number(e.target.value)
-                    }))}
-                    className="w-24"
-                  />
-                  <span className="ml-2">%</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-muted/30 p-4 rounded-md space-y-2">
-              <div className="flex justify-between">
-                <span className="font-medium">Subtotal base:</span>
-                <span>{calculateBaseTotal().toLocaleString('es-ES')} €</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="font-medium">Imprevistos ({budget.contingency}%):</span>
-                <span>{((calculateBaseTotal() * budget.contingency) / 100).toLocaleString('es-ES')} €</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="font-medium">Honorarios ({budget.fees}%):</span>
-                <span>{((calculateBaseTotal() * budget.fees) / 100).toLocaleString('es-ES')} €</span>
-              </div>
-              <div className="flex justify-between border-t border-gray-300 pt-2">
-                <span className="font-medium">Total sin IVA:</span>
-                <span>{calculateTotalWithExtras().toLocaleString('es-ES')} €</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="font-medium">IVA ({budget.vat}%):</span>
-                <span>{((calculateTotalWithExtras() * budget.vat) / 100).toLocaleString('es-ES')} €</span>
-              </div>
-              <div className="flex justify-between border-t border-gray-300 pt-2">
-                <span className="font-medium text-lg">TOTAL:</span>
-                <span className="font-bold text-lg">{calculateFinalTotal().toLocaleString('es-ES')} €</span>
-              </div>
+                        ))}
+                      </div>
+                      <div className="flex justify-between font-medium border-t pt-2">
+                        <span>Total estancia</span>
+                        <span>
+                          {currentEditingRoom.chapters.reduce((sum, ch) => sum + ch.amount, 0).toLocaleString('es-ES')} €
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between">
+                    <Button 
+                      variant="destructive" 
+                      onClick={() => {
+                        deleteRoom(currentEditingRoom.id);
+                        setCurrentEditingRoom(null);
+                      }}
+                    >
+                      Eliminar
+                    </Button>
+                    <div className="space-x-2">
+                      <Button variant="outline" onClick={() => setCurrentEditingRoom(null)}>
+                        Cancelar
+                      </Button>
+                      <Button 
+                        onClick={() => saveRoomChanges(currentEditingRoom)}
+                        className="bg-gradient-to-r from-realestate-purple to-realestate-turquoise"
+                      >
+                        Guardar cambios
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
+            
+            <div className="flex justify-between pt-4 border-t">
+              <Button onClick={() => setStep("type")} variant="outline">
+                Anterior
+              </Button>
+              <Button 
+                onClick={() => setStep("summary")}
+                className="bg-gradient-to-r from-realestate-purple to-realestate-turquoise"
+                disabled={rooms.length === 0}
+              >
+                Ver resumen
+              </Button>
             </div>
           </div>
         )}
 
-        {/* Paso 4: Editar estancia/partida */}
-        {step === 4 && currentRoom && (
+        {step === "summary" && (
           <div className="space-y-6">
-            <h3 className="text-lg font-medium">Editar {currentRoom.name}</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="room-name">Nombre</Label>
-                <Input
-                  id="room-name"
-                  value={currentRoom.name}
-                  onChange={(e) => updateRoomField("name", e.target.value)}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="room-area">Superficie útil (m²)</Label>
-                <Input
-                  id="room-area"
-                  type="number"
-                  min="0"
-                  value={currentRoom.area}
-                  onChange={(e) => updateRoomField("area", Number(e.target.value))}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="room-work-type">Tipo de obra</Label>
-                <Select
-                  value={currentRoom.workType}
-                  onValueChange={(value) => updateRoomField("workType", value)}
-                >
-                  <SelectTrigger id="room-work-type">
-                    <SelectValue placeholder="Selecciona tipo de obra" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="demolición">Demolición</SelectItem>
-                    <SelectItem value="obra nueva">Obra nueva</SelectItem>
-                    <SelectItem value="sustitución">Sustitución</SelectItem>
-                    <SelectItem value="actualización ligera">Actualización ligera</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="room-quality">Calidades</Label>
-                <Select
-                  value={currentRoom.quality}
-                  onValueChange={(value) => updateRoomField("quality", value)}
-                >
-                  <SelectTrigger id="room-quality">
-                    <SelectValue placeholder="Selecciona calidades" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="económica">Económica</SelectItem>
-                    <SelectItem value="estándar">Estándar</SelectItem>
-                    <SelectItem value="alta">Alta</SelectItem>
-                    <SelectItem value="premium">Premium</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="text-center mb-4">
+              <h3 className="text-lg font-medium">Resumen del presupuesto</h3>
             </div>
             
-            <h4 className="font-medium mt-4">Desglose por capítulos</h4>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="chapter-albañilería">Albañilería (€)</Label>
-                <Input
-                  id="chapter-albañilería"
-                  type="number"
-                  min="0"
-                  value={currentRoom.chapters.albañilería}
-                  onChange={(e) => updateRoomChapter("albañilería", Number(e.target.value))}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="chapter-electricidad">Electricidad (€)</Label>
-                <Input
-                  id="chapter-electricidad"
-                  type="number"
-                  min="0"
-                  value={currentRoom.chapters.electricidad}
-                  onChange={(e) => updateRoomChapter("electricidad", Number(e.target.value))}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="chapter-fontanería">Fontanería (€)</Label>
-                <Input
-                  id="chapter-fontanería"
-                  type="number"
-                  min="0"
-                  value={currentRoom.chapters.fontanería}
-                  onChange={(e) => updateRoomChapter("fontanería", Number(e.target.value))}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="chapter-carpintería">Carpintería (€)</Label>
-                <Input
-                  id="chapter-carpintería"
-                  type="number"
-                  min="0"
-                  value={currentRoom.chapters.carpintería}
-                  onChange={(e) => updateRoomChapter("carpintería", Number(e.target.value))}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="chapter-climatización">Climatización (€)</Label>
-                <Input
-                  id="chapter-climatización"
-                  type="number"
-                  min="0"
-                  value={currentRoom.chapters.climatización}
-                  onChange={(e) => updateRoomChapter("climatización", Number(e.target.value))}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="chapter-pintura">Pintura (€)</Label>
-                <Input
-                  id="chapter-pintura"
-                  type="number"
-                  min="0"
-                  value={currentRoom.chapters.pintura}
-                  onChange={(e) => updateRoomChapter("pintura", Number(e.target.value))}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="chapter-otros">Otros (€)</Label>
-                <Input
-                  id="chapter-otros"
-                  type="number"
-                  min="0"
-                  value={currentRoom.chapters.otros}
-                  onChange={(e) => updateRoomChapter("otros", Number(e.target.value))}
-                />
-              </div>
-              
-              <div className="flex items-end">
-                <div className="bg-muted/30 p-3 rounded-md w-full">
-                  <span className="block text-sm">Subtotal estancia:</span>
-                  <span className="text-lg font-bold">
-                    {calculateRoomSubtotal(currentRoom).toLocaleString('es-ES')} €
-                  </span>
+            <div className="border rounded-md p-4 space-y-4">
+              <div>
+                <h4 className="font-medium mb-2">Desglose por estancias</h4>
+                <div className="divide-y border rounded-md">
+                  {rooms.map((room) => (
+                    <div key={room.id} className="flex justify-between items-center p-3">
+                      <div>
+                        <div>{room.name}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {room.area} m² - {workTypes.find(t => t.id === room.workType)?.name} - {qualityTypes.find(q => q.id === room.quality)?.name}
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-4">
+                        <span className="font-medium">
+                          {room.subtotal.toLocaleString('es-ES')} €
+                        </span>
+                        <Button size="sm" variant="ghost" onClick={() => editRoom(room)}>
+                          Editar
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
+              
+              <div className="space-y-3 pt-2">
+                <h4 className="font-medium">Costes adicionales</h4>
+                
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center space-x-2">
+                    <Label htmlFor="imprevistos">Imprevistos</Label>
+                    <div className="flex items-center">
+                      <Input
+                        id="imprevistos"
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={imprevistosPercent}
+                        onChange={(e) => setImprevistosPercent(Number(e.target.value))}
+                        className="w-16 text-right"
+                      />
+                      <span className="ml-1">%</span>
+                    </div>
+                  </div>
+                  <span>{totals.imprevistos.toLocaleString('es-ES')} €</span>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center space-x-2">
+                    <Label htmlFor="honorarios">Honorarios profesionales</Label>
+                    <div className="flex items-center">
+                      <Input
+                        id="honorarios"
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={honorariosPercent}
+                        onChange={(e) => setHonorariosPercent(Number(e.target.value))}
+                        className="w-16 text-right"
+                      />
+                      <span className="ml-1">%</span>
+                    </div>
+                  </div>
+                  <span>{totals.honorarios.toLocaleString('es-ES')} €</span>
+                </div>
+                
+                <div className="flex justify-between items-center pt-2 border-t">
+                  <div className="font-medium">Base imponible</div>
+                  <div className="font-medium">{totals.baseImponible.toLocaleString('es-ES')} €</div>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center space-x-2">
+                    <Label htmlFor="iva">IVA</Label>
+                    <div className="flex items-center">
+                      <Input
+                        id="iva"
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={ivaPercent}
+                        onChange={(e) => setIvaPercent(Number(e.target.value))}
+                        className="w-16 text-right"
+                      />
+                      <span className="ml-1">%</span>
+                    </div>
+                  </div>
+                  <span>{totals.iva.toLocaleString('es-ES')} €</span>
+                </div>
+              </div>
+              
+              <div className="pt-4 border-t flex justify-between items-center">
+                <div className="text-xl font-bold">TOTAL</div>
+                <div className="text-xl font-bold">{totals.total.toLocaleString('es-ES')} €</div>
+              </div>
             </div>
             
-            <div className="flex justify-end space-x-2 pt-4">
-              <Button variant="outline" onClick={() => {
-                setCurrentRoom(null);
-                setStep(3);
-              }}>
-                Cancelar
-              </Button>
-              <Button onClick={handleSaveRoom}>
-                Guardar cambios
-              </Button>
+            <div className="flex justify-between pt-4 gap-2">
+              <div className="flex space-x-2">
+                <Button onClick={() => setStep("rooms")} variant="outline">
+                  Anterior
+                </Button>
+                <Button onClick={() => onOpenChange(false)} variant="outline">
+                  Cerrar
+                </Button>
+              </div>
+              <div className="flex space-x-2">
+                <Button 
+                  onClick={saveBudgetToSupabase} 
+                  disabled={isSaving || !userId}
+                  className="bg-gradient-to-r from-realestate-purple to-realestate-turquoise"
+                >
+                  {isSaving ? "Guardando..." : "Guardar presupuesto"}
+                </Button>
+                <div className="dropdown">
+                  <Button variant="outline">
+                    Exportar
+                  </Button>
+                  <div className="dropdown-content">
+                    <Button variant="ghost" onClick={exportToPDF} className="w-full justify-start">
+                      Exportar a PDF
+                    </Button>
+                    <Button variant="ghost" onClick={exportToExcel} className="w-full justify-start">
+                      Exportar a Excel
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}

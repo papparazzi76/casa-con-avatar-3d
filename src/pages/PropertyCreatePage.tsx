@@ -30,7 +30,13 @@ export default function PropertyCreatePage() {
           <h1 className="text-3xl font-bold tracking-tight mb-8">Publicar un inmueble</h1>
           
           <div className="max-w-3xl mx-auto">
-            <PropertyForm />
+            {user ? (
+              <PropertyForm />
+            ) : (
+              <div className="text-center p-12 border rounded-lg">
+                <p className="mb-4">Redirigiendo a la página de inicio de sesión...</p>
+              </div>
+            )}
           </div>
         </div>
       </main>

@@ -39,7 +39,11 @@ export default function UserPropertiesPage() {
       
       <main className="flex-1 py-12">
         <div className="container px-4 md:px-6">
-          {isLoading ? (
+          {!user ? (
+            <div className="text-center p-12 border rounded-lg">
+              <p className="mb-4">Redirigiendo a la página de inicio de sesión...</p>
+            </div>
+          ) : isLoading ? (
             <LoadingPropertiesState />
           ) : error ? (
             <ErrorPropertiesState onRetry={refetch} />

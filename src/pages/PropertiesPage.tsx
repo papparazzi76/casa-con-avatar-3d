@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { PlusCircle } from "lucide-react";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 
 export default function PropertiesPage() {
   const navigate = useNavigate();
@@ -17,6 +18,15 @@ export default function PropertiesPage() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  const handlePublishClick = () => {
+    if (!user) {
+      toast.error("Debes iniciar sesión para publicar un inmueble");
+      navigate("/auth?redirect=/propiedades/nueva");
+    } else {
+      navigate("/propiedades/nueva");
+    }
+  };
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -35,22 +45,20 @@ export default function PropertiesPage() {
                 </p>
               </div>
               
-              {user && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="mt-4 md:mt-0"
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="mt-4 md:mt-0"
+              >
+                <Button 
+                  onClick={handlePublishClick}
+                  className="bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90"
                 >
-                  <Button 
-                    onClick={() => navigate("/propiedades/nueva")}
-                    className="bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90"
-                  >
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Publicar inmueble
-                  </Button>
-                </motion.div>
-              )}
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Publicar inmueble
+                </Button>
+              </motion.div>
             </div>
           </div>
         </section>
