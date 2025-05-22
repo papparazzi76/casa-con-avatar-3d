@@ -21,6 +21,75 @@ export const fetchProperties = async () => {
   return data as (Property & { property_images: PropertyImage[] })[];
 };
 
+// Buscar inmuebles con filtros
+export const searchProperties = async (filters: Record<string, string>) => {
+  let query = supabase
+    .from("properties")
+    .select(`
+      *,
+      property_images(*)
+    `)
+    .eq("status", "active");
+
+  // Aplicar filtros
+  if (filters.location) {
+    query = query.ilike("location", `%${filters.location}%`);
+  }
+
+  if (filters.operation) {
+    query = query.eq("operation_type", filters.operation);
+  }
+
+  if (filters.type) {
+    query = query.eq("property_type", filters.type);
+  }
+
+  if (filters.minPrice) {
+    query = query.gte("price", filters.minPrice);
+  }
+
+  if (filters.maxPrice) {
+    query = query.lte("price", filters.maxPrice);
+  }
+
+  if (filters.minArea) {
+    query = query.gte("area", filters.minArea);
+  }
+
+  if (filters.maxArea) {
+    query = query.lte("area", filters.maxArea);
+  }
+
+  if (filters.minRooms) {
+    query = query.gte("rooms", filters.minRooms);
+  }
+
+  if (filters.minBathrooms) {
+    query = query.gte("bathrooms", filters.minBathrooms);
+  }
+
+  if (filters.postalCode) {
+    query = query.ilike("postal_code", `%${filters.postalCode}%`);
+  }
+
+  if (filters.features) {
+    const featuresList = filters.features.split(",");
+    query = query.overlaps("features", featuresList);
+  }
+
+  // Ordenar por los más recientes
+  query = query.order("created_at", { ascending: false });
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error("Error searching properties:", error);
+    throw new Error(error.message);
+  }
+
+  return data as (Property & { property_images: PropertyImage[] })[];
+};
+
 // Obtener un inmueble por su ID
 export const fetchPropertyById = async (id: string) => {
   const { data, error } = await supabase

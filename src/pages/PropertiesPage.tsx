@@ -2,7 +2,8 @@
 import { useEffect } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { PropertyGrid } from "@/components/properties/PropertyGrid";
+import { PropertySearch } from "@/components/properties/PropertySearch";
+import { PropertySearchResults } from "@/components/properties/PropertySearchResults";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -60,12 +61,16 @@ export default function PropertiesPage() {
                 </Button>
               </motion.div>
             </div>
+            
+            {/* Aquí integramos el componente de búsqueda */}
+            <PropertySearch />
           </div>
         </section>
         
         <section className="py-12">
           <div className="container px-4 md:px-6">
-            <PropertyGrid />
+            {/* Reemplazamos PropertyGrid por PropertySearchResults */}
+            <PropertySearchResults />
           </div>
         </section>
         

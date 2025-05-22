@@ -3,14 +3,23 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchProperties } from "@/services/propertyService";
 import { PropertyCard } from "./PropertyCard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Property, PropertyImage } from "@/types/property";
 
-export function PropertyGrid() {
-  const { data: properties, isLoading, error } = useQuery({
+interface PropertyGridProps {
+  properties?: (Property & { property_images: PropertyImage[] })[];
+}
+
+export function PropertyGrid({ properties }: PropertyGridProps) {
+  const { data: fetchedProperties, isLoading, error } = useQuery({
     queryKey: ["properties"],
-    queryFn: fetchProperties
+    queryFn: fetchProperties,
+    // No ejecutar la consulta si se pasaron propiedades como prop
+    enabled: !properties
   });
+  
+  const displayProperties = properties || fetchedProperties;
 
-  if (isLoading) {
+  if (isLoading && !properties) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {[...Array(6)].map((_, i) => (
@@ -30,7 +39,7 @@ export function PropertyGrid() {
     );
   }
 
-  if (error) {
+  if (error && !properties) {
     return (
       <div className="py-12 text-center">
         <p className="text-destructive text-lg">
@@ -40,7 +49,7 @@ export function PropertyGrid() {
     );
   }
 
-  if (!properties || properties.length === 0) {
+  if (!displayProperties || displayProperties.length === 0) {
     return (
       <div className="py-12 text-center">
         <h3 className="text-xl font-medium mb-2">No hay propiedades disponibles</h3>
@@ -53,7 +62,7 @@ export function PropertyGrid() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {properties.map(property => (
+      {displayProperties.map(property => (
         <PropertyCard key={property.id} property={property} />
       ))}
     </div>
