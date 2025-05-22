@@ -2,7 +2,7 @@
 import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { Property, PropertyImage } from "@/types/property";
-import { uploadPropertyImage, deletePropertyImage, setMainImage } from "@/services/propertyService";
+import { uploadPropertyImage, deletePropertyImage, setMainImage } from "@/services/property/imageService";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Upload, X, Star, StarOff, Image } from "lucide-react";

@@ -1,8 +1,8 @@
 
 import { useState, useRef, useCallback } from "react";
 import { toast } from "sonner";
-import { uploadPropertyImage, deletePropertyImage, setMainImage } from "@/services/propertyService";
 import { PropertyImage } from "@/types/property";
+import { uploadPropertyImage, deletePropertyImage, setMainImage } from "@/services/property/imageService";
 import { EmptyImagesList } from "./images/EmptyImagesList";
 import { ImagesGrid } from "./images/ImagesGrid";
 import { UploadHeader } from "./images/UploadHeader";
