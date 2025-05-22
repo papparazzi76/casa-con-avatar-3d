@@ -20,6 +20,8 @@ export function SubmitButton({ form, onSubmit, isGenerating = false }: SubmitBut
   const handleSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
     try {
+      console.log("Formulario enviado, enviando notificación para:", user?.email);
+      
       // Enviar notificación
       await sendFormNotification(
         "Social Media Post Generator", 
@@ -35,11 +37,13 @@ export function SubmitButton({ form, onSubmit, isGenerating = false }: SubmitBut
           banos: data.banos,
           caracteristicas_destacadas: data.caracteristicas_destacadas,
           estado_conservacion: data.estado_conservacion,
-          tono_comunicacion: data.tono // Fixed property name
+          tono: data.tono // Fixed property name
         }
       );
       
       onSubmit(data);
+    } catch (error) {
+      console.error("Error al enviar notificación:", error);
     } finally {
       setIsSubmitting(false);
     }

@@ -28,6 +28,8 @@ const handler = async (req: Request): Promise<Response> => {
     let subject = '';
     let htmlContent = '';
     
+    console.log("Received notification request:", JSON.stringify(data));
+    
     if (data.type === 'registration') {
       subject = 'Nueva Registro en PropTools';
       htmlContent = `
@@ -36,6 +38,7 @@ const handler = async (req: Request): Promise<Response> => {
         <p><strong>Email:</strong> ${data.email || 'No disponible'}</p>
         <p><strong>Fecha:</strong> ${new Date().toLocaleString('es-ES')}</p>
       `;
+      console.log("Processing registration notification for:", data.email);
     } else if (data.type === 'form_submission') {
       subject = `Nuevo Formulario: ${data.formType || 'Desconocido'}`;
       
@@ -61,7 +64,11 @@ const handler = async (req: Request): Promise<Response> => {
         <p><strong>Fecha:</strong> ${new Date().toLocaleString('es-ES')}</p>
         ${formDataHtml}
       `;
+      console.log("Processing form submission notification:", data.formType);
     }
+
+    console.log("Sending email to: carlos@arcasl.es");
+    console.log("Email subject:", subject);
 
     const emailResponse = await resend.emails.send({
       from: "PropTools <onboarding@resend.dev>",

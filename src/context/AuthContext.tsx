@@ -45,6 +45,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Función para enviar notificación
   const sendNotification = async (type: 'registration' | 'form_submission', email?: string, formType?: string, formData?: Record<string, any>) => {
     try {
+      console.log(`Sending ${type} notification for ${email || 'unknown email'}`);
+      
       const response = await fetch("https://axkfeoivkpsvjmewqndu.supabase.co/functions/v1/send-notification", {
         method: "POST",
         headers: {
@@ -59,7 +61,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       if (!response.ok) {
-        console.error("Error sending notification:", await response.text());
+        const errorText = await response.text();
+        console.error("Error sending notification:", errorText);
+        throw new Error(`Error sending notification: ${errorText}`);
+      } else {
+        console.log("Notification sent successfully");
+        const result = await response.json();
+        console.log("Response:", result);
       }
     } catch (error) {
       console.error("Failed to send notification:", error);
@@ -77,6 +85,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw error;
       }
 
+      console.log("Registro exitoso, enviando notificación para:", email);
+      
       // Enviar notificación de registro
       await sendNotification('registration', email);
 
@@ -85,6 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: "Por favor verifica tu correo electrónico para confirmar tu cuenta.",
       });
     } catch (error: any) {
+      console.error("Error en el registro:", error);
       toast({
         title: "Error en el registro",
         description: error.message || "Ocurrió un error durante el registro.",
@@ -182,6 +193,8 @@ export function useAuth() {
 export const useNotification = () => {
   const sendFormNotification = async (formType: string, email?: string, formData?: Record<string, any>) => {
     try {
+      console.log(`Sending form notification: ${formType} for ${email || 'unknown user'}`);
+      
       const response = await fetch("https://axkfeoivkpsvjmewqndu.supabase.co/functions/v1/send-notification", {
         method: "POST",
         headers: {
@@ -196,7 +209,13 @@ export const useNotification = () => {
       });
 
       if (!response.ok) {
-        console.error("Error sending form notification:", await response.text());
+        const errorText = await response.text();
+        console.error("Error sending form notification:", errorText);
+        throw new Error(`Error sending form notification: ${errorText}`);
+      } else {
+        console.log("Form notification sent successfully");
+        const result = await response.json();
+        console.log("Response:", result);
       }
     } catch (error) {
       console.error("Failed to send form notification:", error);
