@@ -144,7 +144,7 @@ export function PropertySearch() {
                 <SelectValue placeholder="Comprar o alquilar" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="todos">Todos</SelectItem>
                 {OPERATION_TYPES.map((op) => (
                   <SelectItem key={op.value} value={op.value}>
                     {op.label}
@@ -161,7 +161,7 @@ export function PropertySearch() {
                 <SelectValue placeholder="Tipo de inmueble" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="todos">Todos</SelectItem>
                 {PROPERTY_TYPES.map((type) => (
                   <SelectItem key={type.value} value={type.value}>
                     {type.label}
@@ -276,7 +276,7 @@ export function PropertySearch() {
                           <SelectValue placeholder="Hab." />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Cualquier</SelectItem>
+                          <SelectItem value="cualquiera">Cualquier</SelectItem>
                           {[1, 2, 3, 4, 5].map((num) => (
                             <SelectItem key={num} value={num.toString()}>
                               {num}+ hab.
@@ -291,7 +291,7 @@ export function PropertySearch() {
                           <SelectValue placeholder="Baños" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Cualquier</SelectItem>
+                          <SelectItem value="cualquiera">Cualquier</SelectItem>
                           {[1, 2, 3, 4].map((num) => (
                             <SelectItem key={num} value={num.toString()}>
                               {num}+ baños
