@@ -9,7 +9,7 @@ import {
   CardTitle 
 } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { PropertyAdForm } from "@/components/PropertyAdForm";
+import { PropertyAdForm } from "@/components/property-ad-form";
 import { PropertyAdResult } from "@/components/PropertyAdResult";
 import { generatePropertyAd } from "@/utils/openaiService";
 import type { PropertyAdFormData, PropertyAdResult as PropertyAdResultType } from "@/utils/openaiService";
