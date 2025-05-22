@@ -29,9 +29,6 @@ export function Hero() {
               >
                 Explorar servicios
               </Button>
-              <Button size="lg" variant="outline" className="text-lg py-6 px-8">
-                Saber más
-              </Button>
             </div>
           </motion.div>
           <motion.div 
