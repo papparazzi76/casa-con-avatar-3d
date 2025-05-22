@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,6 +31,7 @@ export function PropertyForm({ property, isEditing = false, onSuccess }: Propert
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState("details");
+  const [createdProperty, setCreatedProperty] = useState<Property | null>(null);
   
   const form = useForm<PropertyFormValues>({
     resolver: zodResolver(propertyFormSchema),
@@ -46,7 +48,7 @@ export function PropertyForm({ property, isEditing = false, onSuccess }: Propert
       location: property?.location || "",
       address: property?.address || "",
       postal_code: property?.postal_code || "",
-      features: property?.features || [], // Changed from string to array to match expected type
+      features: property?.features || [],
     },
   });
 
@@ -58,15 +60,20 @@ export function PropertyForm({ property, isEditing = false, onSuccess }: Propert
       if (isEditing && property) {
         result = await updateProperty(property.id, data as PropertyFormData);
         toast.success("Inmueble actualizado correctamente");
+        if (onSuccess) {
+          onSuccess(result);
+        }
       } else {
         result = await createProperty(data as PropertyFormData);
         toast.success("Inmueble publicado correctamente");
-      }
-      
-      if (onSuccess) {
-        onSuccess(result);
-      } else {
-        navigate(`/propiedades/${result.id}`);
+        
+        // Save the created property and switch to images tab
+        setCreatedProperty(result);
+        setActiveTab("images");
+        
+        if (onSuccess) {
+          onSuccess(result);
+        }
       }
     } catch (error) {
       console.error("Error en el formulario:", error);
@@ -76,14 +83,17 @@ export function PropertyForm({ property, isEditing = false, onSuccess }: Propert
     }
   };
 
+  // Determine if images tab should be available
+  const savedProperty = createdProperty || (isEditing ? property : null);
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2 mb-8">
             <TabsTrigger value="details">Detalles del inmueble</TabsTrigger>
-            <TabsTrigger value="images" disabled={!isEditing}>
-              {isEditing ? "Imágenes" : "Imágenes (disponible después de guardar)"}
+            <TabsTrigger value="images" disabled={!savedProperty}>
+              {savedProperty ? "Imágenes" : "Imágenes (disponible después de guardar)"}
             </TabsTrigger>
           </TabsList>
           
@@ -110,11 +120,11 @@ export function PropertyForm({ property, isEditing = false, onSuccess }: Propert
             <FormActions isSubmitting={isSubmitting} isEditing={isEditing} />
           </TabsContent>
           
-          {isEditing && property && (
+          {savedProperty && (
             <TabsContent value="images">
               <PropertyImagesUploader 
-                propertyId={property.id} 
-                existingImages={property.property_images || []}
+                propertyId={savedProperty.id} 
+                existingImages={savedProperty.property_images || []}
               />
             </TabsContent>
           )}

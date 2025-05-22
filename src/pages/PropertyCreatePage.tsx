@@ -6,8 +6,6 @@ import { PropertyForm } from "@/components/properties/PropertyForm";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { InfoIcon } from "lucide-react";
 
 export default function PropertyCreatePage() {
   const { user } = useAuth();
@@ -40,16 +38,7 @@ export default function PropertyCreatePage() {
                 <p className="mb-4">Verificando sesión...</p>
               </div>
             ) : user ? (
-              <>
-                <Alert className="mb-6 border-realestate-purple">
-                  <InfoIcon className="h-4 w-4" />
-                  <AlertTitle>Subida de imágenes</AlertTitle>
-                  <AlertDescription>
-                    Podrás subir imágenes de tu propiedad después de guardar los datos básicos.
-                  </AlertDescription>
-                </Alert>
-                <PropertyForm />
-              </>
+              <PropertyForm />
             ) : (
               <div className="text-center p-12 border rounded-lg">
                 <p className="mb-4">Redirigiendo a la página de inicio de sesión...</p>

@@ -62,14 +62,12 @@ export default function PropertiesPage() {
               </motion.div>
             </div>
             
-            {/* Aquí integramos el componente de búsqueda */}
             <PropertySearch />
           </div>
         </section>
         
         <section className="py-12">
           <div className="container px-4 md:px-6">
-            {/* Reemplazamos PropertyGrid por PropertySearchResults */}
             <PropertySearchResults />
           </div>
         </section>
