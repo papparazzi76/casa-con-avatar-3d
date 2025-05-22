@@ -3,4 +3,5 @@
 // All services have been moved to the property directory
 
 import * as PropertyService from './property';
-export = PropertyService;
+export default PropertyService;
+export * from './property';
