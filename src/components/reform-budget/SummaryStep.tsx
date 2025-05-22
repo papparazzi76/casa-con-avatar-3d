@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Room, workTypes, qualityTypes, ReformBudgetTotals } from "./types";
 import { calculateTotals } from "./utils";
+import { motion } from "framer-motion";
 
 interface SummaryStepProps {
   rooms: Room[];
@@ -53,18 +54,50 @@ export function SummaryStep({
     alert("Esta función estará disponible próximamente.");
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+  
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1 }
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="text-center mb-4">
+    <motion.div 
+      className="space-y-6"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
+      <motion.div 
+        className="text-center mb-4"
+        variants={itemVariants}
+      >
         <h3 className="text-lg font-medium">Resumen del presupuesto</h3>
-      </div>
+      </motion.div>
       
-      <div className="border rounded-md p-4 space-y-4">
+      <motion.div 
+        className="border rounded-md p-4 space-y-4"
+        variants={itemVariants}
+      >
         <div>
           <h4 className="font-medium mb-2">Desglose por estancias</h4>
           <div className="divide-y border rounded-md">
-            {rooms.map((room) => (
-              <div key={room.id} className="flex justify-between items-center p-3">
+            {rooms.map((room, index) => (
+              <motion.div 
+                key={room.id} 
+                className="flex justify-between items-center p-3"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+              >
                 <div>
                   <div>{room.name}</div>
                   <div className="text-sm text-muted-foreground">
@@ -79,12 +112,15 @@ export function SummaryStep({
                     Editar
                   </Button>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
         
-        <div className="space-y-3 pt-2">
+        <motion.div 
+          className="space-y-3 pt-2"
+          variants={itemVariants}
+        >
           <h4 className="font-medium">Costes adicionales</h4>
           
           <div className="flex justify-between items-center">
@@ -148,15 +184,24 @@ export function SummaryStep({
             </div>
             <span>{totals.iva.toLocaleString('es-ES')} €</span>
           </div>
-        </div>
+        </motion.div>
         
-        <div className="pt-4 border-t flex justify-between items-center">
+        <motion.div 
+          className="pt-4 border-t flex justify-between items-center"
+          variants={itemVariants}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.3 }}
+        >
           <div className="text-xl font-bold">TOTAL</div>
           <div className="text-xl font-bold">{totals.total.toLocaleString('es-ES')} €</div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
       
-      <div className="flex justify-between pt-4 gap-2">
+      <motion.div 
+        className="flex justify-between pt-4 gap-2"
+        variants={itemVariants}
+      >
         <div className="flex space-x-2">
           <Button onClick={onPrevious} variant="outline">
             Anterior
@@ -187,7 +232,7 @@ export function SummaryStep({
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

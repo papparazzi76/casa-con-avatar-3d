@@ -8,17 +8,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { TypeSelectionStep } from "./reform-budget/TypeSelectionStep";
 import { RoomsConfigurationStep } from "./reform-budget/RoomsConfigurationStep";
 import { SummaryStep } from "./reform-budget/SummaryStep";
-import { RoomEditDialog } from "./reform-budget/RoomEditDialog";
 
 // Import types and utilities
 import { 
   Room, 
   ReformType, 
   integralRooms, 
-  partialItems,
-  chapters
+  partialItems
 } from "./reform-budget/types";
-import { calculateBasePrice, createNewRoom } from "./reform-budget/utils";
+import { calculateTotals, createNewRoom } from "./reform-budget/utils";
 
 interface ReformBudgetDialogProps {
   open: boolean;
@@ -37,6 +35,7 @@ export function ReformBudgetDialog({ open, onOpenChange, userId }: ReformBudgetD
   const [ivaPercent, setIvaPercent] = useState(21);
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
+  const [animate, setAnimate] = useState<"enter" | "exit" | null>(null);
 
   // Inicializar rooms cuando cambia el tipo de reforma
   useEffect(() => {
@@ -141,6 +140,17 @@ export function ReformBudgetDialog({ open, onOpenChange, userId }: ReformBudgetD
     setIsDirty(true);
   };
 
+  // Handle step transitions with animations
+  const handleStepChange = (nextStep: "type" | "rooms" | "summary") => {
+    setAnimate("exit");
+    
+    // Wait for exit animation to finish before changing step
+    setTimeout(() => {
+      setStep(nextStep);
+      setAnimate("enter");
+    }, 300);
+  };
+
   // Guardar datos en Supabase
   const saveBudgetToSupabase = async () => {
     if (!userId) {
@@ -153,23 +163,24 @@ export function ReformBudgetDialog({ open, onOpenChange, userId }: ReformBudgetD
     try {
       const totals = calculateTotals(rooms, imprevistosPercent, honorariosPercent, ivaPercent);
       
+      // Convert the data to a structure that can be saved to Supabase
       const budgetData = {
         user_id: userId,
         reform_type: reformType,
         total_amount: totals.total,
-        data: {
+        data: JSON.stringify({
           rooms,
           selectedPartialItems,
           imprevistosPercent,
           honorariosPercent,
           ivaPercent,
           totals
-        }
+        })
       };
       
       const { error } = await supabase
         .from('reform_budgets')
-        .insert([budgetData]);
+        .insert(budgetData);
         
       if (error) throw error;
       
@@ -195,44 +206,50 @@ export function ReformBudgetDialog({ open, onOpenChange, userId }: ReformBudgetD
           </DialogDescription>
         </DialogHeader>
 
-        {step === "type" && (
-          <TypeSelectionStep 
-            reformType={reformType} 
-            setReformType={setReformType} 
-            onNext={() => setStep("rooms")} 
-            onCancel={() => onOpenChange(false)} 
-          />
-        )}
+        <div className={`transition-opacity duration-300 ${
+          animate === "exit" ? "opacity-0" : "opacity-100"
+        } ${
+          animate === "enter" ? "animate-fade-in" : ""
+        }`}>
+          {step === "type" && (
+            <TypeSelectionStep 
+              reformType={reformType} 
+              setReformType={setReformType} 
+              onNext={() => handleStepChange("rooms")} 
+              onCancel={() => onOpenChange(false)} 
+            />
+          )}
 
-        {step === "rooms" && (
-          <RoomsConfigurationStep
-            reformType={reformType}
-            rooms={rooms}
-            selectedPartialItems={selectedPartialItems}
-            onRoomsChange={setRooms}
-            onSelectedPartialItemsChange={setSelectedPartialItems}
-            onPrevious={() => setStep("type")}
-            onNext={() => setStep("summary")}
-          />
-        )}
+          {step === "rooms" && (
+            <RoomsConfigurationStep
+              reformType={reformType}
+              rooms={rooms}
+              selectedPartialItems={selectedPartialItems}
+              onRoomsChange={setRooms}
+              onSelectedPartialItemsChange={setSelectedPartialItems}
+              onPrevious={() => handleStepChange("type")}
+              onNext={() => handleStepChange("summary")}
+            />
+          )}
 
-        {step === "summary" && (
-          <SummaryStep
-            rooms={rooms}
-            imprevistosPercent={imprevistosPercent}
-            honorariosPercent={honorariosPercent}
-            ivaPercent={ivaPercent}
-            onImprevistosPercentChange={setImprevistosPercent}
-            onHonorariosPercentChange={setHonorariosPercent}
-            onIvaPercentChange={setIvaPercent}
-            onEditRoom={setCurrentEditingRoom}
-            onPrevious={() => setStep("rooms")}
-            onClose={() => onOpenChange(false)}
-            onSave={saveBudgetToSupabase}
-            userId={userId}
-            isSaving={isSaving}
-          />
-        )}
+          {step === "summary" && (
+            <SummaryStep
+              rooms={rooms}
+              imprevistosPercent={imprevistosPercent}
+              honorariosPercent={honorariosPercent}
+              ivaPercent={ivaPercent}
+              onImprevistosPercentChange={setImprevistosPercent}
+              onHonorariosPercentChange={setHonorariosPercent}
+              onIvaPercentChange={setIvaPercent}
+              onEditRoom={setCurrentEditingRoom}
+              onPrevious={() => handleStepChange("rooms")}
+              onClose={() => onOpenChange(false)}
+              onSave={saveBudgetToSupabase}
+              userId={userId}
+              isSaving={isSaving}
+            />
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
