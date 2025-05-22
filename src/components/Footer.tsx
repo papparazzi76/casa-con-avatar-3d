@@ -6,7 +6,7 @@ export function Footer() {
   return (
     <footer className="border-t bg-background">
       <motion.div 
-        className="container flex flex-col items-center justify-between gap-4 py-10 md:h-20 md:flex-row md:py-0"
+        className="container flex flex-col items-center justify-between gap-4 py-10 md:h-24 md:flex-row md:py-0"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.2 }}
@@ -18,6 +18,15 @@ export function Footer() {
             className="h-12 md:h-10" 
           />
         </div>
+        
+        <div className="flex items-center justify-center">
+          <img 
+            src="/lovable-uploads/69972362-33bb-4c1d-95a4-3af6bb0c70a2.png" 
+            alt="PropTools Logo" 
+            className="h-10 md:h-8" 
+          />
+        </div>
+        
         <div className="flex gap-4">
           <Link to="/terminos" className="text-sm text-muted-foreground underline underline-offset-4">
             Términos de Servicio
