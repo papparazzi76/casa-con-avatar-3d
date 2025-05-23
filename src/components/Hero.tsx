@@ -7,7 +7,15 @@ export function Hero() {
   const [isVideoLoaded, setIsVideoLoaded] = useState(false);
   
   useEffect(() => {
-    // Simulamos la carga del video
+    const video = document.createElement('video');
+    video.src = "/lovable-uploads/sample-property-video.mp4";
+    
+    // Comprobar si el video se puede cargar
+    video.onloadeddata = () => {
+      setIsVideoLoaded(true);
+    };
+    
+    // Timeout de seguridad en caso de que el evento onloadeddata no se dispare
     const timer = setTimeout(() => {
       setIsVideoLoaded(true);
     }, 300);

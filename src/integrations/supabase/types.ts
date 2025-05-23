@@ -140,6 +140,41 @@ export type Database = {
           },
         ]
       }
+      property_videos: {
+        Row: {
+          created_at: string
+          id: string
+          is_main: boolean
+          order_num: number
+          property_id: string
+          video_url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_main?: boolean
+          order_num?: number
+          property_id: string
+          video_url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_main?: boolean
+          order_num?: number
+          property_id?: string
+          video_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_videos_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reform_budgets: {
         Row: {
           created_at: string

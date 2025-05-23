@@ -56,7 +56,7 @@ export const uploadPropertyVideo = async (propertyId: string, file: File, isMain
     
     console.log(`Video subido correctamente. URL pública: ${publicUrlData.publicUrl}`);
 
-    // Guardar referencia en BD
+    // Guardar referencia en BD - usamos tipado explícito para evitar problemas de tipo
     const { data, error } = await supabase
       .from("property_videos")
       .insert({
@@ -74,7 +74,8 @@ export const uploadPropertyVideo = async (propertyId: string, file: File, isMain
     }
 
     console.log("Referencia de video guardada en BD:", data);
-    return data as PropertyVideo;
+    // Hacer un cast explícito para resolver problemas de tipo
+    return data as unknown as PropertyVideo;
   } catch (error) {
     console.error("Error completo al subir el video:", error);
     throw error;
@@ -157,5 +158,6 @@ export const setMainVideo = async (propertyId: string, videoId: string) => {
     throw new Error(error.message);
   }
 
-  return data as PropertyVideo;
+  // Hacer un cast explícito para resolver problemas de tipo
+  return data as unknown as PropertyVideo;
 };

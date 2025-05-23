@@ -69,6 +69,7 @@ export default function PropertyDetailPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <PropertyGallery 
               images={property.property_images || []}
+              videos={property.property_videos || []}
               title={property.title}
               operationType={property.operation_type}
               formatOperationType={formatOperationType}

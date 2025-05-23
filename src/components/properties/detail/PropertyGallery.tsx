@@ -60,9 +60,16 @@ export function PropertyGallery({ images, videos = [], title, operationType, for
     }
   };
   
-  const currentMedia = currentType === 'image' 
-    ? images[currentImageIndex] 
-    : videos[currentImageIndex];
+  // Usamos un tipo guardado para determinar qué mostrar
+  const getCurrentMedia = () => {
+    if (currentType === 'image') {
+      return images[currentImageIndex];
+    } else {
+      return videos[currentImageIndex];
+    }
+  };
+  
+  const currentMedia = getCurrentMedia();
   
   const handleThumbnailClick = (index: number, type: 'image' | 'video') => {
     setCurrentImageIndex(index);
@@ -79,7 +86,7 @@ export function PropertyGallery({ images, videos = [], title, operationType, for
       <div className="relative aspect-[16/9] mb-4 rounded-lg overflow-hidden">
         {currentType === 'image' ? (
           <img 
-            src={currentMedia?.image_url || "/placeholder.svg"} 
+            src={images[currentImageIndex]?.image_url || "/placeholder.svg"} 
             alt={title}
             className="object-cover w-full h-full"
           />
@@ -91,7 +98,7 @@ export function PropertyGallery({ images, videos = [], title, operationType, for
                 autoPlay
                 className="w-full h-full object-cover"
               >
-                <source src={currentMedia?.video_url} type="video/mp4" />
+                <source src={videos[currentImageIndex]?.video_url} type="video/mp4" />
                 Su navegador no soporta videos HTML5.
               </video>
             ) : (
