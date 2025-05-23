@@ -6,13 +6,16 @@ import {
   PropertyAdFormData, 
   PropertyAdResult, 
   generatePropertyAd,
-  ImageProcessingOptions,
-  ProcessImageResult,
-  processImage,
+  processImage
+} from '@/services/ai';
+
+import {
   ImageEditPlan,
   ImageEditStep,
-  ImageEditResponse
-} from '@/services/ai';
+  ImageEditResponse,
+  ImageProcessingOptions,
+  ProcessImageResult
+} from '@/services/ai/types/image';
 
 // Reexportamos todos los tipos y funciones para mantener la compatibilidad
 export type {

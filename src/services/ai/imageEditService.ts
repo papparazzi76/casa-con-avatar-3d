@@ -56,7 +56,7 @@ No escribes texto para el usuario final ni explicaciones de tu lógica interna; 
         edit_plan: null
       };
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error generating image edit plan:", error);
     return {
       success: false,
@@ -112,8 +112,8 @@ export async function processImage({
     
     // Primero: Generar el plan de edición con GPT-4o-mini
     const editPlanResponse = await generateImageEditPlan({
-      mode: editMode,
-      room_type: roomType,
+      mode: editMode as EditMode,
+      room_type: roomType as RoomType,
       image_url: "data:image/jpeg;base64," + base64Image.split(',')[1],
       notes: `Estilo: ${decorStyle}`
     });
@@ -128,7 +128,12 @@ export async function processImage({
     }
     
     // Crear prompt basado en opciones y el plan de edición
-    const prompt = createImagePrompt(editMode, roomType, decorStyle, editPlanResponse);
+    const prompt = createImagePrompt(
+      editMode as EditMode, 
+      roomType as RoomType, 
+      decorStyle as DecorStyle, 
+      editPlanResponse
+    );
     console.log("Prompt generado:", prompt);
     
     // Llamar a DALL-E API para la edición de imagen
@@ -171,7 +176,7 @@ export async function processImage({
       imageUrl: data.data[0].url,
       editPlan: editPlan
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error processing image:", error);
     throw error;
   }

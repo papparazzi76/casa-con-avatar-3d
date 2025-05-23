@@ -14,12 +14,12 @@ interface AuthContextType {
   loading: boolean;
 }
 
-interface NotificationContextType {
+interface NotificationContextProps {
   sendFormNotification: (formType: string, email: string | undefined, formData: Record<string, any>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
+const NotificationContext = createContext<NotificationContextProps | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -132,7 +132,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   // Create notification context value
-  const notificationContextValue: NotificationContextType = {
+  const notificationValue: NotificationContextProps = {
     sendFormNotification
   };
 
@@ -148,7 +148,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         loading
       }}
     >
-      <NotificationContext.Provider value={notificationContextValue}>
+      <NotificationContext.Provider value={notificationValue}>
         {children}
       </NotificationContext.Provider>
     </AuthContext.Provider>

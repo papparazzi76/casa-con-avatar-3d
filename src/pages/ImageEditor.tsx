@@ -10,7 +10,6 @@ import { ImageEditPlan } from "@/services/ai/types/image";
 import { ContactProfessionalButtonWithDialog } from "@/components/ContactProfessionalButtonWithDialog";
 import { EditPlanDisplay } from "@/features/image-editor/EditPlanDisplay";
 import { useAuth } from "@/context/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -153,7 +152,7 @@ const ImageEditor = () => {
       // Set fake edited image
       setEditedImage(fakeEditedImageUrl);
       
-      // Create fake edit plan with proper types
+      // Create fake edit plan
       setEditPlan({
         description: "Imagen mejorada con ajustes de iluminación, contraste y nitidez.",
         steps: [

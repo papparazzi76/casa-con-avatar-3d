@@ -28,7 +28,7 @@ export interface CalculationResult {
   plusvaliaDetails?: string;
 }
 
-// Add missing types for calculatorService
+// Updated PropertyFormData to include all needed fields
 export interface PropertyFormData {
   region: string;
   price: string | number;
@@ -40,6 +40,8 @@ export interface PropertyFormData {
   improvements?: string | number;
   municipalCapitalGainsTax?: string | number;
   remainingLoan?: string | number;
+  includeAgencyFees: boolean;
+  includeLegalFees: boolean;
 }
 
 export interface RegionTaxRates {

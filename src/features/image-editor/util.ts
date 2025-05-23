@@ -4,7 +4,7 @@ import { RoomType } from "./types";
 export const getRoomTypeLabel = (type: RoomType): string => {
   const labels: Record<RoomType, string> = {
     cocina: "cocina",
-    baño: "baño",
+    bano: "baño",
     salon: "salón",
     dormitorio: "dormitorio",
     oficina: "oficina",
