@@ -60,16 +60,16 @@ export function Header() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <>
+            <div className="flex items-center gap-3">
               <Link to="/auth">
-                <Button variant="ghost">Iniciar Sesión</Button>
+                <Button variant="ghost" className="whitespace-nowrap">Iniciar Sesión</Button>
               </Link>
               <Link to="/auth">
-                <Button className="bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90">
+                <Button className="bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90 px-4 whitespace-nowrap">
                   Registrarse
                 </Button>
               </Link>
-            </>
+            </div>
           )}
         </motion.div>
       </div>
