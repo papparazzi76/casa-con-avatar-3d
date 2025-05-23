@@ -1,9 +1,8 @@
-
 import { Button } from "@/components/ui/button";
 import { ReformType } from "./types";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
-import { useNotification } from "@/context/AuthContext";
+import { useNotification } from "@/context/NotificationContext";
 
 interface TypeSelectionStepProps {
   reformType: ReformType;

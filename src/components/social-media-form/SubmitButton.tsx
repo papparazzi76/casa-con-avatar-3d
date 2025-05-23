@@ -1,10 +1,9 @@
-
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { FormValues } from "./formSchema";
 import { useAuth } from "@/context/AuthContext";
-import { useNotification } from "@/context/AuthContext";
+import { useNotification } from "@/context/NotificationContext";
 
 type SubmitButtonProps = {
   form: UseFormReturn<FormValues>;

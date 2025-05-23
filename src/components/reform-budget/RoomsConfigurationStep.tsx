@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Room, ReformType } from "./types";
 import { IntegralRoomsList } from "./IntegralRoomsList";
@@ -7,7 +6,7 @@ import { RoomEditDialog } from "./RoomEditDialog";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
-import { useNotification } from "@/context/AuthContext";
+import { useNotification } from "@/context/NotificationContext";
 
 interface RoomsConfigurationStepProps {
   reformType: ReformType;
