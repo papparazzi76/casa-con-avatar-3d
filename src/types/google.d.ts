@@ -5,8 +5,8 @@ interface Window {
     load: (api: string, callback: () => void) => void;
     client: {
       init: (config: {
+        apiKey: string;
         clientId: string;
-        apiKey?: string;
         discoveryDocs: string[];
         scope: string;
       }) => Promise<void>;

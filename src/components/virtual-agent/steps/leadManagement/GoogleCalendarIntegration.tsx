@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { CalendarRange } from "lucide-react";
 import { toast } from "sonner";
@@ -16,18 +16,9 @@ const GoogleCalendarIntegration: React.FC<GoogleCalendarIntegrationProps> = ({
   onAuthorizationChange, 
   user 
 }) => {
+  const [isLoading, setIsLoading] = useState(false);
   
   useEffect(() => {
-    // Load Google API script dynamically
-    const loadGoogleScript = () => {
-      const script = document.createElement('script');
-      script.src = 'https://apis.google.com/js/api.js';
-      script.async = true;
-      script.defer = true;
-      script.onload = initializeGoogleAPI;
-      document.body.appendChild(script);
-    };
-
     // Only load Google API if user is logged in
     if (user) {
       loadGoogleScript();
@@ -42,23 +33,47 @@ const GoogleCalendarIntegration: React.FC<GoogleCalendarIntegrationProps> = ({
     };
   }, [user]);
 
+  const loadGoogleScript = () => {
+    // Check if script is already loaded
+    if (window.gapi) {
+      initializeGoogleAPI();
+      return;
+    }
+
+    // Load Google API script dynamically
+    const script = document.createElement('script');
+    script.src = 'https://apis.google.com/js/api.js';
+    script.async = true;
+    script.defer = true;
+    script.onload = initializeGoogleAPI;
+    document.body.appendChild(script);
+  };
+
   const initializeGoogleAPI = () => {
     window.gapi.load('client:auth2', () => {
-      window.gapi.client.init({
-        apiKey: GOOGLE_API_KEY,
-        clientId: GOOGLE_CLIENT_ID,
-        discoveryDocs: GOOGLE_DISCOVERY_DOCS,
-        scope: GOOGLE_API_SCOPES
-      } as any).then(() => { // Use type assertion to bypass TypeScript error
-        // Check if user is already signed in to Google
-        if (window.gapi.auth2.getAuthInstance().isSignedIn.get()) {
-          onAuthorizationChange(true);
-          toast.success("Conectado a Google Calendar");
-        }
-      }).catch(error => {
-        console.error("Error initializing Google API", error);
-        toast.error("Error al conectar con Google Calendar: " + error.message);
-      });
+      try {
+        // Initialize the Google API client
+        window.gapi.client.init({
+          apiKey: GOOGLE_API_KEY,
+          clientId: GOOGLE_CLIENT_ID,
+          discoveryDocs: GOOGLE_DISCOVERY_DOCS,
+          scope: GOOGLE_API_SCOPES
+        })
+        .then(() => {
+          // Check if user is already signed in to Google
+          if (window.gapi.auth2.getAuthInstance().isSignedIn.get()) {
+            onAuthorizationChange(true);
+            toast.success("Conectado a Google Calendar");
+          }
+        })
+        .catch(error => {
+          console.error("Error initializing Google API", error);
+          toast.error("Error al conectar con Google Calendar: " + error.message);
+        });
+      } catch (error: any) {
+        console.error("Error in Google API initialization", error);
+        toast.error("Error en la inicialización de Google API: " + error.message);
+      }
     });
   };
 
@@ -73,24 +88,45 @@ const GoogleCalendarIntegration: React.FC<GoogleCalendarIntegrationProps> = ({
       return;
     }
 
-    // Authorize with Google
-    window.gapi.auth2.getAuthInstance().signIn().then(() => {
-      onAuthorizationChange(true);
-      toast.success("Conectado a Google Calendar correctamente");
-    }).catch(error => {
-      console.error("Google auth error", error);
-      toast.error("Error al conectar con Google Calendar: " + error.message);
-    });
+    setIsLoading(true);
+
+    try {
+      // Make sure the API is initialized
+      if (!window.gapi || !window.gapi.auth2) {
+        loadGoogleScript();
+        toast.error("El API de Google todavía se está cargando. Por favor, inténtalo de nuevo.");
+        setIsLoading(false);
+        return;
+      }
+
+      // Authorize with Google
+      window.gapi.auth2.getAuthInstance()
+        .signIn()
+        .then(() => {
+          onAuthorizationChange(true);
+          toast.success("Conectado a Google Calendar correctamente");
+          setIsLoading(false);
+        })
+        .catch(error => {
+          console.error("Google auth error", error);
+          toast.error("Error al conectar con Google Calendar: " + (error.message || "Error desconocido"));
+          setIsLoading(false);
+        });
+    } catch (error: any) {
+      console.error("Error during Google Calendar sync", error);
+      toast.error("Error al sincronizar con Google Calendar: " + error.message);
+      setIsLoading(false);
+    }
   };
 
   return (
     <Button 
       onClick={handleSyncWithGoogle} 
       className="gap-2"
-      disabled={!user}
+      disabled={!user || isLoading}
     >
       <CalendarRange className="h-4 w-4" /> 
-      {isAuthorized 
+      {isLoading ? "Conectando..." : isAuthorized 
         ? "Conectado a Google Calendar" 
         : "Sincronizar con Google Calendar"}
     </Button>
