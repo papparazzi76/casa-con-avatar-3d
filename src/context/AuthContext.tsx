@@ -18,8 +18,8 @@ interface NotificationContextProps {
   sendFormNotification: (formType: string, email: string | undefined, formData: Record<string, any>) => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-const NotificationContext = createContext<NotificationContextProps | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | null>(null);
+const NotificationContext = createContext<NotificationContextProps | null>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -158,7 +158,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   
-  if (context === undefined) {
+  if (context === null) {
     throw new Error("useAuth debe usarse dentro de un AuthProvider");
   }
   
@@ -168,7 +168,7 @@ export const useAuth = () => {
 export const useNotification = () => {
   const context = useContext(NotificationContext);
   
-  if (context === undefined) {
+  if (context === null) {
     throw new Error("useNotification debe usarse dentro de un AuthProvider");
   }
   
