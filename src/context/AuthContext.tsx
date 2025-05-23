@@ -134,13 +134,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  // Create notification context value
-  const notificationValue: NotificationContextProps = {
-    sendFormNotification
-  };
-
-  // Create auth context value separately to avoid circular references
-  const authValue: AuthContextType = {
+  // Create value objects separately
+  const authValue = {
     user,
     session,
     signUp,
@@ -150,6 +145,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     loading
   };
 
+  const notificationValue = {
+    sendFormNotification
+  };
+
+  // Provide contexts separately to avoid circular references
   return (
     <AuthContext.Provider value={authValue}>
       <NotificationContext.Provider value={notificationValue}>
@@ -159,7 +159,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-// Export hook functions without using the other context directly
+// Export hooks separately with no cross-references
 export const useAuth = () => {
   const context = useContext(AuthContext);
   
