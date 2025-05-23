@@ -1,343 +1,291 @@
 
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { calculateExpenses } from "@/services/expensesCalculatorService";
+import { CalculatorRequest } from "@/types/calculatorTypes";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
-import { PropertyFormData, CalculationResult } from "@/types/calculatorTypes";
-import { calculateExpenses } from "@/services/calculatorService";
-import { toast } from "@/hooks/use-toast";
-import { Calendar } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner";
 
 interface ExpensesCalculatorFormProps {
-  onCalculationComplete: (result: CalculationResult) => void;
+  onCalculationComplete: (result: any) => void;
 }
 
-export function ExpensesCalculatorForm({ onCalculationComplete }: ExpensesCalculatorFormProps) {
-  const [formData, setFormData] = useState<PropertyFormData>({
-    region: "",
-    municipality: "",
-    price: 0,
-    propertyType: "used",
-    specialRegime: "",
-    hasLoan: false,
-    loanAmount: "",
-    bank: "",
-    deedDate: "",
-    acquisitionDate: "",
-    acquisitionValue: "",
-    improvements: "",
-    adjustmentCoefficient: "",
-    yearsOfResidence: "",
-    remainingLoan: "",
-    municipalCapitalGainsTax: "",
-    financingPercentage: ""
+const formSchema = z.object({
+  propertyType: z.enum(["new", "used"]),
+  propertyValue: z.number().min(1, "El valor debe ser mayor que 0"),
+  municipality: z.string().optional(),
+  previousPurchaseYear: z.number().min(1900).max(new Date().getFullYear()).optional(),
+  previousPurchasePrice: z.number().min(1, "El valor debe ser mayor que 0").optional(),
+  includeAgencyFees: z.boolean().default(false),
+  includeLegalFees: z.boolean().default(false),
+});
+
+type FormValues = z.infer<typeof formSchema>;
+
+export function ExpensesCalculatorForm({
+  onCalculationComplete,
+}: ExpensesCalculatorFormProps) {
+  const [isCalculating, setIsCalculating] = useState(false);
+  const [showPlusvaliaFields, setShowPlusvaliaFields] = useState(false);
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      propertyType: "used",
+      propertyValue: undefined,
+      municipality: "",
+      previousPurchaseYear: new Date().getFullYear() - 5,
+      previousPurchasePrice: undefined,
+      includeAgencyFees: false,
+      includeLegalFees: false,
+    },
   });
 
-  const regions = [
-    "Andalucía", "Aragón", "Asturias", "Baleares", "Canarias", "Cantabria", 
-    "Castilla-La Mancha", "Castilla y León", "Cataluña", "Extremadura", "Galicia", 
-    "Madrid", "Murcia", "La Rioja", "Comunidad Valenciana", "País Vasco", "Navarra"
-  ];
+  const propertyType = form.watch("propertyType");
+  const municipality = form.watch("municipality");
 
-  // Manejar cambios en los campos de texto
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type } = e.target;
-    
-    // Convertir a número si es un campo numérico
-    const processedValue = type === "number" ? (value === "" ? "" : Number(value)) : value;
-    
-    setFormData(prev => ({
-      ...prev,
-      [name]: processedValue
-    }));
-  };
-
-  // Manejar cambios en los selectores
-  const handleSelectChange = (name: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  // Manejar cambios en switches
-  const handleSwitchChange = (name: string, checked: boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      [name]: checked
-    }));
-  };
-
-  // Manejar el envío del formulario
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Validación básica
-    if (!formData.region || !formData.price) {
-      toast({
-        title: "Datos incompletos",
-        description: "Por favor, complete al menos la comunidad autónoma y el precio de la vivienda.",
-        variant: "destructive"
-      });
-      return;
-    }
-
+  const onSubmit = async (data: FormValues) => {
     try {
-      // Realizar el cálculo
-      const result = calculateExpenses(formData);
-      onCalculationComplete(result);
+      setIsCalculating(true);
       
-      toast({
-        title: "Cálculo completado",
-        description: "El cálculo de gastos e impuestos se ha realizado correctamente."
-      });
-    } catch (error) {
-      toast({
-        title: "Error en el cálculo",
-        description: "Ha ocurrido un error al realizar el cálculo. Revise los datos introducidos.",
-        variant: "destructive"
-      });
+      // Prepare the request data
+      const request: CalculatorRequest = {
+        propertyType: data.propertyType,
+        propertyValue: data.propertyValue,
+        includeAgencyFees: data.includeAgencyFees,
+        includeLegalFees: data.includeLegalFees,
+      };
+      
+      // Only add plusvalía fields if they're filled
+      if (data.municipality) {
+        request.municipality = data.municipality;
+        
+        if (data.previousPurchaseYear && data.previousPurchasePrice) {
+          request.previousPurchaseYear = data.previousPurchaseYear;
+          request.previousPurchasePrice = data.previousPurchasePrice;
+        }
+      }
+      
+      const result = await calculateExpenses(request);
+      onCalculationComplete(result);
+    } catch (error: any) {
       console.error("Error en el cálculo:", error);
+      toast.error(error.message || "Ha ocurrido un error al realizar el cálculo");
+    } finally {
+      setIsCalculating(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="p-6 bg-white rounded-lg shadow-sm border">
-        <h3 className="text-lg font-medium mb-4">Datos Básicos</h3>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <FormField
+          control={form.control}
+          name="propertyType"
+          render={({ field }) => (
+            <FormItem className="space-y-3">
+              <FormLabel>Tipo de inmueble</FormLabel>
+              <FormControl>
+                <RadioGroup
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                  className="flex flex-col space-y-1"
+                >
+                  <FormItem className="flex items-center space-x-3 space-y-0">
+                    <FormControl>
+                      <RadioGroupItem value="new" />
+                    </FormControl>
+                    <FormLabel className="font-normal">
+                      Vivienda nueva (primera transmisión)
+                    </FormLabel>
+                  </FormItem>
+                  <FormItem className="flex items-center space-x-3 space-y-0">
+                    <FormControl>
+                      <RadioGroupItem value="used" />
+                    </FormControl>
+                    <FormLabel className="font-normal">
+                      Vivienda de segunda mano
+                    </FormLabel>
+                  </FormItem>
+                </RadioGroup>
+              </FormControl>
+              <FormDescription>
+                {propertyType === "new"
+                  ? "Las viviendas nuevas están sujetas a IVA (10%) y AJD"
+                  : "Las viviendas de segunda mano están sujetas al Impuesto de Transmisiones Patrimoniales (ITP)"}
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="propertyValue"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Precio del inmueble (€)</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  placeholder="Ej: 200000"
+                  {...field}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    field.onChange(value ? parseInt(value) : undefined);
+                  }}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="region">Comunidad Autónoma *</Label>
-            <Select 
-              value={formData.region}
-              onValueChange={(value) => handleSelectChange("region", value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Seleccione comunidad" />
-              </SelectTrigger>
-              <SelectContent>
-                {regions.map(region => (
-                  <SelectItem key={region} value={region}>{region}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="municipality">Municipio</Label>
-            <Input
-              id="municipality"
-              name="municipality"
-              value={formData.municipality}
-              onChange={handleChange}
-              placeholder="Ej: Madrid"
-            />
-          </div>
+        <Separator />
 
-          <div className="space-y-2">
-            <Label htmlFor="price">Precio de compraventa (€) *</Label>
-            <Input
-              id="price"
-              name="price"
-              type="number"
-              value={formData.price || ""}
-              onChange={handleChange}
-              placeholder="Ej: 250000"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="propertyType">Tipo de vivienda *</Label>
-            <Select
-              value={formData.propertyType}
-              onValueChange={(value) => handleSelectChange("propertyType", value as 'new' | 'used')}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Seleccione tipo" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="new">Nueva (primera transmisión)</SelectItem>
-                <SelectItem value="used">Segunda mano</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="specialRegime">Régimen fiscal especial</Label>
-            <Input
-              id="specialRegime"
-              name="specialRegime"
-              value={formData.specialRegime}
-              onChange={handleChange}
-              placeholder="VPO, menor 35 años, etc."
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="deedDate">Fecha prevista escritura</Label>
-            <div className="relative">
-              <Input
-                id="deedDate"
-                name="deedDate"
-                type="date"
-                value={formData.deedDate}
-                onChange={handleChange}
-                className="pl-10"
-              />
-              <Calendar className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-4 flex items-center space-x-2">
-          <Switch 
-            id="hasLoan"
-            checked={formData.hasLoan}
-            onCheckedChange={(checked) => handleSwitchChange("hasLoan", checked)}
+        <div>
+          <FormField
+            control={form.control}
+            name="municipality"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Municipio (para cálculo de plusvalía)</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Ej: Madrid"
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(e.target.value);
+                      setShowPlusvaliaFields(!!e.target.value);
+                    }}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Introduce el municipio para calcular el impuesto de plusvalía municipal
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          <Label htmlFor="hasLoan">¿Existe hipoteca?</Label>
+
+          {showPlusvaliaFields && (
+            <div className="mt-4 space-y-4 p-4 bg-gray-50 rounded-md">
+              <h3 className="font-medium text-sm">Datos para el cálculo de plusvalía</h3>
+              
+              <FormField
+                control={form.control}
+                name="previousPurchaseYear"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Año de compra anterior</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="Ej: 2015"
+                        {...field}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          field.onChange(value ? parseInt(value) : undefined);
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="previousPurchasePrice"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Precio de compra anterior (€)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="Ej: 150000"
+                        {...field}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          field.onChange(value ? parseInt(value) : undefined);
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          )}
         </div>
 
-        {formData.hasLoan && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-            <div className="space-y-2">
-              <Label htmlFor="loanAmount">Importe a financiar (€)</Label>
-              <Input
-                id="loanAmount"
-                name="loanAmount"
-                type="number"
-                value={formData.loanAmount || ""}
-                onChange={handleChange}
-                placeholder="Ej: 200000"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="bank">Entidad bancaria</Label>
-              <Input
-                id="bank"
-                name="bank"
-                value={formData.bank}
-                onChange={handleChange}
-                placeholder="Ej: Banco Santander"
-              />
-            </div>
-          </div>
-        )}
-      </div>
-      
-      {/* Datos del vendedor */}
-      <div className="p-6 bg-white rounded-lg shadow-sm border">
-        <h3 className="text-lg font-medium mb-4">Datos del Vendedor</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="acquisitionDate">Fecha de adquisición</Label>
-            <div className="relative">
-              <Input
-                id="acquisitionDate"
-                name="acquisitionDate"
-                type="date"
-                value={formData.acquisitionDate}
-                onChange={handleChange}
-                className="pl-10"
-              />
-              <Calendar className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="acquisitionValue">Valor de adquisición (€)</Label>
-            <Input
-              id="acquisitionValue"
-              name="acquisitionValue"
-              type="number"
-              value={formData.acquisitionValue || ""}
-              onChange={handleChange}
-              placeholder="Ej: 150000"
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="improvements">Inversiones/mejoras (€)</Label>
-            <Input
-              id="improvements"
-              name="improvements"
-              type="number"
-              value={formData.improvements || ""}
-              onChange={handleChange}
-              placeholder="Ej: 20000"
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="yearsOfResidence">Años de residencia</Label>
-            <Input
-              id="yearsOfResidence"
-              name="yearsOfResidence"
-              type="number"
-              value={formData.yearsOfResidence || ""}
-              onChange={handleChange}
-              placeholder="Ej: 5"
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="remainingLoan">Hipoteca pendiente (€)</Label>
-            <Input
-              id="remainingLoan"
-              name="remainingLoan"
-              type="number"
-              value={formData.remainingLoan || ""}
-              onChange={handleChange}
-              placeholder="Ej: 50000"
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="municipalCapitalGainsTax">Plusvalía municipal (€)</Label>
-            <Input
-              id="municipalCapitalGainsTax"
-              name="municipalCapitalGainsTax"
-              type="number"
-              value={formData.municipalCapitalGainsTax || ""}
-              onChange={handleChange}
-              placeholder="Ej: 2000"
-            />
-          </div>
-        </div>
-      </div>
-      
-      {/* Datos del comprador */}
-      <div className="p-6 bg-white rounded-lg shadow-sm border">
-        <h3 className="text-lg font-medium mb-4">Datos del Comprador</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="financingPercentage">Porcentaje de financiación (%)</Label>
-            <Input
-              id="financingPercentage"
-              name="financingPercentage"
-              type="number"
-              value={formData.financingPercentage || ""}
-              onChange={handleChange}
-              placeholder="Ej: 80"
-              min="0"
-              max="100"
-            />
-          </div>
-        </div>
-      </div>
-      
-      <Button type="submit" className="w-full bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90">
-        Calcular Gastos e Impuestos
-      </Button>
-      
-      <p className="text-xs text-gray-500 mt-2">
-        * Los campos marcados son obligatorios. Los resultados son estimativos y deben ser verificados con un profesional.
-      </p>
-    </form>
+        <Separator />
+
+        <FormField
+          control={form.control}
+          name="includeAgencyFees"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base">
+                  Incluir honorarios de agencia inmobiliaria
+                </FormLabel>
+                <FormDescription>
+                  Aprox. 3% del valor de la propiedad
+                </FormDescription>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="includeLegalFees"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base">
+                  Incluir asesoramiento legal
+                </FormLabel>
+                <FormDescription>
+                  Gestiones y asesoría jurídica para la compra
+                </FormDescription>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+
+        <Button type="submit" className="w-full" disabled={isCalculating}>
+          {isCalculating ? "Calculando..." : "Calcular gastos e impuestos"}
+        </Button>
+      </form>
+    </Form>
   );
 }

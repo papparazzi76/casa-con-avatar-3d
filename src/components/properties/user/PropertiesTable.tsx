@@ -28,6 +28,7 @@ import {
   Eye, 
   Home 
 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 interface PropertiesTableProps {
   properties: (Property & { property_images: PropertyImage[] })[];
@@ -37,6 +38,7 @@ interface PropertiesTableProps {
 export function PropertiesTable({ properties, onDelete }: PropertiesTableProps) {
   const navigate = useNavigate();
   const [isDeleting, setIsDeleting] = useState(false);
+  const { user } = useAuth();
   
   // Formatear fecha
   const formatDate = (dateString: string) => {
@@ -54,13 +56,18 @@ export function PropertiesTable({ properties, onDelete }: PropertiesTableProps) 
         await deleteProperty(id);
         toast.success("Inmueble eliminado correctamente");
         onDelete();
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error al eliminar el inmueble:", error);
-        toast.error("Error al eliminar el inmueble. Inténtalo de nuevo.");
+        toast.error(`Error al eliminar el inmueble: ${error.message || "Inténtalo de nuevo."}`);
       } finally {
         setIsDeleting(false);
       }
     }
+  };
+
+  // Determinar si el usuario es propietario del inmueble
+  const isOwner = (property: Property) => {
+    return user && property.user_id === user.id;
   };
   
   return (
@@ -139,18 +146,23 @@ export function PropertiesTable({ properties, onDelete }: PropertiesTableProps) 
                         <Eye className="mr-2 h-4 w-4" />
                         Ver
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => navigate(`/propiedades/${property.id}/editar`)}>
-                        <Edit className="mr-2 h-4 w-4" />
-                        Editar
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => handleDelete(property.id)}
-                        className="text-destructive focus:text-destructive"
-                        disabled={isDeleting}
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Eliminar
-                      </DropdownMenuItem>
+                      
+                      {isOwner(property) && (
+                        <>
+                          <DropdownMenuItem onClick={() => navigate(`/propiedades/${property.id}/editar`)}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => handleDelete(property.id)}
+                            className="text-destructive focus:text-destructive"
+                            disabled={isDeleting}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Eliminar
+                          </DropdownMenuItem>
+                        </>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>

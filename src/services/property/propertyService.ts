@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Property } from "@/types/property";
 
@@ -129,6 +130,34 @@ export const fetchPropertyById = async (id: string) => {
   }
 };
 
+// Verificar si un usuario ya tiene un inmueble activo
+export const checkUserHasProperty = async () => {
+  try {
+    // Obtener el ID del usuario actual
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      throw new Error("No estás autenticado.");
+    }
+    
+    const { data, error, count } = await supabase
+      .from("properties")
+      .select("id", { count: 'exact' })
+      .eq("user_id", user.id)
+      .eq("status", "active");
+
+    if (error) {
+      console.error("Error checking user properties:", error);
+      throw new Error(error.message);
+    }
+
+    return { hasProperty: (count && count > 0), property: data?.[0] };
+  } catch (error) {
+    console.error("Error al verificar propiedades del usuario:", error);
+    throw error;
+  }
+};
+
 // Crear un nuevo inmueble
 export const createProperty = async (property: Omit<Property, "id" | "created_at" | "updated_at" | "user_id" | "status">) => {
   // Obtener el ID del usuario actual
@@ -136,6 +165,13 @@ export const createProperty = async (property: Omit<Property, "id" | "created_at
   
   if (!user) {
     throw new Error("No estás autenticado.");
+  }
+  
+  // Verificar si el usuario ya tiene un inmueble
+  const { hasProperty } = await checkUserHasProperty();
+  
+  if (hasProperty) {
+    throw new Error("Ya tienes un inmueble publicado. Debes eliminar el existente antes de publicar uno nuevo.");
   }
   
   const { data, error } = await supabase
@@ -158,6 +194,28 @@ export const createProperty = async (property: Omit<Property, "id" | "created_at
 
 // Actualizar un inmueble existente
 export const updateProperty = async (id: string, property: Partial<Omit<Property, "id" | "created_at" | "updated_at" | "user_id">>) => {
+  // Verificar que el usuario sea el propietario del inmueble
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    throw new Error("No estás autenticado.");
+  }
+  
+  // Verificar propiedad
+  const { data: propertyData, error: propertyError } = await supabase
+    .from("properties")
+    .select("user_id")
+    .eq("id", id)
+    .single();
+    
+  if (propertyError) {
+    throw new Error("No se pudo verificar la propiedad del inmueble.");
+  }
+    
+  if (propertyData.user_id !== user.id) {
+    throw new Error("No tienes permiso para editar este inmueble.");
+  }
+
   const { data, error } = await supabase
     .from("properties")
     .update({
@@ -178,6 +236,28 @@ export const updateProperty = async (id: string, property: Partial<Omit<Property
 
 // Eliminar un inmueble
 export const deleteProperty = async (id: string) => {
+  // Verificar que el usuario sea el propietario del inmueble
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    throw new Error("No estás autenticado.");
+  }
+  
+  // Verificar propiedad
+  const { data: propertyData, error: propertyError } = await supabase
+    .from("properties")
+    .select("user_id")
+    .eq("id", id)
+    .single();
+    
+  if (propertyError) {
+    throw new Error("No se pudo verificar la propiedad del inmueble.");
+  }
+    
+  if (propertyData.user_id !== user.id) {
+    throw new Error("No tienes permiso para eliminar este inmueble.");
+  }
+
   const { error } = await supabase
     .from("properties")
     .delete()

@@ -1,38 +1,36 @@
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { User, Session } from "@supabase/supabase-js";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { User, Session } from "@supabase/supabase-js";
+import { toast } from "sonner";
 
-type AuthContextType = {
+interface AuthContextType {
   user: User | null;
   session: Session | null;
-  loading: boolean;
   signUp: (email: string, password: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
-  signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
-};
+  signInWithGoogle: () => Promise<void>;
+  loading: boolean;
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
 
   useEffect(() => {
-    // Set up auth state listener first
+    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        setLoading(false);
       }
     );
 
-    // Then check for existing session
+    // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -42,185 +40,99 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Función para enviar notificación
-  const sendNotification = async (type: 'registration' | 'form_submission', email?: string, formType?: string, formData?: Record<string, any>) => {
+  const signUp = async (email: string, password: string) => {
     try {
-      console.log(`Sending ${type} notification for ${email || 'unknown email'}`);
-      
-      const response = await fetch("https://axkfeoivkpsvjmewqndu.supabase.co/functions/v1/send-notification", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          type,
-          email,
-          formType,
-          formData
-        }),
-      });
+      // First check if user already exists
+      const { data: existingUsers } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', email)
+        .maybeSingle();
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Error sending notification:", errorText);
-        throw new Error(`Error sending notification: ${errorText}`);
-      } else {
-        console.log("Notification sent successfully");
-        const result = await response.json();
-        console.log("Response:", result);
+      if (existingUsers) {
+        toast.error("Este correo electrónico ya está registrado. Por favor, inicia sesión.");
+        return;
       }
-    } catch (error) {
-      console.error("Failed to send notification:", error);
+
+      const { error } = await supabase.auth.signUp({ email, password });
+      
+      if (error) {
+        if (error.message.includes('already registered')) {
+          toast.error("Este correo electrónico ya está registrado. Por favor, inicia sesión.");
+        } else {
+          throw error;
+        }
+      } else {
+        toast.success("Registro exitoso. Por favor, verifica tu correo electrónico.");
+      }
+    } catch (error: any) {
+      toast.error(`Error en el registro: ${error.message}`);
+      throw error;
     }
   };
 
-  async function signUp(email: string, password: string) {
+  const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      console.log("Registro exitoso, enviando notificación para:", email);
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
       
-      // Enviar notificación de registro
-      await sendNotification('registration', email);
-
-      toast({
-        title: "Registro exitoso",
-        description: "Por favor verifica tu correo electrónico para confirmar tu cuenta.",
-      });
+      if (error) throw error;
+      
+      toast.success("Inicio de sesión exitoso");
     } catch (error: any) {
-      console.error("Error en el registro:", error);
-      toast({
-        title: "Error en el registro",
-        description: error.message || "Ocurrió un error durante el registro.",
-        variant: "destructive",
-      });
+      toast.error(`Error de inicio de sesión: ${error.message}`);
       throw error;
     }
-  }
+  };
 
-  async function signIn(email: string, password: string) {
+  const signOut = async () => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      toast({
-        title: "Inicio de sesión exitoso",
-        description: "Bienvenido de nuevo a PropTools.",
-      });
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) throw error;
+      
+      toast.success("Sesión cerrada correctamente");
     } catch (error: any) {
-      toast({
-        title: "Error al iniciar sesión",
-        description: error.message || "Credenciales incorrectas.",
-        variant: "destructive",
-      });
+      toast.error(`Error al cerrar sesión: ${error.message}`);
       throw error;
     }
-  }
+  };
 
-  async function signInWithGoogle() {
+  const signInWithGoogle = async () => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: window.location.origin,
-        },
+        provider: "google",
       });
-
-      if (error) {
-        throw error;
-      }
+      
+      if (error) throw error;
     } catch (error: any) {
-      toast({
-        title: "Error al iniciar sesión con Google",
-        description: error.message || "Ocurrió un error al intentar iniciar sesión con Google.",
-        variant: "destructive",
-      });
+      toast.error(`Error al iniciar sesión con Google: ${error.message}`);
       throw error;
     }
-  }
-
-  async function signOut() {
-    try {
-      await supabase.auth.signOut();
-      toast({
-        title: "Sesión cerrada",
-        description: "Has cerrado sesión correctamente.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "No se pudo cerrar la sesión.",
-        variant: "destructive",
-      });
-    }
-  }
-
-  const value = {
-    user,
-    session,
-    loading,
-    signUp,
-    signIn,
-    signInWithGoogle,
-    signOut,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        session,
+        signUp,
+        signIn,
+        signOut,
+        signInWithGoogle,
+        loading
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+};
 
-export function useAuth() {
+export const useAuth = () => {
   const context = useContext(AuthContext);
+  
   if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error("useAuth debe usarse dentro de un AuthProvider");
   }
+  
   return context;
-}
-
-// Exportar la función sendNotification para usarla en otros componentes
-export const useNotification = () => {
-  const sendFormNotification = async (formType: string, email?: string, formData?: Record<string, any>) => {
-    try {
-      console.log(`Sending form notification: ${formType} for ${email || 'unknown user'}`);
-      
-      const response = await fetch("https://axkfeoivkpsvjmewqndu.supabase.co/functions/v1/send-notification", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          type: 'form_submission',
-          email,
-          formType,
-          formData
-        }),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Error sending form notification:", errorText);
-        throw new Error(`Error sending form notification: ${errorText}`);
-      } else {
-        console.log("Form notification sent successfully");
-        const result = await response.json();
-        console.log("Response:", result);
-      }
-    } catch (error) {
-      console.error("Failed to send form notification:", error);
-    }
-  };
-
-  return { sendFormNotification };
 };

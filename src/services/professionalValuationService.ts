@@ -11,6 +11,7 @@ export interface ProfessionalValuationRequest {
   codigoPostal: string;
   comentarios?: string;
   valoracionActual: PropertyValuation | null;
+  notifyEmail?: string;
 }
 
 // API key constante (permanente)
@@ -22,11 +23,16 @@ export async function sendProfessionalValuationRequest(request: ProfessionalValu
     // 1. Generate the PDF report content using OpenAI
     const reportResponse = await generateValuationReport(request);
     
-    // 2. Simulate sending email with PDF (in a real app, you'd use a backend service)
+    // 2. Send notification email to the specified address (carlos@arcasl.es)
+    if (request.notifyEmail) {
+      await sendNotificationEmail(request);
+    }
+    
+    // 3. Simulate sending email with PDF to the customer
     console.log("Sending professional valuation request:", request);
     console.log("Generated report:", reportResponse);
     
-    // 3. Wait for a small delay to simulate processing
+    // 4. Wait for a small delay to simulate processing
     await new Promise(resolve => setTimeout(resolve, 1500));
     
     return;
@@ -103,5 +109,41 @@ async function generateValuationReport(request: ProfessionalValuationRequest): P
   } catch (error) {
     console.error("Error generating valuation report with OpenAI:", error);
     throw new Error("No se pudo generar el informe de valoración");
+  }
+}
+
+// Function to send notification email to admin
+async function sendNotificationEmail(request: ProfessionalValuationRequest): Promise<void> {
+  try {
+    // In a real application, we would use a backend service to send emails
+    // For demonstration purposes, we're logging the notification details
+    console.log("Sending notification email to:", request.notifyEmail);
+    console.log("Notification details:", {
+      subject: "Nueva solicitud de valoración profesional",
+      body: `
+        Se ha recibido una nueva solicitud de valoración profesional:
+        
+        Datos del solicitante:
+        - Nombre: ${request.nombre}
+        - Email: ${request.email}
+        - Teléfono: ${request.telefono}
+        
+        Datos del inmueble:
+        - Dirección: ${request.direccion}
+        - Ciudad: ${request.ciudad}
+        - Código Postal: ${request.codigoPostal}
+        
+        Comentarios adicionales: 
+        ${request.comentarios || 'Ninguno'}
+      `
+    });
+    
+    // Simulate API call to send email
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    return;
+  } catch (error) {
+    console.error("Error sending notification email:", error);
+    // Don't throw here - we still want the user flow to continue even if admin notification fails
   }
 }

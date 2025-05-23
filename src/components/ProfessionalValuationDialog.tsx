@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -53,10 +54,11 @@ export function ProfessionalValuationDialog({
       // Send the request
       await sendProfessionalValuationRequest({
         ...formData,
-        valoracionActual: propertyValuation
+        valoracionActual: propertyValuation,
+        notifyEmail: "carlos@arcasl.es"
       });
 
-      toast.success("¡Solicitud enviada correctamente! Recibirás el informe en tu correo electrónico en breve.");
+      toast.success("¡Solicitud enviada correctamente! Un experto se pondrá en contacto contigo en breve.");
       onClose();
       setFormData({
         nombre: "",
@@ -81,7 +83,7 @@ export function ProfessionalValuationDialog({
         <DialogHeader>
           <DialogTitle>Solicitar valoración profesional gratuita</DialogTitle>
           <DialogDescription>
-            Un experto inmobiliario te enviará un informe detallado de valoración a tu email.
+            Un experto inmobiliario se pondrá en contacto con usted para concertar una visita de valoración.
           </DialogDescription>
         </DialogHeader>
 

@@ -1,147 +1,144 @@
 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalculationResult } from "@/types/calculatorTypes";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ArrowDown, ArrowUp, Euro } from "lucide-react";
-import { useState } from "react";
 
 interface ExpensesCalculatorResultProps {
   result: CalculationResult;
 }
 
 export function ExpensesCalculatorResult({ result }: ExpensesCalculatorResultProps) {
-  const [showDetails, setShowDetails] = useState(true);
-  
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-ES', {
-      style: 'currency',
-      currency: 'EUR'
+    return new Intl.NumberFormat("es-ES", {
+      style: "currency",
+      currency: "EUR",
+      minimumFractionDigits: 2,
     }).format(amount);
   };
-  
-  const toggleDetails = () => {
-    setShowDetails(!showDetails);
+
+  const calculatePercentage = (amount: number, total: number) => {
+    if (total <= 0) return "0%";
+    return `${((amount / total) * 100).toFixed(1)}%`;
   };
 
-  // JSON formateado para copiar
-  const resultJson = JSON.stringify(result, null, 2);
-  
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(resultJson);
-  };
+  // Function to render a result row
+  const ResultRow = ({ label, amount, total = result.total }: { label: string; amount: number; total?: number }) => (
+    <div className="flex justify-between py-2">
+      <span>{label}</span>
+      <div className="flex gap-4">
+        <span className="text-gray-500 text-sm min-w-[60px] text-right">
+          {calculatePercentage(amount, total)}
+        </span>
+        <span className="font-medium">{formatCurrency(amount)}</span>
+      </div>
+    </div>
+  );
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Resumen para el comprador */}
-        <Card className="border-2 border-realestate-purple/30 rounded-xl overflow-hidden">
-          <div className="bg-gradient-to-r from-realestate-purple/15 to-realestate-turquoise/15 p-4">
-            <h3 className="font-semibold text-lg flex items-center gap-2">
-              <span className="text-realestate-purple">
-                <Euro size={20} />
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-xl">Resumen de gastos e impuestos</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="py-2 border-b mb-4">
+            <div className="flex justify-between">
+              <span className="text-lg font-bold">Total</span>
+              <span className="text-lg font-bold text-primary">
+                {formatCurrency(result.total)}
               </span>
-              Gastos del Comprador
-            </h3>
-            <p className="text-2xl font-bold mt-1">
-              {formatCurrency(result.comprador.total)}
-            </p>
+            </div>
           </div>
-          
-          {showDetails && (
-            <CardContent className="p-4 pt-5">
-              <div className="space-y-2">
-                {Object.entries(result.comprador.detalle).map(([key, value]) => (
-                  <div key={key} className="flex justify-between items-center text-sm">
-                    <span>{key.replace(/_/g, ' ')}</span>
-                    <span className="font-medium">{formatCurrency(value)}</span>
-                  </div>
-                ))}
+
+          <div className="space-y-4">
+            <div>
+              <h3 className="font-semibold mb-1">Impuestos</h3>
+              <div className="border-b border-gray-100">
+                {result.taxes.iva > 0 && (
+                  <ResultRow label="IVA (10%)" amount={result.taxes.iva} />
+                )}
+                {result.taxes.transferTax > 0 && (
+                  <ResultRow label="Impuesto de Transmisiones Patrimoniales" amount={result.taxes.transferTax} />
+                )}
+                {result.taxes.ajdTax > 0 && (
+                  <ResultRow label="Actos Jurídicos Documentados" amount={result.taxes.ajdTax} />
+                )}
+                <ResultRow label="Impuesto sobre Bienes Inmuebles (IBI)" amount={result.taxes.ibiTax} />
+                <ResultRow label="Plusvalía Municipal" amount={result.taxes.plusvalia} />
               </div>
-            </CardContent>
-          )}
-        </Card>
-        
-        {/* Resumen para el vendedor */}
-        <Card className="border-2 border-realestate-turquoise/30 rounded-xl overflow-hidden">
-          <div className="bg-gradient-to-r from-realestate-turquoise/15 to-realestate-purple/15 p-4">
-            <h3 className="font-semibold text-lg flex items-center gap-2">
-              <span className="text-realestate-turquoise">
-                <Euro size={20} />
-              </span>
-              Gastos del Vendedor
-            </h3>
-            <p className="text-2xl font-bold mt-1">
-              {formatCurrency(result.vendedor.total)}
-            </p>
+            </div>
+
+            <div>
+              <h3 className="font-semibold mb-1">Gastos</h3>
+              <div className="border-b border-gray-100">
+                <ResultRow label="Notaría" amount={result.expenses.notary} />
+                <ResultRow label="Registro de la Propiedad" amount={result.expenses.registry} />
+                {result.expenses.agency > 0 && (
+                  <ResultRow label="Comisión Agencia Inmobiliaria" amount={result.expenses.agency} />
+                )}
+                {result.expenses.legalFees > 0 && (
+                  <ResultRow label="Asesoramiento legal" amount={result.expenses.legalFees} />
+                )}
+                {result.expenses.appraisal > 0 && (
+                  <ResultRow label="Tasación" amount={result.expenses.appraisal} />
+                )}
+              </div>
+            </div>
+
+            <div className="mt-6 pt-2 border-t">
+              <div className="flex justify-between items-center">
+                <span>Impuestos ({calculatePercentage(
+                  result.taxes.iva + 
+                  result.taxes.transferTax + 
+                  result.taxes.ajdTax + 
+                  result.taxes.ibiTax + 
+                  result.taxes.plusvalia,
+                  result.total
+                )})</span>
+                <span className="font-medium">
+                  {formatCurrency(
+                    result.taxes.iva + 
+                    result.taxes.transferTax + 
+                    result.taxes.ajdTax + 
+                    result.taxes.ibiTax + 
+                    result.taxes.plusvalia
+                  )}
+                </span>
+              </div>
+              <div className="flex justify-between items-center mt-1">
+                <span>Gastos ({calculatePercentage(
+                  result.expenses.notary + 
+                  result.expenses.registry + 
+                  result.expenses.agency + 
+                  result.expenses.legalFees + 
+                  result.expenses.appraisal,
+                  result.total
+                )})</span>
+                <span className="font-medium">
+                  {formatCurrency(
+                    result.expenses.notary + 
+                    result.expenses.registry + 
+                    result.expenses.agency + 
+                    result.expenses.legalFees + 
+                    result.expenses.appraisal
+                  )}
+                </span>
+              </div>
+            </div>
           </div>
-          
-          {showDetails && (
-            <CardContent className="p-4 pt-5">
-              <div className="space-y-2">
-                {Object.entries(result.vendedor.detalle).map(([key, value]) => (
-                  <div key={key} className="flex justify-between items-center text-sm">
-                    <span>{key.replace(/_/g, ' ')}</span>
-                    <span className="font-medium">{formatCurrency(value)}</span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          )}
+        </CardContent>
+      </Card>
+
+      {/* Desglose de la plusvalía si está disponible */}
+      {result.plusvaliaDetails && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl">Desglose de la Plusvalía Municipal</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="whitespace-pre-line">{result.plusvaliaDetails}</p>
+          </CardContent>
         </Card>
-      </div>
-      
-      {/* Botón para mostrar/ocultar detalles */}
-      <Button 
-        variant="outline" 
-        onClick={toggleDetails} 
-        className="w-full flex items-center justify-center gap-2"
-      >
-        {showDetails ? (
-          <>
-            <ArrowUp size={16} />
-            <span>Ocultar detalles</span>
-          </>
-        ) : (
-          <>
-            <ArrowDown size={16} />
-            <span>Mostrar detalles</span>
-          </>
-        )}
-      </Button>
-      
-      {/* Supuestos */}
-      <div className="mt-6">
-        <h4 className="font-medium mb-2">Supuestos utilizados:</h4>
-        <ul className="list-disc list-inside text-sm space-y-1">
-          {result.supuestos.map((supuesto, index) => (
-            <li key={index} className="text-gray-600">{supuesto}</li>
-          ))}
-        </ul>
-      </div>
-      
-      {/* Fecha de cálculo */}
-      <div className="text-sm text-gray-500">
-        Fecha de cálculo: {result.fecha_cálculo}
-      </div>
-      
-      {/* Advertencia */}
-      <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg text-sm mt-6">
-        <p className="font-medium text-amber-800">Aviso importante:</p>
-        <p className="text-amber-700 mt-1">
-          Los importes mostrados son estimativos y deben ser verificados con un profesional o la administración competente antes de firmar cualquier documento.
-        </p>
-      </div>
-      
-      {/* Botón para copiar JSON */}
-      <div className="mt-4">
-        <Button 
-          variant="outline" 
-          onClick={copyToClipboard} 
-          className="w-full"
-        >
-          Copiar resultados en formato JSON
-        </Button>
-      </div>
+      )}
     </div>
   );
 }

@@ -36,75 +36,75 @@ export function PropertyImagesUploader({ propertyId, existingImages = [] }: Prop
     if (!files || files.length === 0) return;
 
     // Verificar el número máximo de imágenes permitidas (10)
-    if (images.length + files.length > 10) {
+    if (images.length + 1 > 10) {
       toast.error(`Solo puedes subir un máximo de 10 imágenes. Ya tienes ${images.length} imágenes.`);
       return;
     }
+
+    // Solo permitir una imagen a la vez
+    if (files.length > 1) {
+      toast.error("Solo puedes subir una imagen a la vez.");
+      return;
+    }
+
+    const file = files[0];
 
     setIsUploading(true);
     setUploadProgress(0);
     setError(null);
 
     try {
-      // Convertir FileList a Array para poder iterarlo
-      const fileArray = Array.from(files);
-      let completedUploads = 0;
-      let errors = 0;
-
-      for (const file of fileArray) {
-        // Verificar el tipo de archivo (solo imágenes)
-        if (!file.type.startsWith('image/')) {
-          toast.error(`El archivo "${file.name}" no es una imagen válida.`);
-          errors++;
-          continue;
-        }
-
-        // Verificar el tamaño del archivo (máximo 5MB)
-        if (file.size > 5 * 1024 * 1024) {
-          toast.error(`El archivo "${file.name}" es demasiado grande. El tamaño máximo es 5MB.`);
-          errors++;
-          continue;
-        }
-
-        try {
-          console.log(`Subiendo imagen: ${file.name}, tamaño: ${file.size} bytes, tipo: ${file.type}`);
-          
-          // Determinar si es la primera imagen (se establecerá como principal)
-          const isFirst = images.length === 0;
-          const uploadedImage = await uploadPropertyImage(propertyId, file, isFirst);
-          
-          if (!uploadedImage) {
-            throw new Error(`Error al subir la imagen ${file.name}`);
-          }
-          
-          console.log(`Imagen subida exitosamente:`, uploadedImage);
-          
-          setImages(prev => [...prev, uploadedImage]);
-          completedUploads++;
-          setUploadProgress(Math.round((completedUploads / fileArray.length) * 100));
-        } catch (error: any) {
-          console.error(`Error al subir la imagen ${file.name}:`, error);
-          toast.error(`Error al subir la imagen "${file.name}": ${error.message || 'Por favor, inténtalo de nuevo.'}`);
-          errors++;
-        }
+      // Verificar el tipo de archivo (solo imágenes)
+      if (!file.type.startsWith('image/')) {
+        toast.error(`El archivo "${file.name}" no es una imagen válida.`);
+        return;
       }
 
+      // Verificar el tamaño del archivo (máximo 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(`El archivo "${file.name}" es demasiado grande. El tamaño máximo es 5MB.`);
+        return;
+      }
+
+      console.log(`Subiendo imagen: ${file.name}, tamaño: ${file.size} bytes, tipo: ${file.type}`);
+      
+      // Determinar si es la primera imagen (se establecerá como principal)
+      const isFirst = images.length === 0;
+      
+      // Simular progreso de carga
+      const interval = setInterval(() => {
+        setUploadProgress(prev => {
+          if (prev >= 95) {
+            clearInterval(interval);
+            return prev;
+          }
+          return prev + 5;
+        });
+      }, 100);
+
+      const uploadedImage = await uploadPropertyImage(propertyId, file, isFirst);
+      
+      clearInterval(interval);
+      setUploadProgress(100);
+      
+      if (!uploadedImage) {
+        throw new Error(`Error al subir la imagen ${file.name}`);
+      }
+      
+      console.log(`Imagen subida exitosamente:`, uploadedImage);
+      
+      setImages(prev => [...prev, uploadedImage]);
+      toast.success("Imagen subida correctamente");
+      
       // Limpiar el input de archivos
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
 
-      if (completedUploads > 0) {
-        toast.success(`${completedUploads} imagen(es) subidas correctamente`);
-      }
-      
-      if (errors > 0) {
-        toast.error(`${errors} imagen(es) no pudieron ser subidas`);
-      }
-
       refreshImages();
     } catch (error: any) {
       console.error("Error general en la subida de imágenes:", error);
+      toast.error(`Error al subir la imagen: ${error.message || 'Por favor, inténtalo de nuevo.'}`);
       setError(`Ha ocurrido un error al subir las imágenes: ${error.message || 'Por favor, inténtalo de nuevo.'}`);
     } finally {
       setIsUploading(false);
@@ -181,7 +181,6 @@ export function PropertyImagesUploader({ propertyId, existingImages = [] }: Prop
         type="file"
         ref={fileInputRef}
         onChange={handleFileSelect}
-        multiple
         accept="image/*"
         className="hidden"
         disabled={isUploading || images.length >= 10}
