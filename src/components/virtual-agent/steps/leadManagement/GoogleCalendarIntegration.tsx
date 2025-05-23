@@ -45,7 +45,6 @@ const GoogleCalendarIntegration: React.FC<GoogleCalendarIntegrationProps> = ({
   const initializeGoogleAPI = () => {
     window.gapi.load('client:auth2', () => {
       window.gapi.client.init({
-        apiKey: GOOGLE_API_KEY,
         clientId: GOOGLE_CLIENT_ID,
         discoveryDocs: GOOGLE_DISCOVERY_DOCS,
         scope: GOOGLE_API_SCOPES
