@@ -27,12 +27,15 @@ export function Footer() {
           />
         </div>
         
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-4 justify-center">
           <Link to="/terminos" className="text-sm text-muted-foreground underline underline-offset-4">
             Términos de Servicio
           </Link>
           <Link to="/privacidad" className="text-sm text-muted-foreground underline underline-offset-4">
             Política de Privacidad
+          </Link>
+          <Link to="/cookies" className="text-sm text-muted-foreground underline underline-offset-4">
+            Política de Cookies
           </Link>
         </div>
       </motion.div>

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
@@ -24,9 +25,10 @@ const AVAILABLE_TIMES: TimeSlot[] = [
   { id: "6", time: "18:00", available: true },
 ];
 
-// Google Calendar API configuration
+// Google Calendar API configuration with proper authorization
 const GOOGLE_API_SCOPES = 'https://www.googleapis.com/auth/calendar';
 const GOOGLE_CLIENT_ID = '433488038248-mvrgna13b9ac88k3dr2ton9ht5lkt0a2.apps.googleusercontent.com';
+const GOOGLE_API_KEY = 'AIzaSyDLoLRAiEMPR0vqRSbIgDF80BbeDO-FOW8'; // Added API key
 const GOOGLE_DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"];
 
 const CalendarScheduler: React.FC = () => {
@@ -71,6 +73,7 @@ const CalendarScheduler: React.FC = () => {
   const initializeGoogleAPI = () => {
     window.gapi.load('client:auth2', () => {
       window.gapi.client.init({
+        apiKey: GOOGLE_API_KEY,
         clientId: GOOGLE_CLIENT_ID,
         discoveryDocs: GOOGLE_DISCOVERY_DOCS,
         scope: GOOGLE_API_SCOPES
@@ -82,6 +85,7 @@ const CalendarScheduler: React.FC = () => {
         }
       }).catch(error => {
         console.error("Error initializing Google API", error);
+        toast.error("Error al conectar con Google Calendar: " + error.message);
       });
     });
   };
@@ -176,7 +180,7 @@ const CalendarScheduler: React.FC = () => {
       toast.success("Conectado a Google Calendar correctamente");
     }).catch(error => {
       console.error("Google auth error", error);
-      toast.error("Error al conectar con Google Calendar");
+      toast.error("Error al conectar con Google Calendar: " + error.message);
     });
   };
 
