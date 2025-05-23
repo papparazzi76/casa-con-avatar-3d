@@ -15,13 +15,15 @@ interface AuthContextType {
   loading: boolean;
 }
 
-// Define notification context type separately
+// Create auth context
+const AuthContext = createContext<AuthContextType | null>(null);
+
+// Define notification context type completely separately
 interface NotificationContextType {
   sendFormNotification: (formType: string, email: string | undefined, formData: Record<string, any>) => Promise<void>;
 }
 
-// Create completely separate contexts
-const AuthContext = createContext<AuthContextType | null>(null);
+// Create notification context separately
 const NotificationContext = createContext<NotificationContextType | null>(null);
 
 // Export notification context so it can be imported elsewhere
@@ -122,7 +124,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  // Notification functions
+  // Notification function - completely separate from auth
   const sendFormNotification = async (formType: string, email: string | undefined, formData: Record<string, any>) => {
     try {
       // In a real implementation, you would send this data to your backend
@@ -138,8 +140,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  // Create auth context value - defined explicitly with its type
-  const authValue: AuthContextType = {
+  // Create values for both contexts
+  const authContextValue: AuthContextType = {
     user,
     session,
     signUp,
@@ -149,22 +151,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     loading
   };
 
-  // Create notification context value - defined explicitly with its type
-  const notificationValue: NotificationContextType = {
+  const notificationContextValue: NotificationContextType = {
     sendFormNotification
   };
 
-  // Provide contexts separately to avoid circular references
+  // Use nested providers with the explicitly typed values
   return (
-    <AuthContext.Provider value={authValue}>
-      <NotificationContext.Provider value={notificationValue}>
+    <AuthContext.Provider value={authContextValue}>
+      <NotificationContext.Provider value={notificationContextValue}>
         {children}
       </NotificationContext.Provider>
     </AuthContext.Provider>
   );
 };
 
-// Export hooks with proper typing and no circular references
+// Export hooks with proper typing
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   
