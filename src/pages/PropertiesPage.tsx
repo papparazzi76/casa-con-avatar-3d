@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { PropertySearch } from "@/components/properties/PropertySearch";
-import { PropertySearchResults } from "@/components/properties/PropertySearchResults";
+import { PropertySearchResults } from "@/components/properties/search/PropertySearchResults";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
