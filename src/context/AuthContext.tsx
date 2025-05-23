@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
@@ -21,7 +22,10 @@ interface NotificationContextType {
 
 // Create completely separate contexts
 const AuthContext = createContext<AuthContextType | null>(null);
-export const NotificationContext = createContext<NotificationContextType | null>(null);
+const NotificationContext = createContext<NotificationContextType | null>(null);
+
+// Export notification context so it can be imported elsewhere
+export { NotificationContext };
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -134,8 +138,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  // Create auth context value
-  const authContextValue: AuthContextType = {
+  // Create auth context value - defined explicitly with its type
+  const authValue: AuthContextType = {
     user,
     session,
     signUp,
@@ -145,22 +149,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     loading
   };
 
-  // Create notification context value
-  const notificationContextValue: NotificationContextType = {
+  // Create notification context value - defined explicitly with its type
+  const notificationValue: NotificationContextType = {
     sendFormNotification
   };
 
-  // Provide contexts separately with explicitly typed values
+  // Provide contexts separately to avoid circular references
   return (
-    <AuthContext.Provider value={authContextValue}>
-      <NotificationContext.Provider value={notificationContextValue}>
+    <AuthContext.Provider value={authValue}>
+      <NotificationContext.Provider value={notificationValue}>
         {children}
       </NotificationContext.Provider>
     </AuthContext.Provider>
   );
 };
 
-// Export hooks with proper typing
+// Export hooks with proper typing and no circular references
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   
