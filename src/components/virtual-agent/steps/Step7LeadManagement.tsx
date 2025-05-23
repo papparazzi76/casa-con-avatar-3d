@@ -4,8 +4,11 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CalendarScheduler from './leadManagement/CalendarScheduler';
+import { useAuth } from "@/context/AuthContext";
 
 const Step7LeadManagement: React.FC = () => {
+  const { user } = useAuth();
+  
   return (
     <div className="space-y-4">
       <Tabs defaultValue="calendar">
@@ -16,6 +19,16 @@ const Step7LeadManagement: React.FC = () => {
         
         <TabsContent value="calendar" className="pt-4">
           <CalendarScheduler />
+          
+          {!user && (
+            <Alert className="mt-4">
+              <Info className="h-4 w-4" />
+              <AlertTitle>Maximiza tu experiencia</AlertTitle>
+              <AlertDescription>
+                Inicia sesión con tu cuenta de Google para sincronizar las visitas directamente con tu calendario.
+              </AlertDescription>
+            </Alert>
+          )}
         </TabsContent>
         
         <TabsContent value="tips" className="pt-4">

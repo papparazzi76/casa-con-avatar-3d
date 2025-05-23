@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info, CalendarRange, CalendarClock, Check } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
 
 type TimeSlot = {
   id: string;
@@ -23,16 +25,67 @@ const AVAILABLE_TIMES: TimeSlot[] = [
   { id: "6", time: "18:00", available: true },
 ];
 
+// Google Calendar API configuration
+const GOOGLE_API_SCOPES = 'https://www.googleapis.com/auth/calendar';
+const GOOGLE_CLIENT_ID = '433488038248-mvrgna13b9ac88k3dr2ton9ht5lkt0a2.apps.googleusercontent.com';
+const GOOGLE_DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"];
+
 const CalendarScheduler: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<TimeSlot | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isConfirmed, setIsConfirmed] = useState(false);
+  const [isGoogleCalendarAuthorized, setIsGoogleCalendarAuthorized] = useState(false);
   const [visitorDetails, setVisitorDetails] = useState({
     name: "",
     email: "",
     phone: "",
   });
+
+  const { user } = useAuth();
+
+  useEffect(() => {
+    // Load Google API script dynamically
+    const loadGoogleScript = () => {
+      const script = document.createElement('script');
+      script.src = 'https://apis.google.com/js/api.js';
+      script.async = true;
+      script.defer = true;
+      script.onload = initializeGoogleAPI;
+      document.body.appendChild(script);
+    };
+
+    // Only load Google API if user is logged in
+    if (user) {
+      loadGoogleScript();
+    }
+
+    // Clean up
+    return () => {
+      const scriptTag = document.querySelector('script[src="https://apis.google.com/js/api.js"]');
+      if (scriptTag) {
+        scriptTag.remove();
+      }
+    };
+  }, [user]);
+
+  const initializeGoogleAPI = () => {
+    window.gapi.load('client:auth2', () => {
+      window.gapi.client.init({
+        clientId: GOOGLE_CLIENT_ID,
+        discoveryDocs: GOOGLE_DISCOVERY_DOCS,
+        scope: GOOGLE_API_SCOPES
+      }).then(() => {
+        // Check if user is already signed in to Google
+        if (window.gapi.auth2.getAuthInstance().isSignedIn.get()) {
+          setIsGoogleCalendarAuthorized(true);
+          toast.success("Conectado a Google Calendar");
+        }
+      }).catch(error => {
+        console.error("Error initializing Google API", error);
+      });
+    });
+  };
 
   const handleDateSelect = (date: Date | undefined) => {
     setSelectedDate(date);
@@ -44,17 +97,88 @@ const CalendarScheduler: React.FC = () => {
     setIsDialogOpen(true);
   };
 
-  const handleConfirm = () => {
-    // Here you would integrate with Google Calendar API
+  const handleConfirm = async () => {
     setIsDialogOpen(false);
-    setIsConfirmed(true);
+    
+    try {
+      if (isGoogleCalendarAuthorized && selectedDate && selectedTimeSlot) {
+        // Create a Google Calendar event
+        await addEventToGoogleCalendar();
+      }
+      
+      // Always show confirmation, even if not using Google Calendar
+      setIsConfirmed(true);
+      toast.success("Visita programada correctamente");
+    } catch (error) {
+      console.error("Error al programar la visita", error);
+      toast.error("Hubo un error al programar la visita");
+    }
+  };
+
+  const addEventToGoogleCalendar = async () => {
+    if (!selectedDate || !selectedTimeSlot) return;
+    
+    // Create start and end times for the event
+    const startTime = new Date(selectedDate);
+    const [hours, minutes] = selectedTimeSlot.time.split(":").map(Number);
+    startTime.setHours(hours, minutes, 0, 0);
+    
+    const endTime = new Date(startTime);
+    endTime.setHours(endTime.getHours() + 1); // 1 hour appointment
+    
+    const event = {
+      'summary': `Visita inmueble - ${visitorDetails.name}`,
+      'description': `Visita programada con ${visitorDetails.name}. Teléfono: ${visitorDetails.phone}, Email: ${visitorDetails.email}`,
+      'start': {
+        'dateTime': startTime.toISOString(),
+        'timeZone': Intl.DateTimeFormat().resolvedOptions().timeZone
+      },
+      'end': {
+        'dateTime': endTime.toISOString(),
+        'timeZone': Intl.DateTimeFormat().resolvedOptions().timeZone
+      },
+      'attendees': [
+        {'email': visitorDetails.email}
+      ],
+      'reminders': {
+        'useDefault': false,
+        'overrides': [
+          {'method': 'email', 'minutes': 24 * 60},
+          {'method': 'popup', 'minutes': 30}
+        ]
+      }
+    };
+    
+    try {
+      await window.gapi.client.calendar.events.insert({
+        'calendarId': 'primary',
+        'resource': event
+      });
+    } catch (error) {
+      console.error("Error creating Google Calendar event", error);
+      throw error;
+    }
   };
 
   const handleSyncWithGoogle = () => {
-    // Redirect to Google OAuth flow
-    alert("Esta función conectaría con la API de Google Calendar");
-    // In a real implementation, redirect to Google OAuth
-    // window.location.href = `/api/auth/google?redirect=/agente-virtual-inmobiliario`;
+    if (!user) {
+      toast.error("Debes iniciar sesión primero");
+      return;
+    }
+    
+    if (isGoogleCalendarAuthorized) {
+      toast.success("Ya estás conectado a Google Calendar");
+      return;
+    }
+
+    // Authorize with Google
+    window.gapi.auth2.getAuthInstance().signIn().then(() => {
+      setIsGoogleCalendarAuthorized(true);
+      toast.success("Conectado a Google Calendar correctamente");
+    }).catch(error => {
+      console.error("Google auth error", error);
+      toast.error("Error al conectar con Google Calendar");
+    });
   };
 
   return (
@@ -111,10 +235,27 @@ const CalendarScheduler: React.FC = () => {
       </div>
 
       <div className="mt-4 flex justify-center">
-        <Button onClick={handleSyncWithGoogle} className="gap-2">
-          <CalendarRange className="h-4 w-4" /> Sincronizar con Google Calendar
+        <Button 
+          onClick={handleSyncWithGoogle} 
+          className="gap-2"
+          disabled={!user}
+        >
+          <CalendarRange className="h-4 w-4" /> 
+          {isGoogleCalendarAuthorized 
+            ? "Conectado a Google Calendar" 
+            : "Sincronizar con Google Calendar"}
         </Button>
       </div>
+
+      {!user && (
+        <Alert variant="warning" className="bg-amber-50 text-amber-800 border-amber-200">
+          <Info className="h-4 w-4" />
+          <AlertTitle>Inicio de sesión requerido</AlertTitle>
+          <AlertDescription>
+            Para sincronizar con Google Calendar necesitas iniciar sesión primero.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {isConfirmed && (
         <Alert className="mt-4 bg-green-50 text-green-800 border-green-200">
@@ -128,7 +269,9 @@ const CalendarScheduler: React.FC = () => {
               month: "long",
               day: "numeric",
             })}{" "}
-            a las {selectedTimeSlot?.time}. Recibirás un email de confirmación.
+            a las {selectedTimeSlot?.time}. 
+            {isGoogleCalendarAuthorized && " Se ha añadido a tu Google Calendar."}
+            {!isGoogleCalendarAuthorized && " Recibirás un email de confirmación."}
           </AlertDescription>
         </Alert>
       )}
