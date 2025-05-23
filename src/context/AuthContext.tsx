@@ -1,10 +1,9 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
 import { toast } from "sonner";
 
-// Define each context type separately to avoid circular references
+// Define auth context type
 interface AuthContextType {
   user: User | null;
   session: Session | null;
@@ -15,13 +14,14 @@ interface AuthContextType {
   loading: boolean;
 }
 
-interface NotificationContextProps {
+// Define notification context type separately
+interface NotificationContextType {
   sendFormNotification: (formType: string, email: string | undefined, formData: Record<string, any>) => Promise<void>;
 }
 
-// Create separate contexts
+// Create completely separate contexts
 const AuthContext = createContext<AuthContextType | null>(null);
-export const NotificationContext = createContext<NotificationContextProps | null>(null);
+export const NotificationContext = createContext<NotificationContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -134,8 +134,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  // Create value objects separately
-  const authValue = {
+  // Create auth context value
+  const authContextValue: AuthContextType = {
     user,
     session,
     signUp,
@@ -145,22 +145,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     loading
   };
 
-  const notificationValue = {
+  // Create notification context value
+  const notificationContextValue: NotificationContextType = {
     sendFormNotification
   };
 
-  // Provide contexts separately to avoid circular references
+  // Provide contexts separately with explicitly typed values
   return (
-    <AuthContext.Provider value={authValue}>
-      <NotificationContext.Provider value={notificationValue}>
+    <AuthContext.Provider value={authContextValue}>
+      <NotificationContext.Provider value={notificationContextValue}>
         {children}
       </NotificationContext.Provider>
     </AuthContext.Provider>
   );
 };
 
-// Export hooks separately with no cross-references
-export const useAuth = () => {
+// Export hooks with proper typing
+export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   
   if (context === null) {
@@ -170,7 +171,7 @@ export const useAuth = () => {
   return context;
 };
 
-export const useNotification = () => {
+export const useNotification = (): NotificationContextType => {
   const context = useContext(NotificationContext);
   
   if (context === null) {
