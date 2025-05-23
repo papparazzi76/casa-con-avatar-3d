@@ -143,7 +143,7 @@ const CostReachMatrix: React.FC = () => {
 
       <div className="border rounded-md p-1">
         <ResponsiveContainer width="100%" height={400}>
-          <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+          <ScatterChart margin={{ top: 20, right: 20, bottom: 50, left: 20 }}>
             <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
             <XAxis 
               type="number" 
@@ -151,7 +151,7 @@ const CostReachMatrix: React.FC = () => {
               name="Coste" 
               domain={[0.5, 4.5]} 
               ticks={[1, 2, 3, 4]} 
-              label={{ value: 'Coste', position: 'bottom' }}
+              label={{ value: 'Coste', position: 'bottom', offset: 20 }}
             />
             <YAxis 
               type="number" 
@@ -162,7 +162,12 @@ const CostReachMatrix: React.FC = () => {
               label={{ value: 'Alcance', angle: -90, position: 'left' }}
             />
             <Tooltip content={<CustomTooltip persona={persona} />} />
-            <Legend />
+            <Legend 
+              layout="horizontal"
+              verticalAlign="bottom"
+              align="center"
+              wrapperStyle={{ paddingTop: '20px', bottom: '0px' }}
+            />
             {categories.filter(cat => selectedCategories.includes(cat)).map(category => (
               <Scatter 
                 key={category}
