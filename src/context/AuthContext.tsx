@@ -18,6 +18,7 @@ interface NotificationContextProps {
   sendFormNotification: (formType: string, email: string | undefined, formData: Record<string, any>) => Promise<void>;
 }
 
+// Create separate contexts
 const AuthContext = createContext<AuthContextType | null>(null);
 const NotificationContext = createContext<NotificationContextProps | null>(null);
 
@@ -29,22 +30,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
+      (_event, currentSession) => {
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
       }
     );
 
     // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
+  // Auth functions
   const signUp = async (email: string, password: string) => {
     try {
       // First check if user already exists
@@ -136,18 +138,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     sendFormNotification
   };
 
+  // Create auth context value separately to avoid circular references
+  const authValue: AuthContextType = {
+    user,
+    session,
+    signUp,
+    signIn,
+    signOut,
+    signInWithGoogle,
+    loading
+  };
+
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        session,
-        signUp,
-        signIn,
-        signOut,
-        signInWithGoogle,
-        loading
-      }}
-    >
+    <AuthContext.Provider value={authValue}>
       <NotificationContext.Provider value={notificationValue}>
         {children}
       </NotificationContext.Provider>
@@ -155,6 +158,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
+// Export hook functions separately to avoid circular reference
 export const useAuth = () => {
   const context = useContext(AuthContext);
   

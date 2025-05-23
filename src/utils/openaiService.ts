@@ -21,11 +21,11 @@ import {
 export type {
   PropertyAdFormData,
   PropertyAdResult,
-  ImageProcessingOptions,
-  ProcessImageResult,
   ImageEditPlan,
   ImageEditStep,
-  ImageEditResponse
+  ImageEditResponse,
+  ImageProcessingOptions,
+  ProcessImageResult
 };
 
 // Reexportamos todas las funciones

@@ -11,7 +11,6 @@ export interface ImageEditPlan {
   steps: ImageEditStep[];
 }
 
-// Add missing types
 export interface ImageProcessingOptions {
   image: File;
   editMode: string;

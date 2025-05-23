@@ -1,129 +1,147 @@
 
-import { CalculationResult, PropertyFormData, RegionTaxRates } from "@/types/calculatorTypes";
+import { CalculationResult, CalculationBreakdown } from '@/types/calculatorTypes';
 
-// Tipos impositivos por comunidad autónoma (simplificados para este ejemplo)
-const regionTaxRates: RegionTaxRates = {
-  "Andalucía": { ITP: 7, AJD: 1.5 },
-  "Aragón": { ITP: 8, AJD: 1.5 },
-  "Asturias": { ITP: 8, AJD: 1.2 },
-  "Baleares": { ITP: 8, AJD: 1.2 },
-  "Canarias": { ITP: 6.5, AJD: 1 },
-  "Cantabria": { ITP: 10, AJD: 1.5 },
-  "Castilla-La Mancha": { ITP: 9, AJD: 1.5 },
-  "Castilla y León": { ITP: 8, AJD: 1.5 },
-  "Cataluña": { ITP: 10, AJD: 1.5 },
-  "Extremadura": { ITP: 8, AJD: 1.5 },
-  "Galicia": { ITP: 10, AJD: 1.5 },
-  "Madrid": { ITP: 6, AJD: 0.75 },
-  "Murcia": { ITP: 8, AJD: 1.5 },
-  "La Rioja": { ITP: 7, AJD: 1 },
-  "Comunidad Valenciana": { ITP: 10, AJD: 1.5 },
-  "País Vasco": { ITP: 7, AJD: 0.5 },
-  "Navarra": { ITP: 6, AJD: 0.5 }
-};
+// Define the missing types
+interface PropertyFormData {
+  price: number;
+  region: string;
+  agencyFee: number;
+  includeAgencyFees?: boolean;
+  legalFees?: number;
+  includeLegalFees?: boolean;
+  // Add other fields as needed
+}
 
-// Función para calcular gastos de notaría (simplificado)
-const calculateNotaryFees = (price: number): number => {
-  // Simplificación de los aranceles notariales según RD 1426/1989
-  if (price <= 6010) return 90;
-  if (price <= 30050) return 180;
-  if (price <= 60101) return 270;
-  if (price <= 150253) return 350;
-  if (price <= 601012) return 450;
-  return 500; // Para importes superiores
-};
-
-// Función para calcular gastos de registro (simplificado)
-const calculateRegistryFees = (price: number): number => {
-  // Simplificación de los aranceles registrales según RD 1427/1989
-  if (price <= 6010) return 70;
-  if (price <= 30050) return 140;
-  if (price <= 60101) return 210;
-  if (price <= 150253) return 270;
-  if (price <= 601012) return 350;
-  return 400; // Para importes superiores
-};
-
-// Función principal para realizar el cálculo
-export const calculateExpenses = (data: PropertyFormData): CalculationResult => {
-  const {
-    region, 
-    price, 
-    propertyType, 
-    hasLoan,
-    loanAmount,
-    acquisitionValue,
-    acquisitionDate,
-    improvements,
-    municipalCapitalGainsTax,
-    remainingLoan
-  } = data;
-
-  // Convertir valores string a number
-  const priceNum = Number(price);
-  const loanAmountNum = loanAmount ? Number(loanAmount) : 0;
-  const acquisitionValueNum = acquisitionValue ? Number(acquisitionValue) : 0;
-  const improvementsNum = improvements ? Number(improvements) : 0;
-  const municipalCapitalGainsTaxNum = municipalCapitalGainsTax ? Number(municipalCapitalGainsTax) : 0;
-  const remainingLoanNum = remainingLoan ? Number(remainingLoan) : 0;
-
-  // Obtener tasas aplicables según la comunidad autónoma
-  const rates = regionTaxRates[region] || { ITP: 8, AJD: 1.5 }; // Valores por defecto
-
-  // Initialize the result with default values
-  const result: CalculationResult = {
-    total: 0,
-    taxes: {
-      iva: 0,
-      transferTax: 0,
-      plusvalia: municipalCapitalGainsTaxNum,
-      ajdTax: 0,
-      ibiTax: 250 // Default value for IBI
-    },
-    expenses: {
-      notary: calculateNotaryFees(priceNum),
-      registry: calculateRegistryFees(priceNum),
-      agency: 0,
-      legalFees: 0,
-      appraisal: 0
-    }
+interface RegionTaxRates {
+  [key: string]: {
+    transferTax: number;
+    legalFees: number;
   };
+}
 
-  // Calculate taxes based on property type
-  if (propertyType === 'new') {
-    result.taxes.iva = priceNum * 0.1; // 10% IVA for new properties
-    result.taxes.ajdTax = priceNum * (rates.AJD / 100);
-  } else {
-    result.taxes.transferTax = priceNum * (rates.ITP / 100);
+// Constants for tax rates by region
+const regionTaxRates: RegionTaxRates = {
+  'andalucia': { transferTax: 0.07, legalFees: 0.01 },
+  'aragon': { transferTax: 0.08, legalFees: 0.01 },
+  'asturias': { transferTax: 0.08, legalFees: 0.01 },
+  'canarias': { transferTax: 0.065, legalFees: 0.01 },
+  'cantabria': { transferTax: 0.08, legalFees: 0.01 },
+  'castilla-la-mancha': { transferTax: 0.08, legalFees: 0.01 },
+  'castilla-y-leon': { transferTax: 0.08, legalFees: 0.01 },
+  'cataluna': { transferTax: 0.10, legalFees: 0.01 },
+  'comunidad-valenciana': { transferTax: 0.10, legalFees: 0.01 },
+  'extremadura': { transferTax: 0.08, legalFees: 0.01 },
+  'galicia': { transferTax: 0.09, legalFees: 0.01 },
+  'islas-baleares': { transferTax: 0.08, legalFees: 0.01 },
+  'la-rioja': { transferTax: 0.07, legalFees: 0.01 },
+  'madrid': { transferTax: 0.06, legalFees: 0.01 },
+  'murcia': { transferTax: 0.08, legalFees: 0.01 },
+  'navarra': { transferTax: 0.06, legalFees: 0.01 },
+  'pais-vasco': { transferTax: 0.04, legalFees: 0.01 }
+};
+
+// Helper functions
+const calculateTransferTax = (price: number, region: string): number => {
+  const taxRate = regionTaxRates[region]?.transferTax || 0.08; // Default to 8% if region not found
+  return price * taxRate;
+};
+
+const calculateLegalFees = (price: number, region: string, customFees?: number): number => {
+  if (customFees !== undefined) {
+    return customFees;
   }
+  const feeRate = regionTaxRates[region]?.legalFees || 0.01; // Default to 1% if region not found
+  return price * feeRate;
+};
 
-  // Agency fees if applicable (typically 3-5%)
-  if (data.includeAgencyFees) {
-    result.expenses.agency = priceNum * 0.03;
+const calculateNotaryFees = (price: number): number => {
+  // Simplified calculation
+  return price * 0.005; // Approximately 0.5% of property price
+};
+
+const calculateRegisterFees = (price: number): number => {
+  // Simplified calculation
+  return price * 0.004; // Approximately 0.4% of property price
+};
+
+// Main calculation function
+export const calculateBuyerCosts = (formData: PropertyFormData): CalculationResult => {
+  const { price, region, agencyFee } = formData;
+  
+  // Calculate taxes and fees
+  const transferTax = calculateTransferTax(price, region);
+  const notaryFees = calculateNotaryFees(price);
+  const registerFees = calculateRegisterFees(price);
+  
+  // Agency fees (optional)
+  let calculatedAgencyFee = 0;
+  if (formData.includeAgencyFees) {
+    calculatedAgencyFee = agencyFee;
   }
-
-  // Legal fees if applicable
-  if (data.includeLegalFees) {
-    result.expenses.legalFees = 1000; // Fixed value for simplicity
+  
+  // Legal fees (optional)
+  let calculatedLegalFees = 0;
+  if (formData.includeLegalFees) {
+    calculatedLegalFees = calculateLegalFees(price, region, formData.legalFees);
   }
+  
+  // Calculate totals
+  const totalTaxes = transferTax;
+  const totalFees = notaryFees + registerFees + calculatedAgencyFee + calculatedLegalFees;
+  const totalCost = price + totalTaxes + totalFees;
+  
+  // Create the breakdown
+  const breakdown: CalculationBreakdown = {
+    propertyPrice: price,
+    taxes: {
+      transferTax
+    },
+    fees: {
+      notaryFees,
+      registerFees,
+      agencyFees: calculatedAgencyFee,
+      legalFees: calculatedLegalFees
+    },
+    totalAdditionalCosts: totalTaxes + totalFees,
+    totalCost
+  };
+  
+  return {
+    buyer: breakdown,
+    seller: calculateSellerCosts(formData)
+  };
+};
 
-  // Appraisal for loans
-  if (hasLoan) {
-    result.expenses.appraisal = 300;
+// Calculate seller costs
+const calculateSellerCosts = (formData: PropertyFormData): CalculationBreakdown => {
+  const { price, agencyFee } = formData;
+  
+  // Capital gains tax (simplified)
+  const capitalGainsTax = price * 0.19; // 19% of property price as a simplification
+  
+  // Agency fees (optional)
+  let calculatedAgencyFee = 0;
+  if (formData.includeAgencyFees) {
+    calculatedAgencyFee = agencyFee;
   }
-
-  // Calculate the total
-  result.total = 
-    result.taxes.iva + 
-    result.taxes.transferTax + 
-    result.taxes.plusvalia + 
-    result.taxes.ajdTax + 
-    result.taxes.ibiTax +
-    result.expenses.notary +
-    result.expenses.registry +
-    result.expenses.agency +
-    result.expenses.legalFees +
-    result.expenses.appraisal;
-
-  return result;
+  
+  // Calculate totals
+  const totalTaxes = capitalGainsTax;
+  const totalFees = calculatedAgencyFee;
+  const totalCost = price - totalTaxes - totalFees;
+  
+  // Create the breakdown
+  const breakdown: CalculationBreakdown = {
+    propertyPrice: price,
+    taxes: {
+      capitalGainsTax
+    },
+    fees: {
+      agencyFees: calculatedAgencyFee
+    },
+    totalAdditionalCosts: totalTaxes + totalFees,
+    totalCost
+  };
+  
+  return breakdown;
 };
