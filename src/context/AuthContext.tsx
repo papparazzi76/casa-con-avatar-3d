@@ -141,5 +141,5 @@ export const useAuth = (): AuthContextType => {
   return context;
 };
 
-// Import and re-export from NotificationContext
-export { useNotification } from "./NotificationContext";
+// Remove the circular import/export
+// Instead of re-exporting from NotificationContext, we'll let App.tsx handle both contexts separately
