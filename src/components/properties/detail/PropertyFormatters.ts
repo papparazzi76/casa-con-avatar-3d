@@ -25,3 +25,14 @@ export function formatDate(dateString: string) {
     day: 'numeric' 
   }).format(date);
 }
+
+// Add the missing function
+export function getFormattedLocation(property: { location?: string; address?: string; postal_code?: string }) {
+  const parts = [];
+  
+  if (property.address) parts.push(property.address);
+  if (property.location) parts.push(property.location);
+  if (property.postal_code) parts.push(property.postal_code);
+  
+  return parts.join(", ");
+}

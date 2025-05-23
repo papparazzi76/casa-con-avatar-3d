@@ -4,9 +4,9 @@ import { useToast } from "@/components/ui/use-toast";
 import { ImageUploader } from "@/features/image-editor/ImageUploader";
 import { EditorOptions } from "@/features/image-editor/EditorOptions";
 import { ResultDisplay } from "@/features/image-editor/ResultDisplay";
-import { DecorStyle, EditMode, RoomType } from "@/features/image-editor/types";
+import { DecorStyle, EditMode, RoomType, EditedImage } from "@/features/image-editor/types";
 import { getRoomTypeLabel } from "@/features/image-editor/util";
-import { ImageEditPlan } from "@/utils/openaiService";
+import { ImageEditPlan } from "@/services/ai/types/image";
 import { ContactProfessionalButtonWithDialog } from "@/components/ContactProfessionalButtonWithDialog";
 import { EditPlanDisplay } from "@/features/image-editor/EditPlanDisplay";
 import { useAuth } from "@/context/AuthContext";
@@ -15,16 +15,6 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-
-interface EditedImage {
-  id: string;
-  user_id: string;
-  image_url: string;
-  edit_mode: EditMode;
-  room_type?: RoomType;
-  decor_style?: DecorStyle;
-  created_at: string;
-}
 
 const ImageEditor = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -42,26 +32,26 @@ const ImageEditor = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Fetch user's edited images
+  // Mock edited images since we don't have an actual table for them in Supabase
   useEffect(() => {
-    async function fetchUserImages() {
-      if (!user) return;
+    async function loadUserImages() {
+      if (!user) {
+        setIsLoading(false);
+        return;
+      }
       
       try {
         setIsLoading(true);
-        const { data, error } = await supabase
-          .from('edited_images')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
-          
-        if (error) {
-          throw error;
-        }
         
-        setEditedImages(data || []);
+        // In a real app, we would fetch from Supabase
+        // Since we don't have an 'edited_images' table, we'll use mock data
+        const mockEditedImages: EditedImage[] = [
+          // Some mock edited images could go here in a real application
+        ];
+        
+        setEditedImages(mockEditedImages);
       } catch (error) {
-        console.error("Error fetching user images:", error);
+        console.error("Error loading user images:", error);
         toast({
           title: "Error al cargar imágenes",
           description: "No se pudieron cargar tus imágenes editadas.",
@@ -72,7 +62,7 @@ const ImageEditor = () => {
       }
     }
     
-    fetchUserImages();
+    loadUserImages();
   }, [user, toast]);
 
   const handleImageChange = (file: File) => {
@@ -163,26 +153,38 @@ const ImageEditor = () => {
       // Set fake edited image
       setEditedImage(fakeEditedImageUrl);
       
-      // Create fake edit plan
+      // Create fake edit plan with proper types
       setEditPlan({
         description: "Imagen mejorada con ajustes de iluminación, contraste y nitidez.",
         steps: [
-          "Ajustes de luz y color",
-          "Mejora de nitidez",
-          "Corrección de perspectiva",
-          "Optimización general"
+          {
+            tool: "Ajustes de luz",
+            params: { intensidad: "media", contraste: "+15%" }
+          },
+          {
+            tool: "Mejora de nitidez",
+            params: { cantidad: 30, radio: 1.5 }
+          },
+          {
+            tool: "Corrección de perspectiva",
+            params: { vertical: "auto", horizontal: "0" }
+          },
+          {
+            tool: "Optimización general",
+            params: { intensidad: "alta" }
+          }
         ]
       });
       
       // Add to user's edited images
       if (user) {
-        const newEditedImage = {
+        const newEditedImage: EditedImage = {
           id: Date.now().toString(),
           user_id: user.id,
           image_url: fakeEditedImageUrl || "",
           edit_mode: editMode,
-          room_type: editMode === "homestaging" ? roomType : undefined,
-          decor_style: editMode === "homestaging" ? decorStyle : undefined,
+          room_type: roomType,
+          decor_style: decorStyle,
           created_at: new Date().toISOString()
         };
         

@@ -70,75 +70,60 @@ export const calculateExpenses = (data: PropertyFormData): CalculationResult => 
   // Obtener tasas aplicables según la comunidad autónoma
   const rates = regionTaxRates[region] || { ITP: 8, AJD: 1.5 }; // Valores por defecto
 
-  // Cálculo para el comprador
-  const buyerDetails: { [key: string]: number } = {};
-  
-  // IVA o ITP dependiendo de si es nueva o usada
-  if (propertyType === 'new') {
-    buyerDetails.IVA = priceNum * 0.1; // 10% IVA para vivienda nueva
-    buyerDetails.AJD = priceNum * (rates.AJD / 100);
-  } else {
-    buyerDetails.ITP = priceNum * (rates.ITP / 100);
-  }
-  
-  // Gastos adicionales
-  buyerDetails.Notaría = calculateNotaryFees(priceNum);
-  buyerDetails.Registro = calculateRegistryFees(priceNum);
-  buyerDetails.Gestoría = 350; // Valor genérico
-  
-  // Gastos de hipoteca si aplica
-  if (hasLoan) {
-    buyerDetails.Tasación = 300; // Valor genérico
-    buyerDetails.Hipoteca_comisión_apertura = loanAmountNum * 0.01; // 1% genérico
-    buyerDetails.AJD_hipoteca = loanAmountNum * (rates.AJD / 100);
-  }
-
-  // Cálculo para el vendedor
-  const sellerDetails: { [key: string]: number } = {};
-  
-  // IRPF por ganancia patrimonial (simplificado)
-  const gain = priceNum - (acquisitionValueNum + improvementsNum);
-  if (gain > 0) {
-    sellerDetails.IRPF_ganancia_patrimonial = gain * 0.19; // 19% tipo general simplificado
-  } else {
-    sellerDetails.IRPF_ganancia_patrimonial = 0;
-  }
-  
-  // Plusvalía municipal
-  sellerDetails.Plusvalía_municipal_IVTNU = municipalCapitalGainsTaxNum;
-  
-  // Gastos cancelación hipoteca
-  if (remainingLoanNum > 0) {
-    sellerDetails.Cancelación_hipoteca = remainingLoanNum * 0.005; // 0.5% comisión genérica
-    sellerDetails.Notaría_cancelación = 200; // Valor genérico
-    sellerDetails.Registro_cancelación = 100; // Valor genérico
-  }
-  
-  // Cálculo de totales
-  const buyerTotal = Object.values(buyerDetails).reduce((sum, value) => sum + value, 0);
-  const sellerTotal = Object.values(sellerDetails).reduce((sum, value) => sum + value, 0);
-
-  // Supuestos utilizados
-  const assumptions = [
-    `Tipo ITP ${region} ${rates.ITP}% / AJD ${rates.AJD}% para el cálculo general.`,
-    "Notaría estimada según RD 1426/1989, arancel mínimo aplicado.",
-    "Registro calculado por arancel RD 1427/1989.",
-    "Gestoría genérica 350 € (puede variar)."
-  ];
-
-  // Fecha del cálculo
-  const currentDate = new Date().toISOString().split('T')[0];
-
-  return {
-    comprador: {
-      total: buyerTotal,
-      detalle: buyerDetails
+  // Initialize the result with default values
+  const result: CalculationResult = {
+    total: 0,
+    taxes: {
+      iva: 0,
+      transferTax: 0,
+      plusvalia: municipalCapitalGainsTaxNum,
+      ajdTax: 0,
+      ibiTax: 250 // Default value for IBI
     },
-    vendedor: {
-      total: sellerTotal,
-      detalle: sellerDetails
-    },
-    supuestos: assumptions,
-    fecha_cálculo: currentDate
+    expenses: {
+      notary: calculateNotaryFees(priceNum),
+      registry: calculateRegistryFees(priceNum),
+      agency: 0,
+      legalFees: 0,
+      appraisal: 0
+    }
   };
+
+  // Calculate taxes based on property type
+  if (propertyType === 'new') {
+    result.taxes.iva = priceNum * 0.1; // 10% IVA for new properties
+    result.taxes.ajdTax = priceNum * (rates.AJD / 100);
+  } else {
+    result.taxes.transferTax = priceNum * (rates.ITP / 100);
+  }
+
+  // Agency fees if applicable (typically 3-5%)
+  if (data.includeAgencyFees) {
+    result.expenses.agency = priceNum * 0.03;
+  }
+
+  // Legal fees if applicable
+  if (data.includeLegalFees) {
+    result.expenses.legalFees = 1000; // Fixed value for simplicity
+  }
+
+  // Appraisal for loans
+  if (hasLoan) {
+    result.expenses.appraisal = 300;
+  }
+
+  // Calculate the total
+  result.total = 
+    result.taxes.iva + 
+    result.taxes.transferTax + 
+    result.taxes.plusvalia + 
+    result.taxes.ajdTax + 
+    result.taxes.ibiTax +
+    result.expenses.notary +
+    result.expenses.registry +
+    result.expenses.agency +
+    result.expenses.legalFees +
+    result.expenses.appraisal;
+
+  return result;
 };

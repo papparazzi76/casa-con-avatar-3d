@@ -14,7 +14,12 @@ interface AuthContextType {
   loading: boolean;
 }
 
+interface NotificationContextType {
+  sendFormNotification: (formType: string, email: string | undefined, formData: Record<string, any>) => Promise<void>;
+}
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -110,6 +115,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  // Notification functions
+  const sendFormNotification = async (formType: string, email: string | undefined, formData: Record<string, any>) => {
+    try {
+      // In a real implementation, you would send this data to your backend
+      console.log(`Notification for ${formType} from ${email}:`, formData);
+      
+      // For demo purposes just log it
+      toast.success("Notificación enviada correctamente");
+      return Promise.resolve();
+    } catch (error: any) {
+      console.error("Error sending notification:", error);
+      toast.error("Error al enviar la notificación");
+      return Promise.reject(error);
+    }
+  };
+
+  // Create notification context value
+  const notificationContextValue: NotificationContextType = {
+    sendFormNotification
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -122,7 +148,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         loading
       }}
     >
-      {children}
+      <NotificationContext.Provider value={notificationContextValue}>
+        {children}
+      </NotificationContext.Provider>
     </AuthContext.Provider>
   );
 };
@@ -132,6 +160,16 @@ export const useAuth = () => {
   
   if (context === undefined) {
     throw new Error("useAuth debe usarse dentro de un AuthProvider");
+  }
+  
+  return context;
+};
+
+export const useNotification = () => {
+  const context = useContext(NotificationContext);
+  
+  if (context === undefined) {
+    throw new Error("useNotification debe usarse dentro de un AuthProvider");
   }
   
   return context;

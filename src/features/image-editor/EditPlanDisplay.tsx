@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ImageEditPlan } from "@/services/ai";
+import { ImageEditPlan } from "@/services/ai/types/image";
 
 interface EditPlanDisplayProps {
   editPlan: ImageEditPlan;
@@ -21,7 +21,7 @@ export const EditPlanDisplay = ({ editPlan, className = "" }: EditPlanDisplayPro
       <CardContent className="space-y-4">
         <div>
           <h4 className="font-medium mb-2">Resultado esperado:</h4>
-          <p className="text-sm text-muted-foreground">{editPlan.expected_result}</p>
+          <p className="text-sm text-muted-foreground">{editPlan.description}</p>
         </div>
 
         {editPlan.staging_style && (

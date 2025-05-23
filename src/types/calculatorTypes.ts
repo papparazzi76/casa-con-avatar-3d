@@ -27,3 +27,24 @@ export interface CalculationResult {
   };
   plusvaliaDetails?: string;
 }
+
+// Add missing types for calculatorService
+export interface PropertyFormData {
+  region: string;
+  price: string | number;
+  propertyType: 'new' | 'used';
+  hasLoan: boolean;
+  loanAmount?: string | number;
+  acquisitionValue?: string | number;
+  acquisitionDate?: string;
+  improvements?: string | number;
+  municipalCapitalGainsTax?: string | number;
+  remainingLoan?: string | number;
+}
+
+export interface RegionTaxRates {
+  [key: string]: { 
+    ITP: number; 
+    AJD: number 
+  };
+}
