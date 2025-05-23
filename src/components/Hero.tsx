@@ -1,28 +1,8 @@
 
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
 
 export function Hero() {
-  const [isVideoLoaded, setIsVideoLoaded] = useState(false);
-  
-  useEffect(() => {
-    const video = document.createElement('video');
-    video.src = "/lovable-uploads/sample-property-video.mp4";
-    
-    // Comprobar si el video se puede cargar
-    video.onloadeddata = () => {
-      setIsVideoLoaded(true);
-    };
-    
-    // Timeout de seguridad en caso de que el evento onloadeddata no se dispare
-    const timer = setTimeout(() => {
-      setIsVideoLoaded(true);
-    }, 300);
-    
-    return () => clearTimeout(timer);
-  }, []);
-
   return (
     <section className="py-16 md:py-24">
       <div className="container px-4 md:px-6">
@@ -62,22 +42,11 @@ export function Hero() {
                 <div className="text-2xl font-bold font-heading gradient-text">PropTools</div>
               </div>
               <div className="h-full w-full rounded-b-xl bg-white dark:bg-gray-950 flex items-center justify-center overflow-hidden">
-                {!isVideoLoaded ? (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-realestate-purple"></div>
-                  </div>
-                ) : (
-                  <video 
-                    autoPlay 
-                    muted 
-                    loop 
-                    playsInline
-                    className="w-full h-full object-cover"
-                  >
-                    <source src="/lovable-uploads/sample-property-video.mp4" type="video/mp4" />
-                    Su navegador no soporta videos HTML5.
-                  </video>
-                )}
+                <img 
+                  src="/lovable-uploads/f40a8f73-21e1-48d0-9be1-d8e4eace89a5.png" 
+                  alt="PropTools - Servicios inmobiliarios profesionales"
+                  className="w-full h-full object-cover"
+                />
               </div>
             </div>
           </motion.div>
