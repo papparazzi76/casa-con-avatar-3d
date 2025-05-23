@@ -6,6 +6,7 @@ interface Window {
     client: {
       init: (config: {
         clientId: string;
+        apiKey?: string;
         discoveryDocs: string[];
         scope: string;
       }) => Promise<void>;
