@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
@@ -248,7 +247,7 @@ const CalendarScheduler: React.FC = () => {
       </div>
 
       {!user && (
-        <Alert variant="warning" className="bg-amber-50 text-amber-800 border-amber-200">
+        <Alert variant="default" className="bg-amber-50 text-amber-800 border-amber-200">
           <Info className="h-4 w-4" />
           <AlertTitle>Inicio de sesión requerido</AlertTitle>
           <AlertDescription>
