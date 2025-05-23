@@ -3,7 +3,6 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
 import { toast } from "sonner";
-import { NotificationProvider } from "./NotificationContext";
 
 // Define auth context type
 interface AuthContextType {
@@ -126,9 +125,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <AuthContext.Provider value={authContextValue}>
-      <NotificationProvider>
-        {children}
-      </NotificationProvider>
+      {children}
     </AuthContext.Provider>
   );
 };
@@ -144,6 +141,5 @@ export const useAuth = (): AuthContextType => {
   return context;
 };
 
-// Re-export NotificationContext hooks for convenience
+// Import and re-export from NotificationContext
 export { useNotification } from "./NotificationContext";
-export { NotificationProvider } from "./NotificationContext";
