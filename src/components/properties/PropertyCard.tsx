@@ -3,16 +3,19 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Property, PropertyImage } from "@/types/property";
+import { Property, PropertyImage, PropertyVideo } from "@/types/property";
 import { formatPrice, getFormattedLocation } from "./detail/PropertyFormatters";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Video } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { deleteProperty } from "@/services/propertyService";
 import { toast } from "sonner";
 import { useState } from "react";
 
 interface PropertyCardProps {
-  property: Property & { property_images: PropertyImage[] };
+  property: Property & { 
+    property_images: PropertyImage[],
+    property_videos?: PropertyVideo[] 
+  };
   onDelete?: () => void;
 }
 
@@ -24,6 +27,9 @@ export function PropertyCard({ property, onDelete }: PropertyCardProps) {
   // Encontrar la imagen principal o usar la primera disponible
   const mainImage = property.property_images.find(img => img.is_main) || 
                     property.property_images[0];
+                    
+  // Comprobar si tiene videos
+  const hasVideos = property.property_videos && property.property_videos.length > 0;
 
   // Determinar si el usuario es propietario del inmueble
   const isOwner = user && property.user_id === user.id;
@@ -80,10 +86,17 @@ export function PropertyCard({ property, onDelete }: PropertyCardProps) {
           )}
         </div>
 
-        <div className="absolute top-2 right-2">
+        <div className="absolute top-2 right-2 flex gap-2">
           <Badge variant="secondary" className="bg-white/90 hover:bg-white">
             {property.operation_type === "venta" ? "Venta" : "Alquiler"}
           </Badge>
+          
+          {hasVideos && (
+            <Badge variant="secondary" className="bg-white/90 hover:bg-white">
+              <Video className="h-3 w-3 mr-1" />
+              Video
+            </Badge>
+          )}
         </div>
 
         {isOwner && (

@@ -3,4 +3,5 @@
 
 export * from './propertyService';
 export * from './imageService';
+export * from './videoService';
 export * from './userPropertyService';

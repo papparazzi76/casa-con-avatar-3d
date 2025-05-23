@@ -1,4 +1,3 @@
-
 export interface Property {
   id: string;
   user_id: string;
@@ -21,12 +20,22 @@ export interface Property {
   updated_at: string;
   status: string;
   property_images?: PropertyImage[];
+  property_videos?: PropertyVideo[];
 }
 
 export interface PropertyImage {
   id: string;
   property_id: string;
   image_url: string;
+  is_main: boolean;
+  order_num: number;
+  created_at: string;
+}
+
+export interface PropertyVideo {
+  id: string;
+  property_id: string;
+  video_url: string;
   is_main: boolean;
   order_num: number;
   created_at: string;

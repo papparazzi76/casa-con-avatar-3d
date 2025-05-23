@@ -1,8 +1,20 @@
 
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
 
 export function Hero() {
+  const [isVideoLoaded, setIsVideoLoaded] = useState(false);
+  
+  useEffect(() => {
+    // Simulamos la carga del video
+    const timer = setTimeout(() => {
+      setIsVideoLoaded(true);
+    }, 300);
+    
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <section className="py-16 md:py-24">
       <div className="container px-4 md:px-6">
@@ -42,11 +54,22 @@ export function Hero() {
                 <div className="text-2xl font-bold font-heading gradient-text">PropTools</div>
               </div>
               <div className="h-full w-full rounded-b-xl bg-white dark:bg-gray-950 flex items-center justify-center overflow-hidden">
-                <img 
-                  src="/lovable-uploads/e97eadbf-d056-4bb2-a4f6-1330520fcb27.png" 
-                  alt="PropTools equipo" 
-                  className="w-full h-auto object-cover"
-                />
+                {!isVideoLoaded ? (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-realestate-purple"></div>
+                  </div>
+                ) : (
+                  <video 
+                    autoPlay 
+                    muted 
+                    loop 
+                    playsInline
+                    className="w-full h-full object-cover"
+                  >
+                    <source src="/lovable-uploads/sample-property-video.mp4" type="video/mp4" />
+                    Su navegador no soporta videos HTML5.
+                  </video>
+                )}
               </div>
             </div>
           </motion.div>
