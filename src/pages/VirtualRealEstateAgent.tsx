@@ -37,7 +37,7 @@ export default function VirtualRealEstateAgent() {
             
             <Tabs defaultValue="flowchart" className="mb-12">
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="flowchart">Diagrama de Flujo</TabsTrigger>
+                <TabsTrigger value="flowchart">Paso a paso</TabsTrigger>
                 <TabsTrigger value="detailed">Pasos Detallados</TabsTrigger>
               </TabsList>
               

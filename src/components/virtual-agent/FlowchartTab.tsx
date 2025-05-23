@@ -46,71 +46,127 @@ const FlowchartTab: React.FC<FlowchartTabProps> = ({ steps }) => {
     }
   };
 
+  // Function to get visible steps in current row
+  const getVisibleStepsInRow = () => {
+    // We'll show a maximum of 3 steps per row
+    const maxStepsPerRow = 3;
+    const visibleStepCount = visibleSteps.length;
+    
+    // Calculate how many complete rows we have
+    const completeRows = Math.floor(visibleStepCount / maxStepsPerRow);
+    
+    // Calculate how many steps are in the last (incomplete) row
+    const stepsInLastRow = visibleStepCount % maxStepsPerRow || maxStepsPerRow;
+    
+    return { maxStepsPerRow, completeRows, stepsInLastRow };
+  };
+  
+  const { maxStepsPerRow } = getVisibleStepsInRow();
+
   return (
     <div className="bg-gradient-to-r from-realestate-purple/5 to-realestate-turquoise/5 p-6 rounded-lg">
       <h2 className="text-2xl font-bold text-center text-gray-700 mb-8">
         Proceso de Venta de un Inmueble
       </h2>
       
-      {/* Flowchart with spheres */}
-      <div className="flex flex-wrap justify-center items-start gap-4 py-6">
-        {steps.map((step, index) => (
-          <React.Fragment key={step.id}>
-            {/* Sphere step */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ 
-                opacity: visibleSteps.includes(index) ? 1 : 0,
-                scale: visibleSteps.includes(index) ? 1 : 0.8,
-              }}
-              transition={{ duration: 0.5 }}
-              className={cn(
-                "w-[150px] h-[150px] md:w-[150px] md:h-[150px] rounded-full flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300 shadow-lg p-3 select-none",
-                sphereColors[index % sphereColors.length],
-                visibleSteps.includes(index) ? "visible" : "invisible",
-                visibleSteps.includes(index) && index !== Math.max(...visibleSteps) ? "opacity-70" : ""
-              )}
-              onClick={() => {
-                revealNextStep(index);
-                handleStepClick(step.id);
-              }}
-              whileHover={index === Math.max(...visibleSteps) ? { 
-                translateY: -5, 
-                scale: 1.05,
-                boxShadow: "0 10px 15px rgba(0, 0, 0, 0.1)" 
-              } : {}}
-            >
-              <span className="text-xl font-bold text-white">Paso {index + 1}</span>
-              <span className="text-xs text-white mt-1">{step.title}</span>
-            </motion.div>
-            
-            {/* Arrow between steps */}
-            {index < steps.length - 1 && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ 
-                  opacity: visibleSteps.includes(index) && visibleSteps.includes(index + 1) ? 1 : 0 
-                }}
-                className="text-2xl text-gray-500 flex items-center justify-center"
-              >
-                <ChevronRight className="h-8 w-8" />
-              </motion.div>
-            )}
-          </React.Fragment>
-        ))}
+      {/* Flowchart with steps displayed in rows of 3 */}
+      <div className="flex flex-col gap-8">
+        {Array.from({ length: Math.ceil(visibleSteps.length / maxStepsPerRow) }).map((_, rowIndex) => {
+          // Calculate the steps for this row
+          const rowStartIndex = rowIndex * maxStepsPerRow;
+          const rowEndIndex = Math.min(rowStartIndex + maxStepsPerRow, steps.length);
+          const rowSteps = visibleSteps
+            .filter(stepIndex => stepIndex >= rowStartIndex && stepIndex < rowEndIndex)
+            .map(stepIndex => steps[stepIndex]);
+          
+          // Skip empty rows
+          if (rowSteps.length === 0) return null;
+          
+          return (
+            <div key={`row-${rowIndex}`} className="mb-12">
+              {/* Row of spheres */}
+              <div className="flex flex-wrap justify-center items-center gap-4">
+                {visibleSteps
+                  .filter(stepIndex => stepIndex >= rowStartIndex && stepIndex < rowEndIndex)
+                  .map(stepIndex => {
+                    const step = steps[stepIndex];
+                    const isLastVisibleStep = stepIndex === Math.max(...visibleSteps);
+                    
+                    return (
+                      <React.Fragment key={step.id}>
+                        {/* Sphere step */}
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ 
+                            opacity: 1,
+                            scale: 1,
+                          }}
+                          transition={{ duration: 0.5 }}
+                          className={cn(
+                            "w-[150px] h-[150px] md:w-[150px] md:h-[150px] rounded-full flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300 shadow-lg p-3 select-none",
+                            sphereColors[stepIndex % sphereColors.length],
+                            isLastVisibleStep ? "" : "opacity-70"
+                          )}
+                          onClick={() => {
+                            revealNextStep(stepIndex);
+                            handleStepClick(step.id);
+                          }}
+                          whileHover={isLastVisibleStep ? { 
+                            translateY: -5, 
+                            scale: 1.05,
+                            boxShadow: "0 10px 15px rgba(0, 0, 0, 0.1)" 
+                          } : {}}
+                        >
+                          <span className="text-xl font-bold text-white">Paso {stepIndex + 1}</span>
+                          <span className="text-xs text-white mt-1">{step.title}</span>
+                        </motion.div>
+                        
+                        {/* Arrow between steps (only within the same row) */}
+                        {stepIndex < rowEndIndex - 1 && stepIndex < Math.max(...visibleSteps) && (
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="text-2xl text-gray-500 flex items-center justify-center"
+                          >
+                            <ChevronRight className="h-8 w-8" />
+                          </motion.div>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
+              </div>
+              
+              {/* Row of step content panels (conditional) */}
+              <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                {visibleSteps
+                  .filter(stepIndex => stepIndex >= rowStartIndex && stepIndex < rowEndIndex)
+                  .map(stepIndex => {
+                    const step = steps[stepIndex];
+                    const isActive = activeStep === step.id;
+                    
+                    return (
+                      <motion.div
+                        key={`content-${step.id}`}
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ 
+                          opacity: isActive ? 1 : 0,
+                          height: isActive ? 'auto' : 0,
+                        }}
+                        transition={{ duration: 0.3 }}
+                        className={cn(
+                          "bg-white rounded-lg shadow-md overflow-hidden",
+                          isActive ? "p-6" : "p-0"
+                        )}
+                      >
+                        {isActive && step.content}
+                      </motion.div>
+                    );
+                  })}
+              </div>
+            </div>
+          );
+        })}
       </div>
-      
-      {/* Step content panel that shows when a step is clicked */}
-      {activeStep !== null && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="mt-8 p-6 bg-white rounded-lg shadow-md"
-        >
-          {steps.find(s => s.id === activeStep)?.content}
-        </motion.div>
-      )}
       
       {activeStep === null && (
         <div className="text-center mt-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
