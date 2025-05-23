@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
 import { toast } from "sonner";
+import { NotificationProvider } from "./NotificationContext";
 
 // Define auth context type
 interface AuthContextType {
@@ -17,17 +18,6 @@ interface AuthContextType {
 
 // Create auth context
 const AuthContext = createContext<AuthContextType | null>(null);
-
-// Define notification context type completely separately
-interface NotificationContextType {
-  sendFormNotification: (formType: string, email: string | undefined, formData: Record<string, any>) => Promise<void>;
-}
-
-// Create notification context separately
-const NotificationContext = createContext<NotificationContextType | null>(null);
-
-// Export notification context so it can be imported elsewhere
-export { NotificationContext };
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -124,23 +114,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  // Notification function - completely separate from auth
-  const sendFormNotification = async (formType: string, email: string | undefined, formData: Record<string, any>) => {
-    try {
-      // In a real implementation, you would send this data to your backend
-      console.log(`Notification for ${formType} from ${email}:`, formData);
-      
-      // For demo purposes just log it
-      toast.success("Notificación enviada correctamente");
-      return Promise.resolve();
-    } catch (error: any) {
-      console.error("Error sending notification:", error);
-      toast.error("Error al enviar la notificación");
-      return Promise.reject(error);
-    }
-  };
-
-  // Create values for both contexts
   const authContextValue: AuthContextType = {
     user,
     session,
@@ -151,21 +124,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     loading
   };
 
-  const notificationContextValue: NotificationContextType = {
-    sendFormNotification
-  };
-
-  // Use nested providers with the explicitly typed values
   return (
     <AuthContext.Provider value={authContextValue}>
-      <NotificationContext.Provider value={notificationContextValue}>
+      <NotificationProvider>
         {children}
-      </NotificationContext.Provider>
+      </NotificationProvider>
     </AuthContext.Provider>
   );
 };
 
-// Export hooks with proper typing
+// Export auth context hook
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   
@@ -176,12 +144,6 @@ export const useAuth = (): AuthContextType => {
   return context;
 };
 
-export const useNotification = (): NotificationContextType => {
-  const context = useContext(NotificationContext);
-  
-  if (context === null) {
-    throw new Error("useNotification debe usarse dentro de un AuthProvider");
-  }
-  
-  return context;
-};
+// Re-export NotificationContext hooks for convenience
+export { useNotification } from "./NotificationContext";
+export { NotificationProvider } from "./NotificationContext";
