@@ -26,6 +26,28 @@ export interface CalculationResult {
     appraisal: number;
   };
   plusvaliaDetails?: string;
+  // Adding buyer and seller properties to align with calculatorService.ts usage
+  buyer?: CalculationBreakdown;
+  seller?: CalculationBreakdown;
+}
+
+// Adding the missing CalculationBreakdown interface
+export interface CalculationBreakdown {
+  propertyPrice: number;
+  taxes: {
+    transferTax?: number;
+    capitalGainsTax?: number;
+    [key: string]: number | undefined;
+  };
+  fees: {
+    notaryFees?: number;
+    registerFees?: number;
+    agencyFees?: number;
+    legalFees?: number;
+    [key: string]: number | undefined;
+  };
+  totalAdditionalCosts: number;
+  totalCost: number;
 }
 
 // Updated PropertyFormData to include all needed fields
@@ -42,6 +64,7 @@ export interface PropertyFormData {
   remainingLoan?: string | number;
   includeAgencyFees: boolean;
   includeLegalFees: boolean;
+  agencyFee?: number; // Adding missing field used in calculatorService
 }
 
 export interface RegionTaxRates {

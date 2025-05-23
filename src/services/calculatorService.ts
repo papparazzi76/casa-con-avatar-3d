@@ -91,7 +91,7 @@ export const calculateBuyerCosts = (formData: PropertyFormData): CalculationResu
   const totalCost = price + totalTaxes + totalFees;
   
   // Create the breakdown
-  const breakdown: CalculationBreakdown = {
+  const buyerBreakdown: CalculationBreakdown = {
     propertyPrice: price,
     taxes: {
       transferTax
@@ -105,10 +105,28 @@ export const calculateBuyerCosts = (formData: PropertyFormData): CalculationResu
     totalAdditionalCosts: totalTaxes + totalFees,
     totalCost
   };
+
+  const sellerBreakdown = calculateSellerCosts(formData);
   
+  // Return a correctly typed CalculationResult
   return {
-    buyer: breakdown,
-    seller: calculateSellerCosts(formData)
+    total: totalCost,
+    taxes: {
+      iva: 0,
+      transferTax,
+      plusvalia: 0,
+      ajdTax: 0,
+      ibiTax: 0
+    },
+    expenses: {
+      notary: notaryFees,
+      registry: registerFees,
+      agency: calculatedAgencyFee,
+      legalFees: calculatedLegalFees,
+      appraisal: 0
+    },
+    buyer: buyerBreakdown,
+    seller: sellerBreakdown
   };
 };
 

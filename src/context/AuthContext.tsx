@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
 import { toast } from "sonner";
 
+// Define each context type separately to avoid circular references
 interface AuthContextType {
   user: User | null;
   session: Session | null;
@@ -20,7 +21,7 @@ interface NotificationContextProps {
 
 // Create separate contexts
 const AuthContext = createContext<AuthContextType | null>(null);
-const NotificationContext = createContext<NotificationContextProps | null>(null);
+export const NotificationContext = createContext<NotificationContextProps | null>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -158,7 +159,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-// Export hook functions separately to avoid circular reference
+// Export hook functions without using the other context directly
 export const useAuth = () => {
   const context = useContext(AuthContext);
   
