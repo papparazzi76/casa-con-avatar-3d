@@ -7,8 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Upload, Image } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
-import { uploadImage, checkUserUploadLimits, ImageType, RoomType, FurnitureStyle } from "@/services/imageUploadService";
+import { useToast } from "@/hooks/use-toast";
+import { uploadImage, checkUserUploadLimits, getUserUploadedImages, ImageType, RoomType, FurnitureStyle } from "@/services/imageUploadService";
 
 export const SimpleImageUploader = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -20,6 +20,25 @@ export const SimpleImageUploader = () => {
   const [enhancementCount, setEnhancementCount] = useState(0);
   const [homestagingCount, setHomestagingCount] = useState(0);
   const { toast } = useToast();
+
+  // Load user limits on component mount
+  const loadUserLimits = async () => {
+    try {
+      const images = await getUserUploadedImages();
+      const enhancementImages = images.filter(img => img.image_type === 'enhancement');
+      const homestagingImages = images.filter(img => img.image_type === 'homestaging');
+      
+      setEnhancementCount(enhancementImages.length);
+      setHomestagingCount(homestagingImages.length);
+    } catch (error) {
+      console.error('Error loading user limits:', error);
+    }
+  };
+
+  // Load limits when component mounts
+  useState(() => {
+    loadUserLimits();
+  });
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -66,11 +85,13 @@ export const SimpleImageUploader = () => {
     setIsUploading(true);
 
     try {
-      await uploadImage(selectedFile, {
+      const uploadData = {
         imageType,
         roomType: imageType === 'homestaging' ? roomType : undefined,
         furnitureStyle: imageType === 'homestaging' ? furnitureStyle : undefined,
-      });
+      };
+
+      await uploadImage(selectedFile, uploadData);
 
       toast({
         title: "¡Imagen subida correctamente!",
@@ -96,19 +117,6 @@ export const SimpleImageUploader = () => {
       });
     } finally {
       setIsUploading(false);
-    }
-  };
-
-  const loadUserLimits = async () => {
-    try {
-      const enhancementLimits = await checkUserUploadLimits('enhancement');
-      const homestagingLimits = await checkUserUploadLimits('homestaging');
-      
-      // This is a simplified approach - in a real app you'd get actual counts
-      setEnhancementCount(0);
-      setHomestagingCount(0);
-    } catch (error) {
-      console.error('Error loading limits:', error);
     }
   };
 
