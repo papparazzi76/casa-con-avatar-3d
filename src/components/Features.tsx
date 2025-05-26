@@ -1,4 +1,3 @@
-
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 
@@ -30,7 +29,7 @@ function Feature({ title, description, index }: FeatureProps) {
 export function Features() {
   const features = [
     {
-      title: "Totalmente Gratuito",
+      title: "Todo por menos de 100 €",
       description: "Accede a herramientas profesionales sin ningún coste."
     },
     {
