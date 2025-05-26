@@ -24,7 +24,15 @@ export async function generateImageEditPlan(input: {
     
     const systemPrompt = `Eres un modelo de lenguaje de OpenAI integrado en la aplicación web "Editor de Imágenes & Homestaging".
 Tu único cometido es generar instrucciones claras y estructuradas, en español, que el backend enviará al micro-servicio de edición de imágenes o a la IA de generación visual (p. ej. DALL·E).
-No escribes texto para el usuario final ni explicaciones de tu lógica interna; solo devuelves la respuesta en el formato JSON especificado.`;
+No escribes texto para el usuario final ni explicaciones de tu lógica interna; solo devuelves la respuesta en el formato JSON especificado.
+
+Para el modo "enhancement" (mejora de imagen), SIEMPRE debes seguir estas directrices estrictas:
+- Preservar cada elemento, objeto y detalle de la fotografía original exactamente como aparece
+- Hacer solo los ajustes más ligeros posibles en exposición general, contraste, brillo, balance de blancos y saturación de color
+- No añadir, eliminar o alterar ningún objeto, textura o elemento compositivo
+- Asegurar que los tonos de piel o materiales naturales permanezcan realistas y consistentes
+- Aplicar cambios globales y sutiles—sin retoque localizado o filtros creativos
+- Confirmar que no se han hecho otras modificaciones más allá de los ajustes globales de iluminación y balance de color`;
 
     const response = await callOpenAIAPI("gpt-4o-mini", systemPrompt, input);
 
@@ -95,6 +103,20 @@ export function createImagePrompt(
 ): string {
   const roomTypeLabel = getRoomTypeLabel(roomType);
   
+  if (editMode === "enhancement") {
+    // Aplicar las directrices específicas para corrección de iluminación y color
+    return `You are an expert image editing assistant. Correct the general lighting and color of this ${roomTypeLabel} photograph following these strict guidelines:
+
+- Preserve every element, object, and detail of the original photograph exactly as it appears
+- Make only the lightest possible adjustments to overall exposure, contrast, brightness, white balance, and color saturation
+- Do not add, remove, or alter any objects, textures, or compositional elements
+- Ensure skin tones or natural materials remain realistic and consistent
+- Apply changes globally and subtly—no localized retouching or creative filters
+- Output only the edited image with the adjusted lighting and color corrections
+
+Confirm that no other modifications have been made beyond the global lighting and color balance adjustments.`;
+  }
+  
   if (editPlan && editPlan.success && editPlan.edit_plan) {
     // Use the edit plan to create a more detailed prompt
     return `${editPlan.edit_plan.expected_result || ''}
@@ -107,10 +129,7 @@ ${editMode !== "enhancement" ? `Estilo de decoración: ${editPlan.edit_plan.stag
 `;
   } else {
     // Fallback to original prompts if no edit plan is available
-    if (editMode === "enhancement") {
-      return `Mejora profesional de esta fotografía de ${roomTypeLabel}. 
-              Ajusta la iluminación, el contraste y corrige la distorsión.`;
-    } else if (editMode === "homestaging") {
+    if (editMode === "homestaging") {
       return `Aplica homestaging virtual a esta fotografía de ${roomTypeLabel} 
               en estilo ${decorStyle}. Añade muebles y decoración apropiados.`;
     } else {
@@ -175,19 +194,22 @@ export async function processImage({
     const base64Image = await convertFileToBase64(image);
     console.log("Imagen convertida a base64");
     
-    // Generar el plan de edición con GPT-4o-mini
-    const editPlanResponse = await generateImageEditPlan({
-      mode: editMode as EditMode,
-      room_type: roomType as RoomType,
-      image_url: "data:image/jpeg;base64," + base64Image.split(',')[1],
-      notes: `Estilo: ${decorStyle}`
-    });
+    // Generar el plan de edición con GPT-4o-mini solo para homestaging
+    let editPlanResponse: ImageEditResponse | null = null;
+    if (editMode !== "enhancement") {
+      editPlanResponse = await generateImageEditPlan({
+        mode: editMode as EditMode,
+        room_type: roomType as RoomType,
+        image_url: "data:image/jpeg;base64," + base64Image.split(',')[1],
+        notes: `Estilo: ${decorStyle}`
+      });
+    }
     
     let editPlan: ImageEditPlan | null = null;
-    if (editPlanResponse.success && editPlanResponse.edit_plan) {
+    if (editPlanResponse && editPlanResponse.success && editPlanResponse.edit_plan) {
       editPlan = editPlanResponse.edit_plan;
       console.log("Plan de edición generado:", JSON.stringify(editPlan));
-    } else {
+    } else if (editMode !== "enhancement") {
       console.log("No se pudo generar un plan de edición específico, usando proceso estándar");
     }
     
@@ -196,7 +218,7 @@ export async function processImage({
       editMode as EditMode, 
       roomType as RoomType, 
       decorStyle as DecorStyle, 
-      editPlanResponse
+      editPlanResponse || undefined
     );
     console.log("Prompt generado:", prompt);
     
