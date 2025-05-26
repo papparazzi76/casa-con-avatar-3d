@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Property } from "@/types/property";
+import { isAdminUser } from "@/utils/adminUtils";
 
 // Obtener todos los inmuebles activos
 export const fetchProperties = async () => {
@@ -139,6 +140,11 @@ export const checkUserHasProperty = async () => {
     if (!user) {
       throw new Error("No estás autenticado.");
     }
+
+    // Admin user can have unlimited properties
+    if (isAdminUser(user)) {
+      return { hasProperty: false, property: null };
+    }
     
     const { data, error, count } = await supabase
       .from("properties")
@@ -167,11 +173,13 @@ export const createProperty = async (property: Omit<Property, "id" | "created_at
     throw new Error("No estás autenticado.");
   }
   
-  // Verificar si el usuario ya tiene un inmueble
-  const { hasProperty } = await checkUserHasProperty();
-  
-  if (hasProperty) {
-    throw new Error("Ya tienes un inmueble publicado. Debes eliminar el existente antes de publicar uno nuevo.");
+  // Verificar si el usuario ya tiene un inmueble (excepto admin)
+  if (!isAdminUser(user)) {
+    const { hasProperty } = await checkUserHasProperty();
+    
+    if (hasProperty) {
+      throw new Error("Ya tienes un inmueble publicado. Debes eliminar el existente antes de publicar uno nuevo.");
+    }
   }
   
   const { data, error } = await supabase
