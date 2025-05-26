@@ -42,25 +42,49 @@ export const useSpecialOffer = () => {
     // Fetch initial count
     fetchRemainingSpots();
 
-    // Set up real-time subscription to get updates when new registrations are added
-    const channel = supabase
-      .channel('special-offer-registrations-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'special_offer_registrations'
-        },
-        () => {
-          // Refresh the count when someone registers
-          fetchRemainingSpots();
-        }
-      )
-      .subscribe();
+    // Set up real-time subscription with proper error handling
+    let channel: any = null;
+    
+    const setupRealtimeSubscription = () => {
+      try {
+        channel = supabase
+          .channel('special-offer-updates')
+          .on(
+            'postgres_changes',
+            {
+              event: 'INSERT',
+              schema: 'public',
+              table: 'special_offer_registrations'
+            },
+            (payload) => {
+              console.log('New registration detected:', payload);
+              // Refresh the count when someone registers
+              fetchRemainingSpots();
+            }
+          )
+          .subscribe((status) => {
+            console.log('Realtime subscription status:', status);
+            if (status === 'SUBSCRIBED') {
+              console.log('Successfully subscribed to special offer updates');
+            }
+          });
+      } catch (error) {
+        console.error('Error setting up realtime subscription:', error);
+        // If realtime fails, we can still function with manual refresh
+      }
+    };
+
+    // Set up the subscription
+    setupRealtimeSubscription();
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) {
+        try {
+          supabase.removeChannel(channel);
+        } catch (error) {
+          console.error('Error removing channel:', error);
+        }
+      }
     };
   }, []);
 
