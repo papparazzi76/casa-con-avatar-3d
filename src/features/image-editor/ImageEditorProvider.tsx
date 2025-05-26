@@ -4,8 +4,9 @@ import { EditedImage, EditMode, DecorStyle, RoomType } from "./types";
 import { ImageEditPlan } from "@/services/ai/types/image";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/context/AuthContext";
-import { checkPaymentRequired, checkUserLimit, createMockEditPlan } from "./checkUserLimits";
+import { checkPaymentRequired, checkUserLimit } from "./checkUserLimits";
 import { getRoomTypeLabel } from "./util";
+import { processImage } from "@/services/ai";
 
 interface ImageEditorContextType {
   selectedImage: File | null;
@@ -67,7 +68,7 @@ export const ImageEditorProvider = ({ children }: { children: ReactNode }) => {
     setIsPaymentRequired(false);
   };
 
-  const handleEditImage = () => {
+  const handleEditImage = async () => {
     if (!selectedImage) {
       toast({
         title: "No hay imagen seleccionada",
@@ -101,26 +102,31 @@ export const ImageEditorProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
-    // Actual processing would happen here
     setIsProcessing(true);
     
-    // Simulate the process using a timeout
-    setTimeout(() => {
-      // Create fake edited image URL (in a real app this would be returned from a service)
-      const fakeEditedImageUrl = imagePreview;
+    try {
+      // Use the real AI service instead of simulation
+      const result = await processImage({
+        image: selectedImage,
+        editMode: editMode,
+        roomType: roomType,
+        decorStyle: decorStyle
+      });
       
-      // Set fake edited image
-      setEditedImage(fakeEditedImageUrl);
+      // Set the processed image
+      setEditedImage(result.imageUrl);
       
-      // Create fake edit plan
-      setEditPlan(createMockEditPlan());
+      // Set the edit plan if available
+      if (result.editPlan) {
+        setEditPlan(result.editPlan);
+      }
       
       // Add to user's edited images
       if (user) {
         const newEditedImage: EditedImage = {
           id: Date.now().toString(),
           user_id: user.id,
-          image_url: fakeEditedImageUrl || "",
+          image_url: result.imageUrl,
           edit_mode: editMode,
           room_type: roomType,
           decor_style: decorStyle,
@@ -135,8 +141,16 @@ export const ImageEditorProvider = ({ children }: { children: ReactNode }) => {
         description: `Modo: ${editMode}${editMode !== "enhancement" ? `, Estilo: ${decorStyle}` : ""}, Estancia: ${getRoomTypeLabel(roomType)}`,
       });
       
+    } catch (error: any) {
+      console.error("Error processing image:", error);
+      toast({
+        title: "Error al procesar la imagen",
+        description: error.message || "Ha ocurrido un error inesperado. Por favor, inténtalo de nuevo.",
+        variant: "destructive",
+      });
+    } finally {
       setIsProcessing(false);
-    }, 2000);
+    }
   };
 
   const value = {
