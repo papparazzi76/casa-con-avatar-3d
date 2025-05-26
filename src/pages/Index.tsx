@@ -1,4 +1,3 @@
-
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
 import { ServiceGrid } from "@/components/ServiceGrid";
@@ -11,18 +10,18 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import { isAdminUser } from "@/utils/adminUtils";
-
 const Index = () => {
-  const { user } = useAuth();
+  const {
+    user
+  } = useAuth();
   const navigate = useNavigate();
-
   const handleVirtualAgentClick = () => {
     // Allow admin user unrestricted access
     if (isAdminUser(user)) {
       navigate("/agente-virtual-inmobiliario");
       return;
     }
-    
+
     // Regular users need to be authenticated
     if (!user) {
       toast.error("Debes iniciar sesión para acceder a la guía completa");
@@ -31,7 +30,6 @@ const Index = () => {
     }
     navigate("/agente-virtual-inmobiliario");
   };
-
   return <div className="flex min-h-screen flex-col">
       <Header />
       
@@ -63,10 +61,7 @@ const Index = () => {
                   como un profesional. Con consejos prácticos, checklists y herramientas interactivas.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Button 
-                    onClick={handleVirtualAgentClick}
-                    className="bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90"
-                  >
+                  <Button onClick={handleVirtualAgentClick} className="bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90">
                     <FileText className="mr-2 h-4 w-4" />
                     Consultar guía completa
                   </Button>
@@ -97,11 +92,7 @@ const Index = () => {
                 <h2 className="text-3xl font-bold tracking-tighter mb-4">
                   Escaparate Inmobiliario
                 </h2>
-                <p className="text-muted-foreground mb-6">
-                  Descubre inmuebles o publica el tuyo totalmente gratis. 
-                  Sin comisiones ni intermediarios, conectamos directamente a 
-                  propietarios y compradores/inquilinos.
-                </p>
+                <p className="text-muted-foreground mb-6">Descubre inmuebles o publica el tuyo. Sin comisiones ni intermediarios, conectamos directamente a propietarios y compradores/inquilinos.</p>
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Button asChild className="bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90">
                     <Link to="/propiedades">
