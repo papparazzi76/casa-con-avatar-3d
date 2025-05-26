@@ -1,3 +1,4 @@
+
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
 import { ServiceGrid } from "@/components/ServiceGrid";
@@ -6,8 +7,23 @@ import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { FileText, Home } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
+
 const Index = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleVirtualAgentClick = () => {
+    if (!user) {
+      toast.error("Debes iniciar sesión para acceder a la guía completa");
+      navigate("/auth");
+      return;
+    }
+    navigate("/agente-virtual-inmobiliario");
+  };
+
   return <div className="flex min-h-screen flex-col">
       <Header />
       
@@ -39,11 +55,12 @@ const Index = () => {
                   como un profesional. Con consejos prácticos, checklists y herramientas interactivas.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Button asChild className="bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90">
-                    <Link to="/agente-virtual-inmobiliario">
-                      <FileText className="mr-2 h-4 w-4" />
-                      Consultar guía completa
-                    </Link>
+                  <Button 
+                    onClick={handleVirtualAgentClick}
+                    className="bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90"
+                  >
+                    <FileText className="mr-2 h-4 w-4" />
+                    Consultar guía completa
                   </Button>
                 </div>
               </div>
