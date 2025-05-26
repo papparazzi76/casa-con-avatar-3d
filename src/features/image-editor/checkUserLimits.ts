@@ -2,8 +2,14 @@
 import { EditedImage } from "./types";
 import { User } from "@supabase/supabase-js";
 import { EditMode, RoomType } from "./types";
+import { isAdminUser } from "@/utils/adminUtils";
 
 export const checkUserLimit = (user: User | null, editedImages: EditedImage[]) => {
+  // Admin user has no limits
+  if (isAdminUser(user)) {
+    return { canEdit: true, message: "" };
+  }
+  
   if (!user) return { canEdit: false, message: "Debes iniciar sesión para editar imágenes." };
   
   // User can edit max 5 images
@@ -17,7 +23,12 @@ export const checkUserLimit = (user: User | null, editedImages: EditedImage[]) =
   return { canEdit: true, message: "" };
 };
 
-export const checkPaymentRequired = (editMode: EditMode, roomType: RoomType) => {
+export const checkPaymentRequired = (editMode: EditMode, roomType: RoomType, user: User | null) => {
+  // Admin user never needs to pay
+  if (isAdminUser(user)) {
+    return false;
+  }
+  
   // Gratuitas: todas las mejoras y homestaging de salón y dormitorio
   if (editMode === "enhancement") return false;
   
