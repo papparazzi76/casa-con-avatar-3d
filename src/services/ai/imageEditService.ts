@@ -125,7 +125,7 @@ Aplicar estas mejoras específicas:
 ${editPlan.edit_plan.steps.map((step, index) => `${index + 1}. ${step.tool}: ${JSON.stringify(step.params)}`).join('\n')}
 
 Tipo de estancia: ${roomTypeLabel}
-${editMode !== "enhancement" ? `Estilo de decoración: ${editPlan.edit_plan.staging_style || decorStyle}` : ''}
+Estilo de decoración: ${editPlan.edit_plan.staging_style || decorStyle}
 `;
   } else {
     // Fallback to original prompts if no edit plan is available
@@ -194,9 +194,9 @@ export async function processImage({
     const base64Image = await convertFileToBase64(image);
     console.log("Imagen convertida a base64");
     
-    // Generar el plan de edición con GPT-4o-mini solo para homestaging
+    // Generar el plan de edición con GPT-4o-mini solo para homestaging y mixto
     let editPlanResponse: ImageEditResponse | null = null;
-    if (editMode !== "enhancement") {
+    if (editMode === "homestaging" || editMode === "mixto") {
       editPlanResponse = await generateImageEditPlan({
         mode: editMode as EditMode,
         room_type: roomType as RoomType,
@@ -209,7 +209,7 @@ export async function processImage({
     if (editPlanResponse && editPlanResponse.success && editPlanResponse.edit_plan) {
       editPlan = editPlanResponse.edit_plan;
       console.log("Plan de edición generado:", JSON.stringify(editPlan));
-    } else if (editMode !== "enhancement") {
+    } else if (editMode === "homestaging" || editMode === "mixto") {
       console.log("No se pudo generar un plan de edición específico, usando proceso estándar");
     }
     
