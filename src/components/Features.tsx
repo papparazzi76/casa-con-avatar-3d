@@ -30,7 +30,7 @@ export function Features() {
   const features = [
     {
       title: "Todo por sólo 99 €",
-      description: "Accede a herramientas profesionales sin ningún coste."
+      description: "Accede a herramientas profesionales y vende tu inmueble por un precio simbólico."
     },
     {
       title: "Potenciado por IA Avanzada",
