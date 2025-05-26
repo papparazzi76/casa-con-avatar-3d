@@ -229,6 +229,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_uploaded_images: {
+        Row: {
+          created_at: string
+          furniture_style: string | null
+          id: string
+          image_type: string
+          image_url: string
+          processed: boolean
+          room_type: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          furniture_style?: string | null
+          id?: string
+          image_type: string
+          image_url: string
+          processed?: boolean
+          room_type?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          furniture_style?: string | null
+          id?: string
+          image_type?: string
+          image_url?: string
+          processed?: boolean
+          room_type?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
