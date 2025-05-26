@@ -1,5 +1,4 @@
 
-import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,43 +9,10 @@ interface SpecialOfferPopupProps {
   isOpen: boolean;
   onClose: () => void;
   onAccept: () => void;
+  remainingSpots: number;
 }
 
-export const SpecialOfferPopup = ({ isOpen, onClose, onAccept }: SpecialOfferPopupProps) => {
-  const [remainingSpots, setRemainingSpots] = useState(100);
-
-  useEffect(() => {
-    // Simular registros existentes (en una app real esto vendría del backend)
-    const existingRegistrations = localStorage.getItem('special-offer-registrations');
-    const currentRegistrations = existingRegistrations ? parseInt(existingRegistrations) : 0;
-    
-    // Calcular spots restantes
-    const spots = Math.max(0, 100 - currentRegistrations);
-    setRemainingSpots(spots);
-
-    // Actualizar contador cada 30 segundos (simular nuevos registros)
-    const interval = setInterval(() => {
-      setRemainingSpots(prev => {
-        if (prev > 0) {
-          const newValue = Math.max(0, prev - Math.floor(Math.random() * 2)); // Reduce 0-1 spots randomly
-          return newValue;
-        }
-        return 0;
-      });
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const handleAccept = () => {
-    // Incrementar contador de registros
-    const existingRegistrations = localStorage.getItem('special-offer-registrations');
-    const currentRegistrations = existingRegistrations ? parseInt(existingRegistrations) : 0;
-    localStorage.setItem('special-offer-registrations', (currentRegistrations + 1).toString());
-    
-    onAccept();
-  };
-
+export const SpecialOfferPopup = ({ isOpen, onClose, onAccept, remainingSpots }: SpecialOfferPopupProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md mx-auto">
@@ -154,7 +120,7 @@ export const SpecialOfferPopup = ({ isOpen, onClose, onAccept }: SpecialOfferPop
             className="flex flex-col space-y-3"
           >
             <Button
-              onClick={handleAccept}
+              onClick={onAccept}
               disabled={remainingSpots === 0}
               className="w-full bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90 text-lg py-6"
             >

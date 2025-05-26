@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -33,7 +32,7 @@ import VirtualRealEstateAgent from "./pages/VirtualRealEstateAgent";
 const queryClient = new QueryClient();
 
 const AppContent = () => {
-  const { showOffer, closeOffer, acceptOffer } = useSpecialOffer();
+  const { showOffer, remainingSpots, closeOffer, acceptOffer } = useSpecialOffer();
 
   return (
     <>
@@ -68,6 +67,7 @@ const AppContent = () => {
         isOpen={showOffer}
         onClose={closeOffer}
         onAccept={acceptOffer}
+        remainingSpots={remainingSpots}
       />
     </>
   );
