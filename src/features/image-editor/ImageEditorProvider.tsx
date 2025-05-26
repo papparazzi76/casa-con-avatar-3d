@@ -1,4 +1,3 @@
-
 import { useState, createContext, useContext, ReactNode } from "react";
 import { EditedImage, EditMode, DecorStyle, RoomType } from "./types";
 import { ImageEditPlan } from "@/services/ai/types/image";
@@ -90,7 +89,7 @@ export const ImageEditorProvider = ({ children }: { children: ReactNode }) => {
     }
 
     // Check if payment is required
-    const paymentRequired = checkPaymentRequired(editMode, roomType);
+    const paymentRequired = checkPaymentRequired(editMode, roomType, user);
     setIsPaymentRequired(paymentRequired);
     
     if (paymentRequired) {
