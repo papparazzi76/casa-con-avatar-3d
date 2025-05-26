@@ -1,4 +1,3 @@
-
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 
@@ -20,7 +19,7 @@ function Feature({ title, description, index }: FeatureProps) {
         <Check className="h-4 w-4" />
       </div>
       <div>
-        <h3 className="font-semibold leading-tight">{title}</h3>
+        <h3 className="font-semibold leading-tight">Todo por sólo 99 €</h3>
         <p className="text-muted-foreground text-sm mt-1">{description}</p>
       </div>
     </motion.div>
@@ -30,7 +29,7 @@ function Feature({ title, description, index }: FeatureProps) {
 export function Features() {
   const features = [
     {
-      title: "Totalmente Gratuito",
+      title: "Todo por sólo 99 €",
       description: "Accede a herramientas profesionales sin ningún coste."
     },
     {
