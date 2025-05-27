@@ -1,4 +1,3 @@
-
 export interface CalculatorRequest {
   propertyType: 'new' | 'used';
   propertyValue: number;
@@ -8,6 +7,8 @@ export interface CalculatorRequest {
   previousPurchaseYear?: number;
   previousPurchasePrice?: number;
   userRole: 'buyer' | 'seller' | 'both'; // Nuevo campo para especificar el rol
+  region?: string; // Added missing property
+  buyerAge?: number; // Added missing property
 }
 
 export interface CalculationResult {

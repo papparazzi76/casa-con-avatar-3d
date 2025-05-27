@@ -1,4 +1,3 @@
-
 import { CalculationResult, CalculatorRequest, CalculationBreakdown } from "@/types/calculatorTypes";
 import { calculateRegionalITP, REGIONAL_TAX_RATES } from "./regionalTaxService";
 
@@ -216,7 +215,10 @@ async function calculateSellerCosts(request: CalculatorRequest): Promise<Calcula
 
   // Ganancia patrimonial (IRPF) - aproximación
   if (request.previousPurchasePrice && request.previousPurchaseYear) {
-    const capitalGain = propertyPrice - request.previousPurchasePrice;
+    const currentPrice = Number(propertyPrice);
+    const previousPrice = Number(request.previousPurchasePrice);
+    const capitalGain = currentPrice - previousPrice;
+    
     if (capitalGain > 0) {
       // Aplicar coeficientes de actualización si aplica
       const yearsHeld = new Date().getFullYear() - request.previousPurchaseYear;
@@ -243,8 +245,8 @@ async function calculateSellerCosts(request: CalculatorRequest): Promise<Calcula
   }
 
   // Calcular totales
-  const totalTaxes = Object.values(breakdown.taxes).reduce((sum, tax) => sum + (tax || 0), 0);
-  const totalFees = Object.values(breakdown.fees).reduce((sum, fee) => sum + (fee || 0), 0);
+  const totalTaxes = Object.values(breakdown.taxes).reduce((sum, tax) => sum + (Number(tax) || 0), 0);
+  const totalFees = Object.values(breakdown.fees).reduce((sum, fee) => sum + (Number(fee) || 0), 0);
   
   breakdown.totalAdditionalCosts = totalTaxes + totalFees;
   breakdown.totalCost = breakdown.totalAdditionalCosts; // Costos que debe pagar el vendedor

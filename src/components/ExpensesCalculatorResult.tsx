@@ -15,27 +15,16 @@ export function ExpensesCalculatorResult({ result }: ExpensesCalculatorResultPro
     }).format(amount);
   };
 
-  const calculatePercentage = (amount: number, total: number) => {
-    if (total <= 0) return "0%";
-    return `${((amount / total) * 100).toFixed(1)}%`;
-  };
-
-  // Function to render a result row
-  const ResultRow = ({ label, amount, total = result.total, explanation }: { 
+  // Function to render a result row without percentage
+  const ResultRow = ({ label, amount, explanation }: { 
     label: string; 
     amount: number; 
-    total?: number;
     explanation?: string;
   }) => (
     <div className="flex flex-col py-2">
       <div className="flex justify-between">
         <span>{label}</span>
-        <div className="flex gap-4">
-          <span className="text-gray-500 text-sm min-w-[60px] text-right">
-            {calculatePercentage(amount, total)}
-          </span>
-          <span className="font-medium">{formatCurrency(amount)}</span>
-        </div>
+        <span className="font-medium">{formatCurrency(amount)}</span>
       </div>
       {explanation && (
         <div className="text-xs text-gray-600 mt-1 ml-0">
@@ -73,18 +62,17 @@ export function ExpensesCalculatorResult({ result }: ExpensesCalculatorResultPro
                   <h3 className="font-semibold mb-1">Impuestos a pagar</h3>
                   <div className="border-b border-gray-100">
                     {result.buyer.taxes.iva && result.buyer.taxes.iva > 0 && (
-                      <ResultRow label="IVA (10%)" amount={result.buyer.taxes.iva} total={result.buyer.totalAdditionalCosts} />
+                      <ResultRow label="IVA (10%)" amount={result.buyer.taxes.iva} />
                     )}
                     {result.buyer.taxes.transferTax && result.buyer.taxes.transferTax > 0 && (
                       <ResultRow 
                         label="Impuesto de Transmisiones Patrimoniales (ITP)" 
                         amount={result.buyer.taxes.transferTax} 
-                        total={result.buyer.totalAdditionalCosts}
                         explanation={result.buyer.taxes.itpExplanation}
                       />
                     )}
                     {result.buyer.taxes.ajdTax && result.buyer.taxes.ajdTax > 0 && (
-                      <ResultRow label="Actos Jurídicos Documentados (AJD)" amount={result.buyer.taxes.ajdTax} total={result.buyer.totalAdditionalCosts} />
+                      <ResultRow label="Actos Jurídicos Documentados (AJD)" amount={result.buyer.taxes.ajdTax} />
                     )}
                   </div>
                 </div>
@@ -93,16 +81,16 @@ export function ExpensesCalculatorResult({ result }: ExpensesCalculatorResultPro
                   <h3 className="font-semibold mb-1">Gastos y gestiones</h3>
                   <div className="border-b border-gray-100">
                     {result.buyer.fees.notaryFees && result.buyer.fees.notaryFees > 0 && (
-                      <ResultRow label="Notaría" amount={result.buyer.fees.notaryFees} total={result.buyer.totalAdditionalCosts} />
+                      <ResultRow label="Notaría" amount={result.buyer.fees.notaryFees} />
                     )}
                     {result.buyer.fees.registerFees && result.buyer.fees.registerFees > 0 && (
-                      <ResultRow label="Registro de la Propiedad" amount={result.buyer.fees.registerFees} total={result.buyer.totalAdditionalCosts} />
+                      <ResultRow label="Registro de la Propiedad" amount={result.buyer.fees.registerFees} />
                     )}
                     {result.buyer.fees.agencyFees && result.buyer.fees.agencyFees > 0 && (
-                      <ResultRow label="Comisión Agencia Inmobiliaria" amount={result.buyer.fees.agencyFees} total={result.buyer.totalAdditionalCosts} />
+                      <ResultRow label="Comisión Agencia Inmobiliaria" amount={result.buyer.fees.agencyFees} />
                     )}
                     {result.buyer.fees.legalFees && result.buyer.fees.legalFees > 0 && (
-                      <ResultRow label="Asesoramiento legal" amount={result.buyer.fees.legalFees} total={result.buyer.totalAdditionalCosts} />
+                      <ResultRow label="Asesoramiento legal" amount={result.buyer.fees.legalFees} />
                     )}
                   </div>
                 </div>
@@ -134,10 +122,10 @@ export function ExpensesCalculatorResult({ result }: ExpensesCalculatorResultPro
                   <h3 className="font-semibold mb-1">Impuestos a liquidar</h3>
                   <div className="border-b border-gray-100">
                     {result.seller.taxes.plusvalia && result.seller.taxes.plusvalia > 0 && (
-                      <ResultRow label="Plusvalía Municipal" amount={result.seller.taxes.plusvalia} total={result.seller.totalCost} />
+                      <ResultRow label="Plusvalía Municipal" amount={result.seller.taxes.plusvalia} />
                     )}
                     {result.seller.taxes.capitalGainsTax && result.seller.taxes.capitalGainsTax > 0 && (
-                      <ResultRow label="IRPF (Ganancia Patrimonial)" amount={result.seller.taxes.capitalGainsTax} total={result.seller.totalCost} />
+                      <ResultRow label="IRPF (Ganancia Patrimonial)" amount={result.seller.taxes.capitalGainsTax} />
                     )}
                   </div>
                 </div>
@@ -146,10 +134,10 @@ export function ExpensesCalculatorResult({ result }: ExpensesCalculatorResultPro
                   <h3 className="font-semibold mb-1">Gastos y comisiones</h3>
                   <div className="border-b border-gray-100">
                     {result.seller.fees.agencyFees && result.seller.fees.agencyFees > 0 && (
-                      <ResultRow label="Comisión Agencia Inmobiliaria" amount={result.seller.fees.agencyFees} total={result.seller.totalCost} />
+                      <ResultRow label="Comisión Agencia Inmobiliaria" amount={result.seller.fees.agencyFees} />
                     )}
                     {result.seller.fees.legalFees && result.seller.fees.legalFees > 0 && (
-                      <ResultRow label="Asesoramiento legal" amount={result.seller.fees.legalFees} total={result.seller.totalCost} />
+                      <ResultRow label="Asesoramiento legal" amount={result.seller.fees.legalFees} />
                     )}
                   </div>
                 </div>
@@ -227,14 +215,7 @@ export function ExpensesCalculatorResult({ result }: ExpensesCalculatorResultPro
 
             <div className="mt-6 pt-2 border-t">
               <div className="flex justify-between items-center">
-                <span>Impuestos ({calculatePercentage(
-                  result.taxes.iva + 
-                  result.taxes.transferTax + 
-                  result.taxes.ajdTax + 
-                  result.taxes.ibiTax + 
-                  result.taxes.plusvalia,
-                  result.total
-                )})</span>
+                <span>Total Impuestos</span>
                 <span className="font-medium">
                   {formatCurrency(
                     result.taxes.iva + 
@@ -246,14 +227,7 @@ export function ExpensesCalculatorResult({ result }: ExpensesCalculatorResultPro
                 </span>
               </div>
               <div className="flex justify-between items-center mt-1">
-                <span>Gastos ({calculatePercentage(
-                  result.expenses.notary + 
-                  result.expenses.registry + 
-                  result.expenses.agency + 
-                  result.expenses.legalFees + 
-                  result.expenses.appraisal,
-                  result.total
-                )})</span>
+                <span>Total Gastos</span>
                 <span className="font-medium">
                   {formatCurrency(
                     result.expenses.notary + 

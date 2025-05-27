@@ -109,7 +109,7 @@ export function ExpensesCalculatorForm({
   };
 
   // Show plusvalia fields only for sellers with used properties
-  const shouldShowPlusvaliaFields = municipality && userRole !== 'buyer' && propertyType === 'used';
+  const shouldShowPlusvaliaFields = municipality && userRole === 'seller' && propertyType === 'used';
 
   return (
     <Form {...form}>
