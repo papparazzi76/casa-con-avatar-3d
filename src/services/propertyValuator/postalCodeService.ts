@@ -204,4 +204,5 @@ export function getPostalCodeInfo(postalCode: string): PostalCodeInfo | null {
 
 // Función para validar si un código postal existe
 export function isValidPostalCode(postalCode: string): boolean {
-  return postalCode in POST
+  return postalCode in POSTAL_CODES_DATABASE;
+}
