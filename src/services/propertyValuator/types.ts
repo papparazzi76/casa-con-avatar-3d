@@ -44,6 +44,7 @@ export interface PropertyValuation {
     codigo_postal: string;
     tipo: string;
     superficie_m2: number;
+    ubicacion_completa?: string; // Nueva información de ubicación completa
   };
   valoracion?: {
     precio_min: number;

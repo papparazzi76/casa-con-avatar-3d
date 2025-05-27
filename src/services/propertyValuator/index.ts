@@ -3,6 +3,7 @@ import { PropertyInfo, PropertyValuation } from "./types";
 import { getComparableProperties } from "./comparableService";
 import { getOpenAIValuation } from "./openaiService";
 import { generateFallbackValuation } from "./fallbackService";
+import { getPostalCodeInfo, isValidPostalCode } from "./postalCodeService";
 import { toast } from "sonner";
 
 // Main function to get property valuation
@@ -12,6 +13,21 @@ export async function getPropertyValuation(
   try {
     console.log("Iniciando valoración para:", propertyInfo);
     
+    // Validar código postal antes de proceder
+    if (!isValidPostalCode(propertyInfo.codigo_postal)) {
+      return {
+        status: "faltan_datos",
+        faltan_datos: [`El código postal ${propertyInfo.codigo_postal} no es válido o no está en nuestra base de datos`],
+        disclaimer: "Por favor, verifica que el código postal sea correcto."
+      };
+    }
+
+    // Obtener información del código postal
+    const postalCodeInfo = getPostalCodeInfo(propertyInfo.codigo_postal);
+    const ubicacionCompleta = postalCodeInfo 
+      ? `${postalCodeInfo.localidad}, ${postalCodeInfo.distrito || postalCodeInfo.provincia}, ${postalCodeInfo.comunidad_autonoma}`
+      : `${propertyInfo.localidad}, ${propertyInfo.distrito}`;
+    
     // 1. Get comparable properties with strict criteria
     const comparables = await getComparableProperties(propertyInfo);
     
@@ -19,11 +35,11 @@ export async function getPropertyValuation(
     if (comparables.length === 0) {
       return {
         status: "ok",
-        sin_comparables: `No se encontraron viviendas similares en el código postal ${propertyInfo.codigo_postal} con las características exactas requeridas (mismo distrito, superficie ±10%, ${propertyInfo.habitaciones} habitaciones, ${propertyInfo.ascensor ? 'con' : 'sin'} ascensor).`
+        sin_comparables: `No se encontraron viviendas similares en el código postal ${propertyInfo.codigo_postal} (${ubicacionCompleta}) con las características exactas requeridas (mismo distrito, superficie ±10%, ${propertyInfo.habitaciones} habitaciones, ${propertyInfo.ascensor ? 'con' : 'sin'} ascensor).`
       };
     }
 
-    console.log(`Encontrados ${comparables.length} comparables válidos`);
+    console.log(`Encontrados ${comparables.length} comparables válidos en ${ubicacionCompleta}`);
 
     // 2. Get valuation from OpenAI
     try {
@@ -53,14 +69,15 @@ export async function getPropertyValuation(
           distrito: propertyInfo.distrito,
           codigo_postal: propertyInfo.codigo_postal,
           tipo: propertyInfo.tipo_vivienda,
-          superficie_m2: propertyInfo.superficie_m2
+          superficie_m2: propertyInfo.superficie_m2,
+          ubicacion_completa: ubicacionCompleta
         },
         valoracion: valuation.valoracion,
         estadisticas_comparables: valuation.estadisticas_comparables,
         comparables_destacados: valuation.comparables_destacados,
         fecha_calculo: valuation.fecha_calculo || new Date().toISOString().split('T')[0],
-        metodologia_breve: valuation.metodologia_breve || `Valoración basada en ${comparables.length} comparables reales del mismo código postal ${propertyInfo.codigo_postal}, mismo distrito, superficie ±10%, mismas habitaciones (${propertyInfo.habitaciones}) y mismo ascensor (${propertyInfo.ascensor ? 'Sí' : 'No'}).`,
-        disclaimer: valuation.disclaimer || "Estimación basada en comparables reales verificados del mismo código postal. No sustituye a una tasación oficial."
+        metodologia_breve: valuation.metodologia_breve || `Valoración basada en ${comparables.length} comparables reales del código postal ${propertyInfo.codigo_postal} (${ubicacionCompleta}), mismo distrito, superficie ±10%, mismas habitaciones (${propertyInfo.habitaciones}) y mismo ascensor (${propertyInfo.ascensor ? 'Sí' : 'No'}).`,
+        disclaimer: valuation.disclaimer || `Estimación basada en comparables reales verificados del código postal ${propertyInfo.codigo_postal} en ${ubicacionCompleta}. No sustituye a una tasación oficial.`
       };
     } catch (parseError) {
       console.error("Error with OpenAI valuation:", parseError);
@@ -83,3 +100,4 @@ export async function getPropertyValuation(
 
 // Re-export types for use elsewhere
 export * from "./types";
+export * from "./postalCodeService";
