@@ -1,4 +1,3 @@
-
 import { CalculationResult, CalculatorRequest, CalculationBreakdown } from "@/types/calculatorTypes";
 import { calculateRegionalITP, REGIONAL_TAX_RATES } from "./regionalTaxService";
 
@@ -178,10 +177,15 @@ async function calculateBuyerCosts(request: CalculatorRequest): Promise<Calculat
     breakdown.fees.legalFees = 1000 + (propertyPrice * 0.005);
   }
 
-  // Calcular totales - ensure all values are numbers
-  const totalTaxes = Object.values(breakdown.taxes).reduce((sum, tax) => {
-    return sum + (typeof tax === 'number' ? tax : 0);
+  // Calcular totales - ensure all values are numbers and filter out string explanations
+  const totalTaxes = Object.entries(breakdown.taxes).reduce((sum, [key, value]) => {
+    // Only add numeric values, skip explanation strings
+    if (typeof value === 'number') {
+      return sum + value;
+    }
+    return sum;
   }, 0);
+  
   const totalFees = Object.values(breakdown.fees).reduce((sum, fee) => {
     return sum + (typeof fee === 'number' ? fee : 0);
   }, 0);
@@ -245,8 +249,15 @@ async function calculateSellerCosts(request: CalculatorRequest): Promise<Calcula
     breakdown.fees.legalFees = 1000;
   }
 
-  // Calcular totales - ensure all values are numbers
-  const totalTaxes = Object.values(breakdown.taxes).reduce((sum, tax) => sum + (Number(tax) || 0), 0);
+  // Calcular totales - ensure all values are numbers and filter out string explanations
+  const totalTaxes = Object.entries(breakdown.taxes).reduce((sum, [key, value]) => {
+    // Only add numeric values, skip explanation strings
+    if (typeof value === 'number') {
+      return sum + value;
+    }
+    return sum;
+  }, 0);
+  
   const totalFees = Object.values(breakdown.fees).reduce((sum, fee) => sum + (Number(fee) || 0), 0);
   
   breakdown.totalAdditionalCosts = totalTaxes + totalFees;
