@@ -109,7 +109,7 @@ export function ExpensesCalculatorForm({
   };
 
   // Show plusvalia fields only for sellers with used properties
-  const shouldShowPlusvaliaFields = municipality && userRole === 'seller' && propertyType === 'used';
+  const shouldShowPlusvaliaFields = municipality && (userRole === 'seller' || userRole === 'both') && propertyType === 'used';
 
   return (
     <Form {...form}>
@@ -296,7 +296,7 @@ export function ExpensesCalculatorForm({
         <Separator />
 
         {/* Campos de plusvalía solo para vendedores y vivienda usada */}
-        {userRole !== 'buyer' && (
+        {(userRole === 'seller' || userRole === 'both') && (
           <div>
             <FormField
               control={form.control}
@@ -305,7 +305,7 @@ export function ExpensesCalculatorForm({
                 <FormItem>
                   <FormLabel>
                     Municipio 
-                    {propertyType === 'used' && userRole !== 'buyer' && ' (para cálculo de plusvalía)'}
+                    {propertyType === 'used' && (userRole === 'seller' || userRole === 'both') && ' (para cálculo de plusvalía)'}
                   </FormLabel>
                   <FormControl>
                     <Input
@@ -314,7 +314,7 @@ export function ExpensesCalculatorForm({
                     />
                   </FormControl>
                   <FormDescription>
-                    {propertyType === 'used' && userRole !== 'buyer' 
+                    {propertyType === 'used' && (userRole === 'seller' || userRole === 'both')
                       ? "Introduce el municipio para calcular el impuesto de plusvalía municipal (solo para vendedores de vivienda usada)"
                       : "Introduce el municipio donde se encuentra la propiedad"
                     }

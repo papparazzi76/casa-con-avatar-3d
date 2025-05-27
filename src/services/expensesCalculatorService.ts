@@ -1,3 +1,4 @@
+
 import { CalculationResult, CalculatorRequest, CalculationBreakdown } from "@/types/calculatorTypes";
 import { calculateRegionalITP, REGIONAL_TAX_RATES } from "./regionalTaxService";
 
@@ -177,7 +178,7 @@ async function calculateBuyerCosts(request: CalculatorRequest): Promise<Calculat
     breakdown.fees.legalFees = 1000 + (propertyPrice * 0.005);
   }
 
-  // Calcular totales
+  // Calcular totales - ensure all values are numbers
   const totalTaxes = Object.values(breakdown.taxes).reduce((sum, tax) => {
     return sum + (typeof tax === 'number' ? tax : 0);
   }, 0);
@@ -244,7 +245,7 @@ async function calculateSellerCosts(request: CalculatorRequest): Promise<Calcula
     breakdown.fees.legalFees = 1000;
   }
 
-  // Calcular totales
+  // Calcular totales - ensure all values are numbers
   const totalTaxes = Object.values(breakdown.taxes).reduce((sum, tax) => sum + (Number(tax) || 0), 0);
   const totalFees = Object.values(breakdown.fees).reduce((sum, fee) => sum + (Number(fee) || 0), 0);
   
