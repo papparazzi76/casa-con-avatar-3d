@@ -7,6 +7,7 @@ export interface CalculatorRequest {
   municipality?: string;
   previousPurchaseYear?: number;
   previousPurchasePrice?: number;
+  userRole: 'buyer' | 'seller' | 'both'; // Nuevo campo para especificar el rol
 }
 
 export interface CalculationResult {
@@ -26,9 +27,11 @@ export interface CalculationResult {
     appraisal: number;
   };
   plusvaliaDetails?: string;
-  // Adding buyer and seller properties to align with calculatorService.ts usage
+  // Separando costos por comprador y vendedor
   buyer?: CalculationBreakdown;
   seller?: CalculationBreakdown;
+  // Nuevo campo para indicar si hay separación de roles
+  separateByRole?: boolean;
 }
 
 // Adding the missing CalculationBreakdown interface
@@ -37,6 +40,10 @@ export interface CalculationBreakdown {
   taxes: {
     transferTax?: number;
     capitalGainsTax?: number;
+    iva?: number;
+    ajdTax?: number;
+    plusvalia?: number;
+    ibiTax?: number;
     [key: string]: number | undefined;
   };
   fees: {
@@ -44,6 +51,7 @@ export interface CalculationBreakdown {
     registerFees?: number;
     agencyFees?: number;
     legalFees?: number;
+    appraisalFees?: number;
     [key: string]: number | undefined;
   };
   totalAdditionalCosts: number;
@@ -65,6 +73,7 @@ export interface PropertyFormData {
   includeAgencyFees: boolean;
   includeLegalFees: boolean;
   agencyFee?: number; // Adding missing field used in calculatorService
+  userRole: 'buyer' | 'seller' | 'both'; // Nuevo campo
 }
 
 export interface RegionTaxRates {

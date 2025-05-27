@@ -1,11 +1,19 @@
 
-import { CalculationResult, CalculatorRequest } from "@/types/calculatorTypes";
+import { CalculationResult, CalculatorRequest, CalculationBreakdown } from "@/types/calculatorTypes";
 
 // API key constante (permanente)
 const API_KEY = "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";
 
 export async function calculateExpenses(request: CalculatorRequest): Promise<CalculationResult> {
   try {
+    const propertyPrice = request.propertyValue || 0;
+    
+    // Si se especifica un rol, calculamos por separado
+    if (request.userRole === 'buyer' || request.userRole === 'seller') {
+      return calculateByRole(request);
+    }
+    
+    // Cálculo tradicional para compatibilidad
     let result: CalculationResult = {
       total: 0,
       taxes: {
@@ -23,8 +31,6 @@ export async function calculateExpenses(request: CalculatorRequest): Promise<Cal
         appraisal: 0
       }
     };
-
-    const propertyPrice = request.propertyValue || 0;
     
     // Base calculation logic for new or used homes
     if (request.propertyType === 'new') {
@@ -37,6 +43,9 @@ export async function calculateExpenses(request: CalculatorRequest): Promise<Cal
       // No transfer tax for new homes
       result.taxes.transferTax = 0;
       
+      // No plusvalía para vivienda nueva
+      result.taxes.plusvalia = 0;
+      
     } else {
       // Used property - Impuesto de Transmisiones Patrimoniales (ITP)
       // Typically 6-10% depending on the region
@@ -47,6 +56,19 @@ export async function calculateExpenses(request: CalculatorRequest): Promise<Cal
       
       // No AJD for used homes (generally)
       result.taxes.ajdTax = 0;
+      
+      // Plusvalía solo para vivienda usada si hay municipio
+      if (request.municipality) {
+        const plusvaliaResponse = await calculatePlusvalia(
+          request.municipality, 
+          propertyPrice, 
+          request.previousPurchaseYear || new Date().getFullYear() - 5,
+          request.previousPurchasePrice || Math.round(propertyPrice * 0.7)
+        );
+        
+        result.taxes.plusvalia = plusvaliaResponse.amount;
+        result.plusvaliaDetails = plusvaliaResponse.explanation;
+      }
     }
     
     // Notary fees - approximate
@@ -67,19 +89,6 @@ export async function calculateExpenses(request: CalculatorRequest): Promise<Cal
     
     // IBI Tax - rough approximation
     result.taxes.ibiTax = propertyPrice * 0.005; // Usually 0.4% - 1.1% of cadastral value
-    
-    // If we have municipality information, calculate plusvalía
-    if (request.municipality) {
-      const plusvaliaResponse = await calculatePlusvalia(
-        request.municipality, 
-        propertyPrice, 
-        request.previousPurchaseYear || new Date().getFullYear() - 5,
-        request.previousPurchasePrice || Math.round(propertyPrice * 0.7)
-      );
-      
-      result.taxes.plusvalia = plusvaliaResponse.amount;
-      result.plusvaliaDetails = plusvaliaResponse.explanation;
-    }
 
     // Calculate the total
     result.total = 
@@ -101,6 +110,130 @@ export async function calculateExpenses(request: CalculatorRequest): Promise<Cal
   }
 }
 
+async function calculateByRole(request: CalculatorRequest): Promise<CalculationResult> {
+  const propertyPrice = request.propertyValue || 0;
+  
+  let result: CalculationResult = {
+    total: 0,
+    taxes: { iva: 0, transferTax: 0, plusvalia: 0, ajdTax: 0, ibiTax: 0 },
+    expenses: { notary: 0, registry: 0, agency: 0, legalFees: 0, appraisal: 0 },
+    separateByRole: true
+  };
+
+  if (request.userRole === 'buyer') {
+    result.buyer = await calculateBuyerCosts(request);
+    result.total = result.buyer.totalCost;
+  } else if (request.userRole === 'seller') {
+    result.seller = await calculateSellerCosts(request);
+    result.total = result.seller.totalCost;
+  }
+
+  return result;
+}
+
+async function calculateBuyerCosts(request: CalculatorRequest): Promise<CalculationBreakdown> {
+  const propertyPrice = request.propertyValue || 0;
+  
+  let breakdown: CalculationBreakdown = {
+    propertyPrice,
+    taxes: {},
+    fees: {},
+    totalAdditionalCosts: 0,
+    totalCost: propertyPrice
+  };
+
+  // Impuestos para compradores
+  if (request.propertyType === 'new') {
+    // Vivienda nueva: IVA + AJD
+    breakdown.taxes.iva = propertyPrice * 0.10; // 10% IVA
+    breakdown.taxes.ajdTax = propertyPrice * 0.015; // 1.5% AJD
+  } else {
+    // Vivienda usada: ITP
+    breakdown.taxes.transferTax = propertyPrice * 0.08; // 8% ITP promedio
+  }
+
+  // Gastos del comprador
+  breakdown.fees.notaryFees = Math.min(900, 500 + (propertyPrice * 0.0004));
+  breakdown.fees.registerFees = Math.min(800, 400 + (propertyPrice * 0.0004));
+  
+  if (request.includeAgencyFees) {
+    breakdown.fees.agencyFees = propertyPrice * 0.03;
+  }
+  
+  if (request.includeLegalFees) {
+    breakdown.fees.legalFees = 1000 + (propertyPrice * 0.005);
+  }
+
+  // Calcular totales
+  const totalTaxes = Object.values(breakdown.taxes).reduce((sum, tax) => sum + (tax || 0), 0);
+  const totalFees = Object.values(breakdown.fees).reduce((sum, fee) => sum + (fee || 0), 0);
+  
+  breakdown.totalAdditionalCosts = totalTaxes + totalFees;
+  breakdown.totalCost = propertyPrice + breakdown.totalAdditionalCosts;
+
+  return breakdown;
+}
+
+async function calculateSellerCosts(request: CalculatorRequest): Promise<CalculationBreakdown> {
+  const propertyPrice = request.propertyValue || 0;
+  
+  let breakdown: CalculationBreakdown = {
+    propertyPrice,
+    taxes: {},
+    fees: {},
+    totalAdditionalCosts: 0,
+    totalCost: 0 // Para vendedores, esto representará los costos a deducir
+  };
+
+  // Plusvalía municipal solo para vivienda usada
+  if (request.propertyType === 'used' && request.municipality) {
+    const plusvaliaResponse = await calculatePlusvalia(
+      request.municipality, 
+      propertyPrice, 
+      request.previousPurchaseYear || new Date().getFullYear() - 5,
+      request.previousPurchasePrice || Math.round(propertyPrice * 0.7)
+    );
+    breakdown.taxes.plusvalia = plusvaliaResponse.amount;
+  }
+
+  // Ganancia patrimonial (IRPF) - aproximación
+  if (request.previousPurchasePrice && request.previousPurchaseYear) {
+    const capitalGain = propertyPrice - request.previousPurchasePrice;
+    if (capitalGain > 0) {
+      // Aplicar coeficientes de actualización si aplica
+      const yearsHeld = new Date().getFullYear() - request.previousPurchaseYear;
+      let taxableGain = capitalGain;
+      
+      // Reducción por años de tenencia (si fue adquirida antes de 2015)
+      if (request.previousPurchaseYear < 2015 && yearsHeld > 1) {
+        const reductionPercentage = Math.min(yearsHeld * 0.11, 0.60); // 11% por año, máximo 60%
+        taxableGain = capitalGain * (1 - reductionPercentage);
+      }
+      
+      // Impuesto sobre ganancia patrimonial (aproximado 19-23%)
+      breakdown.taxes.capitalGainsTax = taxableGain * 0.19;
+    }
+  }
+
+  // Gastos del vendedor
+  if (request.includeAgencyFees) {
+    breakdown.fees.agencyFees = propertyPrice * 0.03;
+  }
+  
+  if (request.includeLegalFees) {
+    breakdown.fees.legalFees = 1000;
+  }
+
+  // Calcular totales
+  const totalTaxes = Object.values(breakdown.taxes).reduce((sum, tax) => sum + (tax || 0), 0);
+  const totalFees = Object.values(breakdown.fees).reduce((sum, fee) => sum + (fee || 0), 0);
+  
+  breakdown.totalAdditionalCosts = totalTaxes + totalFees;
+  breakdown.totalCost = breakdown.totalAdditionalCosts; // Costos que debe pagar el vendedor
+
+  return breakdown;
+}
+
 async function calculatePlusvalia(
   municipality: string,
   currentPrice: number,
@@ -112,7 +245,7 @@ async function calculatePlusvalia(
     const prompt = `
       Necesito calcular el impuesto de plusvalía municipal para una propiedad en ${municipality}, España.
       Datos:
-      - Precio de venta actual (2023): ${currentPrice} euros
+      - Precio de venta actual (2025): ${currentPrice} euros
       - Año de la compra anterior: ${previousPurchaseYear}
       - Precio de compra anterior: ${previousPurchasePrice} euros
       
