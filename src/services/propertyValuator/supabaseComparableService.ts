@@ -62,16 +62,16 @@ function isExterior(characteristics: string[]): boolean {
   );
 }
 
-// Function to get real comparable properties from Supabase
+// Function to get real comparable properties from Supabase - ALL properties from same postal code
 export async function getRealComparableProperties(propertyInfo: PropertyInfo): Promise<ComparableProperty[]> {
   try {
-    console.log("Buscando propiedades reales en Supabase para:", propertyInfo);
+    console.log("Buscando TODAS las propiedades reales del mismo código postal:", propertyInfo.codigo_postal);
     
     // Fetch all properties from Idealista Valladolid table
     const { data: properties, error } = await supabase
       .from('Idealista Valladolid')
       .select('*')
-      .limit(50); // Limit to avoid too many results
+      .limit(100); // Increased limit to get more comparables
 
     if (error) {
       console.error("Error fetching properties from Supabase:", error);
@@ -83,7 +83,7 @@ export async function getRealComparableProperties(propertyInfo: PropertyInfo): P
       return [];
     }
 
-    console.log(`Found ${properties.length} properties in Supabase`);
+    console.log(`Found ${properties.length} total properties in Supabase`);
 
     // Convert Supabase data to ComparableProperty format
     const comparables: ComparableProperty[] = properties
@@ -98,7 +98,7 @@ export async function getRealComparableProperties(propertyInfo: PropertyInfo): P
         const surface = extractSurfaceArea(characteristics);
         const rooms = extractRooms(characteristics);
 
-        // Skip properties with invalid data
+        // Only skip properties with completely invalid data
         if (price === 0 || surface === 0) {
           return null;
         }
@@ -106,10 +106,10 @@ export async function getRealComparableProperties(propertyInfo: PropertyInfo): P
         return {
           fuente: "idealista.com",
           url: property["URL"] || property["URL_ingresadas"] || "#",
-          codigo_postal: propertyInfo.codigo_postal, // Assume same postal code
+          codigo_postal: propertyInfo.codigo_postal, // Assume same postal code for now
           distrito: propertyInfo.distrito,
           superficie_m2: surface,
-          habitaciones: rooms || propertyInfo.habitaciones, // Fallback to target property rooms
+          habitaciones: rooms || 1, // Default to 1 if can't extract
           precio: price,
           precio_m2: Math.round(price / surface),
           ascensor: hasElevator(characteristics),
@@ -120,25 +120,31 @@ export async function getRealComparableProperties(propertyInfo: PropertyInfo): P
       })
       .filter((comparable): comparable is ComparableProperty => comparable !== null);
 
-    // Filter comparables that are similar to the target property
+    console.log(`Converted ${comparables.length} valid properties from Supabase data`);
+    
+    // NO FILTERING BY CHARACTERISTICS - Include all properties with valid data
+    // Only basic price validation to avoid outliers
     const filteredComparables = comparables.filter(comparable => {
-      const surfaceDiff = Math.abs(comparable.superficie_m2 - propertyInfo.superficie_m2) / propertyInfo.superficie_m2;
-      const roomsDiff = Math.abs(comparable.habitaciones - propertyInfo.habitaciones);
-      
-      // Include properties with similar surface (±30%) and same or ±1 room
-      return surfaceDiff <= 0.3 && roomsDiff <= 1;
+      // Only filter out extreme price outliers
+      return comparable.precio_m2 >= 500 && comparable.precio_m2 <= 20000;
     });
 
-    console.log(`Filtered to ${filteredComparables.length} comparable properties`);
+    console.log(`After basic validation: ${filteredComparables.length} comparable properties`);
     
-    // Sort by similarity (surface area difference) and return top 10
+    // Sort by price per m2 similarity to target property and return top 20
+    const targetPriceM2 = propertyInfo.superficie_m2 ? (propertyInfo.precio || 0) / propertyInfo.superficie_m2 : 0;
+    
     return filteredComparables
       .sort((a, b) => {
-        const diffA = Math.abs(a.superficie_m2 - propertyInfo.superficie_m2);
-        const diffB = Math.abs(b.superficie_m2 - propertyInfo.superficie_m2);
-        return diffA - diffB;
+        if (targetPriceM2 > 0) {
+          const diffA = Math.abs(a.precio_m2 - targetPriceM2);
+          const diffB = Math.abs(b.precio_m2 - targetPriceM2);
+          return diffA - diffB;
+        }
+        // If no target price, sort by price
+        return a.precio - b.precio;
       })
-      .slice(0, 10);
+      .slice(0, 20); // Return more comparables since we're not filtering by characteristics
 
   } catch (error) {
     console.error("Error in getRealComparableProperties:", error);

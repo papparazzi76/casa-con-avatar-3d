@@ -28,18 +28,18 @@ export async function getPropertyValuation(
       ? `${postalCodeInfo.localidad}, ${postalCodeInfo.distrito || postalCodeInfo.provincia}, ${postalCodeInfo.comunidad_autonoma}`
       : `${propertyInfo.localidad}, ${propertyInfo.distrito}`;
     
-    // 1. Get comparable properties with strict criteria
+    // 1. Get ALL comparable properties from same postal code
     const comparables = await getComparableProperties(propertyInfo);
     
     // If no comparables, return specific message
     if (comparables.length === 0) {
       return {
         status: "ok",
-        sin_comparables: `No se encontraron viviendas similares en el código postal ${propertyInfo.codigo_postal} (${ubicacionCompleta}) con las características exactas requeridas (mismo distrito, superficie ±10%, ${propertyInfo.habitaciones} habitaciones, ${propertyInfo.ascensor ? 'con' : 'sin'} ascensor).`
+        sin_comparables: `No se encontraron propiedades en el código postal ${propertyInfo.codigo_postal} (${ubicacionCompleta}) en nuestra base de datos.`
       };
     }
 
-    console.log(`Encontrados ${comparables.length} comparables válidos en ${ubicacionCompleta}`);
+    console.log(`Encontradas ${comparables.length} propiedades en ${ubicacionCompleta} para la valoración`);
 
     // 2. Get valuation from OpenAI
     try {
@@ -76,8 +76,8 @@ export async function getPropertyValuation(
         estadisticas_comparables: valuation.estadisticas_comparables,
         comparables_destacados: valuation.comparables_destacados,
         fecha_calculo: valuation.fecha_calculo || new Date().toISOString().split('T')[0],
-        metodologia_breve: valuation.metodologia_breve || `Valoración basada en ${comparables.length} comparables reales del código postal ${propertyInfo.codigo_postal} (${ubicacionCompleta}), mismo distrito, superficie ±10%, mismas habitaciones (${propertyInfo.habitaciones}) y mismo ascensor (${propertyInfo.ascensor ? 'Sí' : 'No'}).`,
-        disclaimer: valuation.disclaimer || `Estimación basada en comparables reales verificados del código postal ${propertyInfo.codigo_postal} en ${ubicacionCompleta}. No sustituye a una tasación oficial.`
+        metodologia_breve: valuation.metodologia_breve || `Valoración basada en ${comparables.length} propiedades reales del código postal ${propertyInfo.codigo_postal} (${ubicacionCompleta}).`,
+        disclaimer: valuation.disclaimer || `Estimación basada en todas las propiedades disponibles del código postal ${propertyInfo.codigo_postal} en ${ubicacionCompleta}. No sustituye a una tasación oficial.`
       };
     } catch (parseError) {
       console.error("Error with OpenAI valuation:", parseError);

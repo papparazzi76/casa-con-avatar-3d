@@ -74,14 +74,14 @@ const PropertyValuator = () => {
             Valorador de Inmuebles - Valladolid
           </h1>
           <p className="mx-auto mt-4 max-w-[700px] text-gray-500 md:text-xl dark:text-gray-400">
-            Obtén una valoración estimada de tu propiedad en Valladolid basada en datos reales de inmuebles similares del mercado.
+            Obtén una valoración estimada de tu propiedad en Valladolid basada en datos reales de inmuebles del mismo código postal.
           </p>
           <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg max-w-2xl mx-auto">
             <p className="text-amber-700 font-medium">
               ⚠️ Servicio disponible únicamente para propiedades en Valladolid capital
             </p>
             <p className="text-amber-600 text-sm mt-1">
-              Utilizamos datos reales de Idealista para ofrecerte valoraciones precisas
+              Utilizamos todas las propiedades disponibles del mismo código postal para ofrecerte una valoración completa del mercado
             </p>
           </div>
           
