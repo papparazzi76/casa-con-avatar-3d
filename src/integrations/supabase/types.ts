@@ -9,6 +9,42 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      "Idealista Valladolid": {
+        Row: {
+          Característica_1: string
+          Característica_2: string
+          Característica_3: string
+          Descripción: string
+          Precio: string
+          Timestamp: string
+          Titulo: string
+          URL: string
+          URL_ingresadas: string
+        }
+        Insert: {
+          Característica_1: string
+          Característica_2: string
+          Característica_3: string
+          Descripción: string
+          Precio: string
+          Timestamp: string
+          Titulo: string
+          URL: string
+          URL_ingresadas: string
+        }
+        Update: {
+          Característica_1?: string
+          Característica_2?: string
+          Característica_3?: string
+          Descripción?: string
+          Precio?: string
+          Timestamp?: string
+          Titulo?: string
+          URL?: string
+          URL_ingresadas?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

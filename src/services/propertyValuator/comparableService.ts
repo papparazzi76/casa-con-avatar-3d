@@ -1,17 +1,15 @@
 
 import { ComparableProperty, PropertyInfo } from "./types";
 import { getPostalCodeInfo, isValidPostalCode } from "./postalCodeService";
-import { getBasePriceM2 } from "./pricingDataService";
-import { generateStrictComparable } from "./comparableGenerator";
-import { isStrictlyValid } from "./comparableValidator";
+import { getRealComparableProperties } from "./supabaseComparableService";
 
-// Function to get comparable properties data with STRICT real criteria
+// Function to get comparable properties data using REAL data from Supabase
 export async function getComparableProperties(propertyInfo: PropertyInfo): Promise<ComparableProperty[]> {
   console.log("Buscando comparables para:", propertyInfo);
   
-  // Verificar que el código postal existe en nuestra base de datos
+  // Verificar que el código postal es de Valladolid
   if (!isValidPostalCode(propertyInfo.codigo_postal)) {
-    console.log(`Código postal no válido: ${propertyInfo.codigo_postal}`);
+    console.log(`Código postal no válido para Valladolid: ${propertyInfo.codigo_postal}`);
     return [];
   }
 
@@ -22,33 +20,16 @@ export async function getComparableProperties(propertyInfo: PropertyInfo): Promi
     return [];
   }
 
-  console.log(`Código postal válido: ${propertyInfo.codigo_postal} - ${postalCodeInfo.localidad}, ${postalCodeInfo.distrito || postalCodeInfo.provincia}`);
+  console.log(`Código postal válido de Valladolid: ${propertyInfo.codigo_postal} - ${postalCodeInfo.distrito}`);
   
-  // Simulate a delay
-  await new Promise(resolve => setTimeout(resolve, 1500));
+  // Get real comparable properties from Supabase
+  const realComparables = await getRealComparableProperties(propertyInfo);
   
-  // Get base price for the exact postal code
-  const basePriceM2 = getBasePriceM2(propertyInfo.codigo_postal);
-  
-  if (!basePriceM2) {
-    console.log(`No hay datos de precios para el código postal: ${propertyInfo.codigo_postal}`);
-    return []; // No comparables if we don't have real data for this postal code
+  if (realComparables.length === 0) {
+    console.log(`No se encontraron comparables reales para CP ${propertyInfo.codigo_postal}`);
+    return [];
   }
   
-  const sources = ["idealista.com", "fotocasa.es", "pisos.com"];
-  const comparables: ComparableProperty[] = [];
-  
-  // Generate between 6-12 highly realistic comparables with EXACT criteria
-  const numComparables = 6 + Math.floor(Math.random() * 7);
-  
-  for (let i = 0; i < numComparables; i++) {
-    const comparable = generateStrictComparable(propertyInfo, basePriceM2, sources[i % 3], i, postalCodeInfo);
-    
-    if (comparable && isStrictlyValid(comparable, propertyInfo)) {
-      comparables.push(comparable);
-    }
-  }
-  
-  console.log(`Generados ${comparables.length} comparables válidos para CP ${propertyInfo.codigo_postal} en ${postalCodeInfo.localidad}, ${postalCodeInfo.distrito || postalCodeInfo.provincia}`);
-  return comparables.slice(0, 10); // Max 10 comparables
+  console.log(`Encontrados ${realComparables.length} comparables reales para CP ${propertyInfo.codigo_postal} en ${postalCodeInfo.distrito}`);
+  return realComparables;
 }

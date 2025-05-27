@@ -1,4 +1,3 @@
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -105,6 +104,13 @@ export function PropertyValuatorForm({ onSubmit, isLoading, missingFields }: Pro
   return (
     <Card className="border-2">
       <CardContent className="pt-6">
+        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <h4 className="font-medium text-blue-800 mb-2">Servicio disponible solo para Valladolid</h4>
+          <p className="text-blue-700 text-sm">
+            Este valorador utiliza datos reales de propiedades y está disponible únicamente para códigos postales de Valladolid capital (47001-47017, 47153).
+          </p>
+        </div>
+        
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
             <div className="space-y-4">
@@ -115,12 +121,12 @@ export function PropertyValuatorForm({ onSubmit, isLoading, missingFields }: Pro
                 name="codigo_postal"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Código Postal <span className="text-red-500">*</span></FormLabel>
+                    <FormLabel>Código Postal (solo Valladolid) <span className="text-red-500">*</span></FormLabel>
                     <FormControl>
-                      <Input placeholder="Ej.: 28001" maxLength={5} {...field} />
+                      <Input placeholder="Ej.: 47001" maxLength={5} {...field} />
                     </FormControl>
                     <FormDescription>
-                      El distrito y localidad se completarán automáticamente
+                      El distrito y localidad se completarán automáticamente. Solo códigos postales de Valladolid (47001-47017, 47153).
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
