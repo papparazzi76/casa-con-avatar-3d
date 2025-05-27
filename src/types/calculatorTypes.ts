@@ -44,7 +44,8 @@ export interface CalculationBreakdown {
     ajdTax?: number;
     plusvalia?: number;
     ibiTax?: number;
-    [key: string]: number | undefined;
+    itpExplanation?: string; // Nueva explicación del cálculo de ITP
+    [key: string]: number | string | undefined;
   };
   fees: {
     notaryFees?: number;

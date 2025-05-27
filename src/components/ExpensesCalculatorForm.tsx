@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 
 interface ExpensesCalculatorFormProps {
@@ -29,7 +30,9 @@ const formSchema = z.object({
   propertyType: z.enum(["new", "used"]),
   propertyValue: z.number().min(1, "El valor debe ser mayor que 0"),
   userRole: z.enum(["buyer", "seller", "both"]),
+  region: z.string().optional(),
   municipality: z.string().optional(),
+  buyerAge: z.number().min(18).max(120).optional(),
   previousPurchaseYear: z.number().min(1900).max(new Date().getFullYear()).optional(),
   previousPurchasePrice: z.number().min(1, "El valor debe ser mayor que 0").optional(),
   includeAgencyFees: z.boolean().default(false),
@@ -42,7 +45,6 @@ export function ExpensesCalculatorForm({
   onCalculationComplete,
 }: ExpensesCalculatorFormProps) {
   const [isCalculating, setIsCalculating] = useState(false);
-  const [showPlusvaliaFields, setShowPlusvaliaFields] = useState(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -50,7 +52,9 @@ export function ExpensesCalculatorForm({
       propertyType: "used",
       userRole: "buyer",
       propertyValue: undefined,
+      region: "",
       municipality: "",
+      buyerAge: undefined,
       previousPurchaseYear: new Date().getFullYear() - 5,
       previousPurchasePrice: undefined,
       includeAgencyFees: false,
@@ -74,6 +78,15 @@ export function ExpensesCalculatorForm({
         includeAgencyFees: data.includeAgencyFees,
         includeLegalFees: data.includeLegalFees,
       };
+      
+      // Add region and buyer age for ITP calculations
+      if (data.region) {
+        request.region = data.region;
+      }
+      
+      if (data.buyerAge && (data.userRole === 'buyer' || data.userRole === 'both')) {
+        request.buyerAge = data.buyerAge;
+      }
       
       // Only add plusvalía fields if they're filled and relevant
       if (data.municipality && (data.userRole === 'seller' || data.userRole === 'both') && data.propertyType === 'used') {
@@ -208,6 +221,77 @@ export function ExpensesCalculatorForm({
             </FormItem>
           )}
         />
+
+        {/* Region selection for ITP calculations */}
+        {(userRole === 'buyer' || userRole === 'both') && propertyType === 'used' && (
+          <FormField
+            control={form.control}
+            name="region"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Comunidad Autónoma</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona tu comunidad autónoma" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="andalucia">Andalucía</SelectItem>
+                    <SelectItem value="aragon">Aragón</SelectItem>
+                    <SelectItem value="asturias">Asturias</SelectItem>
+                    <SelectItem value="baleares">Islas Baleares</SelectItem>
+                    <SelectItem value="canarias">Canarias</SelectItem>
+                    <SelectItem value="cantabria">Cantabria</SelectItem>
+                    <SelectItem value="castilla-la-mancha">Castilla-La Mancha</SelectItem>
+                    <SelectItem value="castilla-leon">Castilla y León</SelectItem>
+                    <SelectItem value="cataluna">Cataluña</SelectItem>
+                    <SelectItem value="extremadura">Extremadura</SelectItem>
+                    <SelectItem value="galicia">Galicia</SelectItem>
+                    <SelectItem value="madrid">Comunidad de Madrid</SelectItem>
+                    <SelectItem value="murcia">Región de Murcia</SelectItem>
+                    <SelectItem value="navarra">Comunidad Foral de Navarra</SelectItem>
+                    <SelectItem value="pais-vasco">País Vasco</SelectItem>
+                    <SelectItem value="rioja">La Rioja</SelectItem>
+                    <SelectItem value="valencia">Comunidad Valenciana</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormDescription>
+                  Necesario para aplicar las tarifas correctas de ITP según tu región
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
+        {/* Buyer age for ITP reductions */}
+        {(userRole === 'buyer' || userRole === 'both') && (
+          <FormField
+            control={form.control}
+            name="buyerAge"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Edad del comprador (años)</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    placeholder="Ej: 25"
+                    {...field}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      field.onChange(value ? parseInt(value) : undefined);
+                    }}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Algunas comunidades autónomas ofrecen reducciones en el ITP para compradores jóvenes
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
         
         <Separator />
 
@@ -227,10 +311,6 @@ export function ExpensesCalculatorForm({
                     <Input
                       placeholder="Ej: Madrid"
                       {...field}
-                      onChange={(e) => {
-                        field.onChange(e.target.value);
-                        setShowPlusvaliaFields(!!e.target.value && propertyType === 'used');
-                      }}
                     />
                   </FormControl>
                   <FormDescription>

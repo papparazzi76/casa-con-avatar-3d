@@ -21,15 +21,27 @@ export function ExpensesCalculatorResult({ result }: ExpensesCalculatorResultPro
   };
 
   // Function to render a result row
-  const ResultRow = ({ label, amount, total = result.total }: { label: string; amount: number; total?: number }) => (
-    <div className="flex justify-between py-2">
-      <span>{label}</span>
-      <div className="flex gap-4">
-        <span className="text-gray-500 text-sm min-w-[60px] text-right">
-          {calculatePercentage(amount, total)}
-        </span>
-        <span className="font-medium">{formatCurrency(amount)}</span>
+  const ResultRow = ({ label, amount, total = result.total, explanation }: { 
+    label: string; 
+    amount: number; 
+    total?: number;
+    explanation?: string;
+  }) => (
+    <div className="flex flex-col py-2">
+      <div className="flex justify-between">
+        <span>{label}</span>
+        <div className="flex gap-4">
+          <span className="text-gray-500 text-sm min-w-[60px] text-right">
+            {calculatePercentage(amount, total)}
+          </span>
+          <span className="font-medium">{formatCurrency(amount)}</span>
+        </div>
       </div>
+      {explanation && (
+        <div className="text-xs text-gray-600 mt-1 ml-0">
+          {explanation}
+        </div>
+      )}
     </div>
   );
 
@@ -64,7 +76,12 @@ export function ExpensesCalculatorResult({ result }: ExpensesCalculatorResultPro
                       <ResultRow label="IVA (10%)" amount={result.buyer.taxes.iva} total={result.buyer.totalAdditionalCosts} />
                     )}
                     {result.buyer.taxes.transferTax && result.buyer.taxes.transferTax > 0 && (
-                      <ResultRow label="Impuesto de Transmisiones Patrimoniales (ITP)" amount={result.buyer.taxes.transferTax} total={result.buyer.totalAdditionalCosts} />
+                      <ResultRow 
+                        label="Impuesto de Transmisiones Patrimoniales (ITP)" 
+                        amount={result.buyer.taxes.transferTax} 
+                        total={result.buyer.totalAdditionalCosts}
+                        explanation={result.buyer.taxes.itpExplanation}
+                      />
                     )}
                     {result.buyer.taxes.ajdTax && result.buyer.taxes.ajdTax > 0 && (
                       <ResultRow label="Actos Jurídicos Documentados (AJD)" amount={result.buyer.taxes.ajdTax} total={result.buyer.totalAdditionalCosts} />

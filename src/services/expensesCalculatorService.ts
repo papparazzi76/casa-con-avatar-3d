@@ -1,5 +1,6 @@
 
 import { CalculationResult, CalculatorRequest, CalculationBreakdown } from "@/types/calculatorTypes";
+import { calculateRegionalITP, REGIONAL_TAX_RATES } from "./regionalTaxService";
 
 // API key constante (permanente)
 const API_KEY = "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";
@@ -146,10 +147,23 @@ async function calculateBuyerCosts(request: CalculatorRequest): Promise<Calculat
   if (request.propertyType === 'new') {
     // Vivienda nueva: IVA + AJD
     breakdown.taxes.iva = propertyPrice * 0.10; // 10% IVA
-    breakdown.taxes.ajdTax = propertyPrice * 0.015; // 1.5% AJD
+    
+    // AJD regional rate
+    const ajdRate = request.region && REGIONAL_TAX_RATES[request.region] 
+      ? REGIONAL_TAX_RATES[request.region].ajdRate 
+      : 0.015;
+    breakdown.taxes.ajdTax = propertyPrice * ajdRate;
   } else {
-    // Vivienda usada: ITP
-    breakdown.taxes.transferTax = propertyPrice * 0.08; // 8% ITP promedio
+    // Vivienda usada: ITP with regional and age considerations
+    if (request.region) {
+      const itpCalculation = calculateRegionalITP(propertyPrice, request.region, request.buyerAge);
+      breakdown.taxes.transferTax = itpCalculation.amount;
+      breakdown.taxes.itpExplanation = itpCalculation.explanation;
+    } else {
+      // Fallback to default 8% if no region specified
+      breakdown.taxes.transferTax = propertyPrice * 0.08;
+      breakdown.taxes.itpExplanation = "Tarifa estándar del 8% (región no especificada)";
+    }
   }
 
   // Gastos del comprador
@@ -165,8 +179,12 @@ async function calculateBuyerCosts(request: CalculatorRequest): Promise<Calculat
   }
 
   // Calcular totales
-  const totalTaxes = Object.values(breakdown.taxes).reduce((sum, tax) => sum + (tax || 0), 0);
-  const totalFees = Object.values(breakdown.fees).reduce((sum, fee) => sum + (fee || 0), 0);
+  const totalTaxes = Object.values(breakdown.taxes).reduce((sum, tax) => {
+    return sum + (typeof tax === 'number' ? tax : 0);
+  }, 0);
+  const totalFees = Object.values(breakdown.fees).reduce((sum, fee) => {
+    return sum + (typeof fee === 'number' ? fee : 0);
+  }, 0);
   
   breakdown.totalAdditionalCosts = totalTaxes + totalFees;
   breakdown.totalCost = propertyPrice + breakdown.totalAdditionalCosts;
