@@ -11,6 +11,8 @@ import { PropertyInfo } from "@/services/propertyValuatorService";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { getPostalCodeInfo } from "@/services/propertyValuator/postalCodeService";
+import { useEffect } from "react";
 
 const propertySchema = z.object({
   localidad: z.string().min(2, {
@@ -80,6 +82,22 @@ export function PropertyValuatorForm({ onSubmit, isLoading, missingFields }: Pro
     },
   });
 
+  // Watch for postal code changes to auto-complete district
+  const watchedPostalCode = form.watch("codigo_postal");
+
+  useEffect(() => {
+    if (watchedPostalCode && watchedPostalCode.length === 5) {
+      const postalCodeInfo = getPostalCodeInfo(watchedPostalCode);
+      if (postalCodeInfo) {
+        // Auto-complete localidad and distrito
+        form.setValue("localidad", postalCodeInfo.localidad);
+        if (postalCodeInfo.distrito) {
+          form.setValue("distrito", postalCodeInfo.distrito);
+        }
+      }
+    }
+  }, [watchedPostalCode, form]);
+
   function handleSubmit(values: z.infer<typeof propertySchema>) {
     onSubmit(values as PropertyInfo);
   }
@@ -91,6 +109,23 @@ export function PropertyValuatorForm({ onSubmit, isLoading, missingFields }: Pro
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
             <div className="space-y-4">
               <h3 className="text-lg font-medium">Ubicación</h3>
+              
+              <FormField
+                control={form.control}
+                name="codigo_postal"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Código Postal <span className="text-red-500">*</span></FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ej.: 28001" maxLength={5} {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      El distrito y localidad se completarán automáticamente
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
@@ -121,23 +156,6 @@ export function PropertyValuatorForm({ onSubmit, isLoading, missingFields }: Pro
                   )}
                 />
               </div>
-
-              <FormField
-                control={form.control}
-                name="codigo_postal"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Código Postal <span className="text-red-500">*</span></FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ej.: 28001" maxLength={5} {...field} />
-                    </FormControl>
-                    <FormDescription>
-                      Código postal de 5 dígitos para encontrar comparables exactos
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
               
               <FormField
                 control={form.control}
