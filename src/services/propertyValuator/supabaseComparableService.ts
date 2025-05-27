@@ -131,19 +131,9 @@ export async function getRealComparableProperties(propertyInfo: PropertyInfo): P
 
     console.log(`After basic validation: ${filteredComparables.length} comparable properties`);
     
-    // Sort by price per m2 similarity to target property and return top 20
-    const targetPriceM2 = propertyInfo.superficie_m2 ? (propertyInfo.precio || 0) / propertyInfo.superficie_m2 : 0;
-    
+    // Sort by price per m2 for consistency and return top 20
     return filteredComparables
-      .sort((a, b) => {
-        if (targetPriceM2 > 0) {
-          const diffA = Math.abs(a.precio_m2 - targetPriceM2);
-          const diffB = Math.abs(b.precio_m2 - targetPriceM2);
-          return diffA - diffB;
-        }
-        // If no target price, sort by price
-        return a.precio - b.precio;
-      })
+      .sort((a, b) => a.precio_m2 - b.precio_m2)
       .slice(0, 20); // Return more comparables since we're not filtering by characteristics
 
   } catch (error) {
