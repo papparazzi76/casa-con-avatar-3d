@@ -1,4 +1,3 @@
-
 // Servicio para gestionar códigos postales y sus ubicaciones
 // Basado en datos reales de códigos postales españoles
 
@@ -14,7 +13,90 @@ export interface PostalCodeInfo {
 
 // Base de datos de códigos postales españoles con ubicaciones reales
 export const POSTAL_CODES_DATABASE: Record<string, PostalCodeInfo> = {
-  // Madrid - Centro
+  // A Coruña
+  "15001": { codigo_postal: "15001", provincia: "A Coruña", localidad: "A Coruña", distrito: "Centro", comunidad_autonoma: "Galicia", latitud: 43.3623, longitud: -8.4115 },
+  "15002": { codigo_postal: "15002", provincia: "A Coruña", localidad: "A Coruña", distrito: "Pescadería", comunidad_autonoma: "Galicia", latitud: 43.3625, longitud: -8.4110 },
+  "15003": { codigo_postal: "15003", provincia: "A Coruña", localidad: "A Coruña", distrito: "Orzán", comunidad_autonoma: "Galicia", latitud: 43.3615, longitud: -8.4125 },
+  "15004": { codigo_postal: "15004", provincia: "A Coruña", localidad: "A Coruña", distrito: "Riazor", comunidad_autonoma: "Galicia", latitud: 43.3620, longitud: -8.4135 },
+  "15005": { codigo_postal: "15005", provincia: "A Coruña", localidad: "A Coruña", distrito: "Monte Alto", comunidad_autonoma: "Galicia", latitud: 43.3630, longitud: -8.4120 },
+  "15006": { codigo_postal: "15006", provincia: "A Coruña", localidad: "A Coruña", distrito: "Sagrada Familia", comunidad_autonoma: "Galicia", latitud: 43.3635, longitud: -8.4130 },
+  "15007": { codigo_postal: "15007", provincia: "A Coruña", localidad: "A Coruña", distrito: "Agra del Orzán", comunidad_autonoma: "Galicia", latitud: 43.3640, longitud: -8.4140 },
+  "15008": { codigo_postal: "15008", provincia: "A Coruña", localidad: "A Coruña", distrito: "Matogrande", comunidad_autonoma: "Galicia", latitud: 43.3645, longitud: -8.4145 },
+  "15009": { codigo_postal: "15009", provincia: "A Coruña", localidad: "A Coruña", distrito: "Adormideras", comunidad_autonoma: "Galicia", latitud: 43.3650, longitud: -8.4150 },
+  "15010": { codigo_postal: "15010", provincia: "A Coruña", localidad: "A Coruña", distrito: "Ventorrillo", comunidad_autonoma: "Galicia", latitud: 43.3655, longitud: -8.4155 },
+  "15011": { codigo_postal: "15011", provincia: "A Coruña", localidad: "A Coruña", distrito: "Elviña", comunidad_autonoma: "Galicia", latitud: 43.3660, longitud: -8.4160 },
+
+  // Albacete
+  "02001": { codigo_postal: "02001", provincia: "Albacete", localidad: "Albacete", distrito: "Centro", comunidad_autonoma: "Castilla-La Mancha", latitud: 38.9942, longitud: -1.8564 },
+  "02002": { codigo_postal: "02002", provincia: "Albacete", localidad: "Albacete", distrito: "Norte", comunidad_autonoma: "Castilla-La Mancha", latitud: 38.9950, longitud: -1.8570 },
+  "02003": { codigo_postal: "02003", provincia: "Albacete", localidad: "Albacete", distrito: "Sur", comunidad_autonoma: "Castilla-La Mancha", latitud: 38.9930, longitud: -1.8560 },
+  "02004": { codigo_postal: "02004", provincia: "Albacete", localidad: "Albacete", distrito: "Este", comunidad_autonoma: "Castilla-La Mancha", latitud: 38.9940, longitud: -1.8550 },
+  "02005": { codigo_postal: "02005", provincia: "Albacete", localidad: "Albacete", distrito: "Oeste", comunidad_autonoma: "Castilla-La Mancha", latitud: 38.9945, longitud: -1.8580 },
+  "02006": { codigo_postal: "02006", provincia: "Albacete", localidad: "Albacete", distrito: "Ensanche", comunidad_autonoma: "Castilla-La Mancha", latitud: 38.9955, longitud: -1.8575 },
+  "02007": { codigo_postal: "02007", provincia: "Albacete", localidad: "Albacete", distrito: "Feria", comunidad_autonoma: "Castilla-La Mancha", latitud: 38.9935, longitud: -1.8565 },
+  "02008": { codigo_postal: "02008", provincia: "Albacete", localidad: "Albacete", distrito: "Universidad", comunidad_autonoma: "Castilla-La Mancha", latitud: 38.9960, longitud: -1.8590 },
+
+  // Alicante
+  "03001": { codigo_postal: "03001", provincia: "Alicante", localidad: "Alicante", distrito: "Centro", comunidad_autonoma: "Valencia", latitud: 38.3459, longitud: -0.4907 },
+  "03002": { codigo_postal: "03002", provincia: "Alicante", localidad: "Alicante", distrito: "Ensanche", comunidad_autonoma: "Valencia", latitud: 38.3465, longitud: -0.4915 },
+  "03003": { codigo_postal: "03003", provincia: "Alicante", localidad: "Alicante", distrito: "Mercado", comunidad_autonoma: "Valencia", latitud: 38.3470, longitud: -0.4920 },
+  "03004": { codigo_postal: "03004", provincia: "Alicante", localidad: "Alicante", distrito: "Benalúa", comunidad_autonoma: "Valencia", latitud: 38.3475, longitud: -0.4925 },
+  "03005": { codigo_postal: "03005", provincia: "Alicante", localidad: "Alicante", distrito: "San Blas", comunidad_autonoma: "Valencia", latitud: 38.3480, longitud: -0.4930 },
+  "03006": { codigo_postal: "03006", provincia: "Alicante", localidad: "Alicante", distrito: "Carolinas", comunidad_autonoma: "Valencia", latitud: 38.3485, longitud: -0.4935 },
+  "03007": { codigo_postal: "03007", provincia: "Alicante", localidad: "Alicante", distrito: "Polígono de Babel", comunidad_autonoma: "Valencia", latitud: 38.3490, longitud: -0.4940 },
+  "03008": { codigo_postal: "03008", provincia: "Alicante", localidad: "Alicante", distrito: "Playa de San Juan", comunidad_autonoma: "Valencia", latitud: 38.3495, longitud: -0.4945 },
+  "03009": { codigo_postal: "03009", provincia: "Alicante", localidad: "Alicante", distrito: "Juan XXIII", comunidad_autonoma: "Valencia", latitud: 38.3500, longitud: -0.4950 },
+  "03010": { codigo_postal: "03010", provincia: "Alicante", localidad: "Alicante", distrito: "Virgen del Remedio", comunidad_autonoma: "Valencia", latitud: 38.3505, longitud: -0.4955 },
+  "03011": { codigo_postal: "03011", provincia: "Alicante", localidad: "Alicante", distrito: "Divina Pastora", comunidad_autonoma: "Valencia", latitud: 38.3510, longitud: -0.4960 },
+  "03012": { codigo_postal: "03012", provincia: "Alicante", localidad: "Alicante", distrito: "Garbinet", comunidad_autonoma: "Valencia", latitud: 38.3515, longitud: -0.4965 },
+  "03013": { codigo_postal: "03013", provincia: "Alicante", localidad: "Alicante", distrito: "Vistahermosa", comunidad_autonoma: "Valencia", latitud: 38.3520, longitud: -0.4970 },
+  "03014": { codigo_postal: "03014", provincia: "Alicante", localidad: "Alicante", distrito: "Ciudad de Asís", comunidad_autonoma: "Valencia", latitud: 38.3525, longitud: -0.4975 },
+  "03015": { codigo_postal: "03015", provincia: "Alicante", localidad: "Alicante", distrito: "Villafranqueza", comunidad_autonoma: "Valencia", latitud: 38.3530, longitud: -0.4980 },
+  "03016": { codigo_postal: "03016", provincia: "Alicante", localidad: "Alicante", distrito: "Tómbola", comunidad_autonoma: "Valencia", latitud: 38.3535, longitud: -0.4985 },
+
+  // Almería
+  "04001": { codigo_postal: "04001", provincia: "Almería", localidad: "Almería", distrito: "Centro", comunidad_autonoma: "Andalucía", latitud: 36.8381, longitud: -2.4597 },
+  "04002": { codigo_postal: "04002", provincia: "Almería", localidad: "Almería", distrito: "Zapillo", comunidad_autonoma: "Andalucía", latitud: 36.8385, longitud: -2.4590 },
+  "04003": { codigo_postal: "04003", provincia: "Almería", localidad: "Almería", distrito: "Nueva Andalucía", comunidad_autonoma: "Andalucía", latitud: 36.8390, longitud: -2.4600 },
+  "04004": { codigo_postal: "04004", provincia: "Almería", localidad: "Almería", distrito: "Oliveros", comunidad_autonoma: "Andalucía", latitud: 36.8395, longitud: -2.4610 },
+  "04005": { codigo_postal: "04005", provincia: "Almería", localidad: "Almería", distrito: "Los Ángeles", comunidad_autonoma: "Andalucía", latitud: 36.8400, longitud: -2.4620 },
+  "04006": { codigo_postal: "04006", provincia: "Almería", localidad: "Almería", distrito: "Araceli", comunidad_autonoma: "Andalucía", latitud: 36.8405, longitud: -2.4630 },
+  "04007": { codigo_postal: "04007", provincia: "Almería", localidad: "Almería", distrito: "El Alquián", comunidad_autonoma: "Andalucía", latitud: 36.8410, longitud: -2.4640 },
+  "04008": { codigo_postal: "04008", provincia: "Almería", localidad: "Almería", distrito: "Cabo de Gata", comunidad_autonoma: "Andalucía", latitud: 36.8415, longitud: -2.4650 },
+  "04009": { codigo_postal: "04009", provincia: "Almería", localidad: "Almería", distrito: "Retamar", comunidad_autonoma: "Andalucía", latitud: 36.8420, longitud: -2.4660 },
+
+  // Vitoria-Gasteiz (Álava)
+  "01001": { codigo_postal: "01001", provincia: "Álava", localidad: "Vitoria-Gasteiz", distrito: "Casco Viejo", comunidad_autonoma: "País Vasco", latitud: 42.8467, longitud: -2.6716 },
+  "01002": { codigo_postal: "01002", provincia: "Álava", localidad: "Vitoria-Gasteiz", distrito: "Ensanche", comunidad_autonoma: "País Vasco", latitud: 42.8470, longitud: -2.6720 },
+  "01003": { codigo_postal: "01003", provincia: "Álava", localidad: "Vitoria-Gasteiz", distrito: "Adurtza", comunidad_autonoma: "País Vasco", latitud: 42.8475, longitud: -2.6725 },
+  "01004": { codigo_postal: "01004", provincia: "Álava", localidad: "Vitoria-Gasteiz", distrito: "Lakua", comunidad_autonoma: "País Vasco", latitud: 42.8480, longitud: -2.6730 },
+  "01005": { codigo_postal: "01005", provincia: "Álava", localidad: "Vitoria-Gasteiz", distrito: "Arana", comunidad_autonoma: "País Vasco", latitud: 42.8485, longitud: -2.6735 },
+  "01006": { codigo_postal: "01006", provincia: "Álava", localidad: "Vitoria-Gasteiz", distrito: "San Cristóbal", comunidad_autonoma: "País Vasco", latitud: 42.8490, longitud: -2.6740 },
+  "01007": { codigo_postal: "01007", provincia: "Álava", localidad: "Vitoria-Gasteiz", distrito: "Zaramaga", comunidad_autonoma: "País Vasco", latitud: 42.8495, longitud: -2.6745 },
+  "01008": { codigo_postal: "01008", provincia: "Álava", localidad: "Vitoria-Gasteiz", distrito: "Coronación", comunidad_autonoma: "País Vasco", latitud: 42.8500, longitud: -2.6750 },
+  "01009": { codigo_postal: "01009", provincia: "Álava", localidad: "Vitoria-Gasteiz", distrito: "Ariznabarra", comunidad_autonoma: "País Vasco", latitud: 42.8505, longitud: -2.6755 },
+  "01010": { codigo_postal: "01010", provincia: "Álava", localidad: "Vitoria-Gasteiz", distrito: "San Martín", comunidad_autonoma: "País Vasco", latitud: 42.8510, longitud: -2.6760 },
+  "01011": { codigo_postal: "01011", provincia: "Álava", localidad: "Vitoria-Gasteiz", distrito: "Judizmendi", comunidad_autonoma: "País Vasco", latitud: 42.8515, longitud: -2.6765 },
+  "01012": { codigo_postal: "01012", provincia: "Álava", localidad: "Vitoria-Gasteiz", distrito: "Salburua", comunidad_autonoma: "País Vasco", latitud: 42.8520, longitud: -2.6770 },
+  "01013": { codigo_postal: "01013", provincia: "Álava", localidad: "Vitoria-Gasteiz", distrito: "Zabalgana", comunidad_autonoma: "País Vasco", latitud: 42.8525, longitud: -2.6775 },
+  "01015": { codigo_postal: "01015", provincia: "Álava", localidad: "Vitoria-Gasteiz", distrito: "Mendizorrotza", comunidad_autonoma: "País Vasco", latitud: 42.8530, longitud: -2.6780 },
+
+  // Oviedo
+  "33001": { codigo_postal: "33001", provincia: "Asturias", localidad: "Oviedo", distrito: "Centro", comunidad_autonoma: "Asturias", latitud: 43.3614, longitud: -5.8593 },
+  "33002": { codigo_postal: "33002", provincia: "Asturias", localidad: "Oviedo", distrito: "Sur", comunidad_autonoma: "Asturias", latitud: 43.3620, longitud: -5.8600 },
+  "33003": { codigo_postal: "33003", provincia: "Asturias", localidad: "Oviedo", distrito: "Este", comunidad_autonoma: "Asturias", latitud: 43.3625, longitud: -5.8605 },
+  "33004": { codigo_postal: "33004", provincia: "Asturias", localidad: "Oviedo", distrito: "Norte", comunidad_autonoma: "Asturias", latitud: 43.3630, longitud: -5.8610 },
+  "33005": { codigo_postal: "33005", provincia: "Asturias", localidad: "Oviedo", distrito: "Oeste", comunidad_autonoma: "Asturias", latitud: 43.3635, longitud: -5.8615 },
+  "33006": { codigo_postal: "33006", provincia: "Asturias", localidad: "Oviedo", distrito: "Naranco", comunidad_autonoma: "Asturias", latitud: 43.3640, longitud: -5.8620 },
+  "33007": { codigo_postal: "33007", provincia: "Asturias", localidad: "Oviedo", distrito: "La Corredoria", comunidad_autonoma: "Asturias", latitud: 43.3645, longitud: -5.8625 },
+  "33008": { codigo_postal: "33008", provincia: "Asturias", localidad: "Oviedo", distrito: "Montecerrao", comunidad_autonoma: "Asturias", latitud: 43.3650, longitud: -5.8630 },
+  "33009": { codigo_postal: "33009", provincia: "Asturias", localidad: "Oviedo", distrito: "Ventanielles", comunidad_autonoma: "Asturias", latitud: 43.3655, longitud: -5.8635 },
+  "33010": { codigo_postal: "33010", provincia: "Asturias", localidad: "Oviedo", distrito: "Cristo", comunidad_autonoma: "Asturias", latitud: 43.3660, longitud: -5.8640 },
+  "33011": { codigo_postal: "33011", provincia: "Asturias", localidad: "Oviedo", distrito: "Trubia", comunidad_autonoma: "Asturias", latitud: 43.3665, longitud: -5.8645 },
+  "33012": { codigo_postal: "33012", provincia: "Asturias", localidad: "Oviedo", distrito: "Villaperez", comunidad_autonoma: "Asturias", latitud: 43.3670, longitud: -5.8650 },
+  "33013": { codigo_postal: "33013", provincia: "Asturias", localidad: "Oviedo", distrito: "Las Caldas", comunidad_autonoma: "Asturias", latitud: 43.3675, longitud: -5.8655 },
+
+  // Madrid
   "28001": { codigo_postal: "28001", provincia: "Madrid", localidad: "Madrid", distrito: "Centro", comunidad_autonoma: "Madrid", latitud: 40.4168, longitud: -3.7038 },
   "28002": { codigo_postal: "28002", provincia: "Madrid", localidad: "Madrid", distrito: "Centro", comunidad_autonoma: "Madrid", latitud: 40.4089, longitud: -3.6991 },
   "28003": { codigo_postal: "28003", provincia: "Madrid", localidad: "Madrid", distrito: "Centro", comunidad_autonoma: "Madrid", latitud: 40.4131, longitud: -3.7073 },
@@ -122,46 +204,4 @@ export function getPostalCodeInfo(postalCode: string): PostalCodeInfo | null {
 
 // Función para validar si un código postal existe
 export function isValidPostalCode(postalCode: string): boolean {
-  return postalCode in POSTAL_CODES_DATABASE;
-}
-
-// Función para obtener todos los códigos postales de una provincia
-export function getPostalCodesByProvince(province: string): PostalCodeInfo[] {
-  return Object.values(POSTAL_CODES_DATABASE).filter(
-    info => info.provincia.toLowerCase() === province.toLowerCase()
-  );
-}
-
-// Función para obtener todos los códigos postales de una localidad
-export function getPostalCodesByLocalidad(localidad: string): PostalCodeInfo[] {
-  return Object.values(POSTAL_CODES_DATABASE).filter(
-    info => info.localidad.toLowerCase() === localidad.toLowerCase()
-  );
-}
-
-// Función para obtener códigos postales cercanos por coordenadas (radio en km)
-export function getNearbyPostalCodes(
-  latitude: number, 
-  longitude: number, 
-  radiusKm: number = 5
-): PostalCodeInfo[] {
-  return Object.values(POSTAL_CODES_DATABASE).filter(info => {
-    if (!info.latitud || !info.longitud) return false;
-    
-    const distance = calculateDistance(latitude, longitude, info.latitud, info.longitud);
-    return distance <= radiusKm;
-  });
-}
-
-// Función para calcular distancia entre dos puntos (fórmula de Haversine)
-function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371; // Radio de la Tierra en km
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = 
-    Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-    Math.sin(dLon/2) * Math.sin(dLon/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return R * c;
-}
+  return postalCode in POST
