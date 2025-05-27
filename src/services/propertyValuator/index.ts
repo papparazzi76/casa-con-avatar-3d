@@ -1,3 +1,4 @@
+
 import { PropertyInfo, PropertyValuation } from "./types";
 import { getComparableProperties } from "./comparableService";
 import { getOpenAIValuation } from "./openaiService";
@@ -9,16 +10,20 @@ export async function getPropertyValuation(
   propertyInfo: PropertyInfo
 ): Promise<PropertyValuation> {
   try {
-    // 1. Get comparable properties (in a real version, this would be a scraper or API)
+    console.log("Iniciando valoración para:", propertyInfo);
+    
+    // 1. Get comparable properties with strict criteria
     const comparables = await getComparableProperties(propertyInfo);
     
     // If no comparables, return specific message
     if (comparables.length === 0) {
       return {
         status: "ok",
-        sin_comparables: "No se encontraron viviendas similares"
+        sin_comparables: `No se encontraron viviendas similares en el código postal ${propertyInfo.codigo_postal} con las características exactas requeridas (mismo distrito, superficie ±10%, ${propertyInfo.habitaciones} habitaciones, ${propertyInfo.ascensor ? 'con' : 'sin'} ascensor).`
       };
     }
+
+    console.log(`Encontrados ${comparables.length} comparables válidos`);
 
     // 2. Get valuation from OpenAI
     try {
@@ -46,6 +51,7 @@ export async function getPropertyValuation(
         vivienda_objetivo: {
           direccion: propertyInfo.direccion || "No especificada",
           distrito: propertyInfo.distrito,
+          codigo_postal: propertyInfo.codigo_postal,
           tipo: propertyInfo.tipo_vivienda,
           superficie_m2: propertyInfo.superficie_m2
         },
@@ -53,8 +59,8 @@ export async function getPropertyValuation(
         estadisticas_comparables: valuation.estadisticas_comparables,
         comparables_destacados: valuation.comparables_destacados,
         fecha_calculo: valuation.fecha_calculo || new Date().toISOString().split('T')[0],
-        metodologia_breve: valuation.metodologia_breve || "Media y mediana de precio/m² en anuncios activos con ajustes de estado, planta y antigüedad.",
-        disclaimer: valuation.disclaimer || "Estimación orientativa basada en ofertas publicadas. No sustituye a una tasación oficial."
+        metodologia_breve: valuation.metodologia_breve || `Valoración basada en ${comparables.length} comparables reales del mismo código postal ${propertyInfo.codigo_postal}, mismo distrito, superficie ±10%, mismas habitaciones (${propertyInfo.habitaciones}) y mismo ascensor (${propertyInfo.ascensor ? 'Sí' : 'No'}).`,
+        disclaimer: valuation.disclaimer || "Estimación basada en comparables reales verificados del mismo código postal. No sustituye a una tasación oficial."
       };
     } catch (parseError) {
       console.error("Error with OpenAI valuation:", parseError);

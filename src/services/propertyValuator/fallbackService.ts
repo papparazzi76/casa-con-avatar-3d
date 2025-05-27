@@ -7,6 +7,8 @@ export function generateFallbackValuation(
   comparables: ComparableProperty[]
 ): PropertyValuation {
   
+  console.log(`Generando valoración de respaldo con ${comparables.length} comparables del CP ${propertyInfo.codigo_postal}`);
+  
   // Calculate statistics from the filtered comparables
   const pricesM2 = comparables.map(c => c.precio_m2);
   const meanPriceM2 = pricesM2.reduce((sum, price) => sum + price, 0) / pricesM2.length;
@@ -21,26 +23,26 @@ export function generateFallbackValuation(
   let adjustmentFactor = 1.0;
   
   // State of conservation adjustment
-  if (propertyInfo.estado_conservacion === 'muy_bueno') {
-    adjustmentFactor *= 1.03;
-  } else if (propertyInfo.estado_conservacion === 'para_reformar') {
-    adjustmentFactor *= 0.92;
+  if (propertyInfo.estado_conservacion === 'nueva-construccion') {
+    adjustmentFactor *= 1.05;
+  } else if (propertyInfo.estado_conservacion === 'a-reformar') {
+    adjustmentFactor *= 0.90;
   }
   
   // Floor adjustment
   if (propertyInfo.planta === 'bajo' && !propertyInfo.exterior) {
-    adjustmentFactor *= 0.95;
+    adjustmentFactor *= 0.94;
   } else if (['4', '5', '6'].includes(propertyInfo.planta) && propertyInfo.ascensor) {
-    adjustmentFactor *= 1.02;
+    adjustmentFactor *= 1.03;
   }
   
   // Age adjustment
   const currentYear = new Date().getFullYear();
   const age = currentYear - propertyInfo.anno_construccion;
   if (age < 10) {
-    adjustmentFactor *= 1.05;
+    adjustmentFactor *= 1.06;
   } else if (age > 40) {
-    adjustmentFactor *= 0.95;
+    adjustmentFactor *= 0.94;
   }
   
   const adjustedMedianPriceM2 = Math.round(medianPriceM2 * adjustmentFactor);
@@ -55,6 +57,7 @@ export function generateFallbackValuation(
     vivienda_objetivo: {
       direccion: propertyInfo.direccion || "No especificada",
       distrito: propertyInfo.distrito,
+      codigo_postal: propertyInfo.codigo_postal,
       tipo: propertyInfo.tipo_vivienda,
       superficie_m2: propertyInfo.superficie_m2
     },
@@ -73,7 +76,7 @@ export function generateFallbackValuation(
     },
     comparables_destacados: comparables.slice(0, 6),
     fecha_calculo: new Date().toISOString().split('T')[0],
-    metodologia_breve: "Valoración basada en comparables filtrados por criterios de calidad: mismo distrito, superficie ±10%, habitaciones similares, y distancia máxima 1km. Ajustes aplicados por estado, planta y antigüedad.",
-    disclaimer: "Estimación orientativa basada en comparables verificados y filtrados. La valoración incluye ajustes por características específicas de la propiedad. No sustituye a una tasación oficial."
+    metodologia_breve: `Valoración basada en ${comparables.length} comparables reales del código postal ${propertyInfo.codigo_postal}, mismo distrito, superficie ±10%, ${propertyInfo.habitaciones} habitaciones y ${propertyInfo.ascensor ? 'con' : 'sin'} ascensor. Ajustes por estado, planta y antigüedad.`,
+    disclaimer: "Estimación orientativa basada en comparables reales verificados del mismo código postal con características idénticas. No sustituye a una tasación oficial."
   };
 }

@@ -19,6 +19,13 @@ const propertySchema = z.object({
   distrito: z.string().min(1, {
     message: "El distrito o barrio es obligatorio.",
   }),
+  codigo_postal: z.string().min(5, {
+    message: "El código postal es obligatorio (5 dígitos).",
+  }).max(5, {
+    message: "El código postal debe tener exactamente 5 dígitos.",
+  }).regex(/^\d{5}$/, {
+    message: "El código postal debe contener solo números.",
+  }),
   direccion: z.string().optional(),
   tipo_vivienda: z.string({
     required_error: "Selecciona el tipo de vivienda.",
@@ -59,6 +66,7 @@ export function PropertyValuatorForm({ onSubmit, isLoading, missingFields }: Pro
     defaultValues: {
       localidad: "",
       distrito: "",
+      codigo_postal: "",
       direccion: "",
       tipo_vivienda: "",
       superficie_m2: undefined,
@@ -113,6 +121,23 @@ export function PropertyValuatorForm({ onSubmit, isLoading, missingFields }: Pro
                   )}
                 />
               </div>
+
+              <FormField
+                control={form.control}
+                name="codigo_postal"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Código Postal <span className="text-red-500">*</span></FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ej.: 28001" maxLength={5} {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      Código postal de 5 dígitos para encontrar comparables exactos
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               
               <FormField
                 control={form.control}

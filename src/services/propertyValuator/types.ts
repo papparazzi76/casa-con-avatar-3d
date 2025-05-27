@@ -5,6 +5,7 @@
 export interface PropertyInfo {
   localidad: string;
   distrito: string;
+  codigo_postal: string;
   direccion?: string;
   tipo_vivienda: string;
   superficie_m2: number;
@@ -21,10 +22,17 @@ export interface PropertyInfo {
 export interface ComparableProperty {
   fuente: string;
   url: string;
+  codigo_postal: string;
+  distrito: string;
   distancia_m?: number;
   superficie_m2: number;
+  habitaciones: number;
   precio: number;
   precio_m2: number;
+  ascensor: boolean;
+  exterior: boolean;
+  estado_conservacion: string;
+  planta: string;
 }
 
 // Interface for property valuation response
@@ -33,6 +41,7 @@ export interface PropertyValuation {
   vivienda_objetivo?: {
     direccion: string;
     distrito: string;
+    codigo_postal: string;
     tipo: string;
     superficie_m2: number;
   };
