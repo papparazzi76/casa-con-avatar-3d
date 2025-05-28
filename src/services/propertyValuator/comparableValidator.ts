@@ -2,8 +2,8 @@
 import { ComparableProperty, PropertyInfo } from "./types";
 
 export function isStrictlyValid(comparable: ComparableProperty, propertyInfo: PropertyInfo): boolean {
-  // VALIDACIÓN ESTRICTA: Código postal EXACTO
-  if (comparable.codigo_postal !== propertyInfo.codigo_postal) {
+  // VALIDACIÓN ESTRICTA: Zona Idealista EXACTA
+  if (comparable.zona_idealista !== propertyInfo.zona_idealista) {
     return false;
   }
   

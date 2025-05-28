@@ -7,7 +7,7 @@ export function generateFallbackValuation(
   comparables: ComparableProperty[]
 ): PropertyValuation {
   
-  console.log(`Generando valoración de respaldo con ${comparables.length} comparables del CP ${propertyInfo.codigo_postal}`);
+  console.log(`Generando valoración de respaldo con ${comparables.length} comparables de la zona ${propertyInfo.zona_idealista}`);
   
   // Calculate statistics from the filtered comparables
   const pricesM2 = comparables.map(c => c.precio_m2);
@@ -57,7 +57,7 @@ export function generateFallbackValuation(
     vivienda_objetivo: {
       direccion: propertyInfo.direccion || "No especificada",
       distrito: propertyInfo.distrito,
-      codigo_postal: propertyInfo.codigo_postal,
+      zona_idealista: propertyInfo.zona_idealista,
       tipo: propertyInfo.tipo_vivienda,
       superficie_m2: propertyInfo.superficie_m2
     },
@@ -76,7 +76,7 @@ export function generateFallbackValuation(
     },
     comparables_destacados: comparables.slice(0, 6),
     fecha_calculo: new Date().toISOString().split('T')[0],
-    metodologia_breve: `Valoración basada en ${comparables.length} comparables reales del código postal ${propertyInfo.codigo_postal}, mismo distrito, superficie ±10%, ${propertyInfo.habitaciones} habitaciones y ${propertyInfo.ascensor ? 'con' : 'sin'} ascensor. Ajustes por estado, planta y antigüedad.`,
-    disclaimer: "Estimación orientativa basada en comparables reales verificados del mismo código postal con características idénticas. No sustituye a una tasación oficial."
+    metodologia_breve: `Valoración basada en ${comparables.length} comparables reales de la zona ${propertyInfo.zona_idealista}, mismo distrito, superficie ±10%, ${propertyInfo.habitaciones} habitaciones y ${propertyInfo.ascensor ? 'con' : 'sin'} ascensor. Ajustes por estado, planta y antigüedad.`,
+    disclaimer: "Estimación orientativa basada en comparables reales verificados de la misma zona de Idealista con características idénticas. No sustituye a una tasación oficial."
   };
 }

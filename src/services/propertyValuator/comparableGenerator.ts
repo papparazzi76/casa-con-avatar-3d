@@ -1,13 +1,11 @@
 
 import { ComparableProperty, PropertyInfo } from "./types";
-import { PostalCodeInfo } from "./postalCodeService";
 
 export function generateStrictComparable(
   propertyInfo: PropertyInfo,
   basePriceM2: number,
   source: string,
-  index: number,
-  postalCodeInfo: PostalCodeInfo
+  index: number
 ): ComparableProperty | null {
   
   // CRITERIO ESTRICTO: Superficie exacta ±10% máximo
@@ -87,7 +85,7 @@ export function generateStrictComparable(
   return {
     fuente: source,
     url: urls[source as keyof typeof urls],
-    codigo_postal: propertyInfo.codigo_postal, // MISMO código postal SIEMPRE
+    zona_idealista: propertyInfo.zona_idealista, // MISMA zona SIEMPRE
     distrito: propertyInfo.distrito, // MISMO distrito SIEMPRE
     superficie_m2: surfaceM2,
     habitaciones: habitaciones, // MISMAS habitaciones SIEMPRE
