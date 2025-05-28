@@ -1,4 +1,3 @@
-
 import { PropertyInfo, PropertyValuation } from "./types";
 import { getComparableProperties } from "./comparableService";
 import { getOpenAIValuation } from "./openaiService";
@@ -11,14 +10,19 @@ export async function getPropertyValuation(
   propertyInfo: PropertyInfo
 ): Promise<PropertyValuation> {
   try {
-    console.log("🏠 Iniciando valoración para:", propertyInfo);
+    console.log("🏠 =================================");
+    console.log("🏠 INICIANDO VALORACIÓN COMPLETA");
+    console.log("🏠 =================================");
+    console.log("🏠 Datos de entrada:", JSON.stringify(propertyInfo, null, 2));
     
     // Validar código postal antes de proceder
     if (!isValidPostalCode(propertyInfo.codigo_postal)) {
       console.log(`❌ Código postal no válido: ${propertyInfo.codigo_postal}`);
+      const message = `El código postal ${propertyInfo.codigo_postal} no es válido o no está en nuestra base de datos de Valladolid`;
+      toast.error(message);
       return {
         status: "faltan_datos",
-        faltan_datos: [`El código postal ${propertyInfo.codigo_postal} no es válido o no está en nuestra base de datos de Valladolid`],
+        faltan_datos: [message],
         disclaimer: "Por favor, verifica que el código postal sea de Valladolid (47001-47017, 47153)."
       };
     }
@@ -32,33 +36,47 @@ export async function getPropertyValuation(
     console.log(`📍 Ubicación completa: ${ubicacionCompleta}`);
     
     // 1. Get ALL comparable properties from same postal code
-    console.log(`🔍 Buscando propiedades comparables en CP ${propertyInfo.codigo_postal}...`);
+    console.log(`🔍 PASO 1: Buscando propiedades comparables en CP ${propertyInfo.codigo_postal}...`);
     const comparables = await getComparableProperties(propertyInfo);
+    console.log(`🔍 PASO 1 COMPLETADO: ${comparables.length} propiedades encontradas`);
     
     // If no comparables, return specific message with debugging info
     if (comparables.length === 0) {
-      console.log(`⚠️ No se encontraron propiedades en CP ${propertyInfo.codigo_postal}`);
+      console.log(`⚠️ ⚠️ ⚠️ NO SE ENCONTRARON PROPIEDADES ⚠️ ⚠️ ⚠️`);
+      console.log(`⚠️ CP buscado: ${propertyInfo.codigo_postal}`);
+      console.log(`⚠️ Ubicación: ${ubicacionCompleta}`);
+      
+      const message = `No se encontraron propiedades en el código postal ${propertyInfo.codigo_postal} (${ubicacionCompleta}) en nuestra base de datos de Idealista.
+
+🔍 Posibles causas:
+• No hay propiedades registradas para este código postal
+• Las propiedades no tienen información suficiente (precio o superficie)
+• Problema de conexión con la base de datos
+• El código postal no coincide con los datos de Idealista
+
+Por favor, verifica el código postal o prueba con uno diferente de Valladolid.
+
+📋 Revisa la consola del navegador (F12) para más información técnica.`;
+
+      toast.warning("No se encontraron propiedades comparables");
+      
       return {
         status: "ok",
-        sin_comparables: `No se encontraron propiedades en el código postal ${propertyInfo.codigo_postal} (${ubicacionCompleta}) en nuestra base de datos de Idealista. 
-        
-Esto puede deberse a:
-- No hay propiedades registradas para este código postal en la base de datos
-- Las propiedades no tienen información suficiente (precio o superficie)
-- El código postal no coincide exactamente con los datos de Idealista
-
-Por favor, verifica el código postal o prueba con uno diferente de Valladolid.`
+        sin_comparables: message
       };
     }
 
-    console.log(`✅ Encontradas ${comparables.length} propiedades en ${ubicacionCompleta} para la valoración`);
+    console.log(`✅ PASO 1 ÉXITO: Encontradas ${comparables.length} propiedades en ${ubicacionCompleta} para la valoración`);
 
     // 2. Get valuation from OpenAI
+    console.log(`🤖 PASO 2: Enviando a OpenAI para valoración...`);
     try {
       const valuation = await getOpenAIValuation(propertyInfo, comparables);
+      console.log(`🤖 PASO 2 COMPLETADO: Valoración de OpenAI recibida`);
       
       // If missing data, return directly
       if (valuation.faltan_datos) {
+        console.log(`📋 Faltan datos:`, valuation.faltan_datos);
         return {
           status: "faltan_datos",
           faltan_datos: valuation.faltan_datos
@@ -67,11 +85,15 @@ Por favor, verifica el código postal o prueba con uno diferente de Valladolid.`
       
       // If no comparables, return message
       if (valuation.sin_comparables) {
+        console.log(`📋 Sin comparables:`, valuation.sin_comparables);
         return {
           status: "ok",
           sin_comparables: valuation.sin_comparables
         };
       }
+      
+      console.log(`🎉 VALORACIÓN COMPLETADA EXITOSAMENTE`);
+      console.log(`🎉 Precio sugerido: €${valuation.valoracion?.precio_sugerido}`);
       
       // Otherwise, return the complete valuation
       return {
@@ -92,19 +114,26 @@ Por favor, verifica el código postal o prueba con uno diferente de Valladolid.`
         disclaimer: valuation.disclaimer || `Estimación basada en ${comparables.length} propiedades de Idealista del código postal ${propertyInfo.codigo_postal} en ${ubicacionCompleta}. No sustituye a una tasación oficial.`
       };
     } catch (parseError) {
-      console.error("❌ Error with OpenAI valuation:", parseError);
+      console.error("❌ ❌ ❌ ERROR CON OPENAI ❌ ❌ ❌", parseError);
+      console.error("❌ Usando valoración de respaldo...");
       
       // If there's an error with OpenAI, use the fallback valuation
-      return generateFallbackValuation(propertyInfo, comparables);
+      const fallbackResult = generateFallbackValuation(propertyInfo, comparables);
+      console.log(`🔄 Valoración de respaldo generada`);
+      return fallbackResult;
     }
   } catch (error) {
-    console.error("💥 Error valuing property:", error);
-    toast.error("Hubo un error al valorar la propiedad. Por favor, inténtalo de nuevo.");
+    console.error("💥 💥 💥 ERROR CRÍTICO EN VALORACIÓN 💥 💥 💥");
+    console.error("💥 Error:", error);
+    console.error("💥 Tipo:", typeof error);
+    console.error("💥 Stack:", error instanceof Error ? error.stack : 'No stack available');
+    
+    toast.error("Error crítico en el valorador. Revisa la consola para más detalles.");
     
     // Return an error format
     return {
       status: "faltan_datos",
-      faltan_datos: ["Error en el servidor: no se pudo procesar la valoración. Revisa la consola del navegador para más detalles."],
+      faltan_datos: ["Error crítico en el servidor. Revisa la consola del navegador (F12) para más información técnica."],
       disclaimer: "Este contenido tiene carácter meramente informativo y no constituye asesoramiento profesional."
     };
   }
