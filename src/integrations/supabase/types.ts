@@ -176,6 +176,69 @@ export type Database = {
           },
         ]
       }
+      property_valuations: {
+        Row: {
+          address: string
+          bathrooms: number
+          bedrooms: number
+          created_at: string
+          estimated_price: number
+          extras: string[] | null
+          high_range: number
+          id: string
+          locality: string
+          low_range: number
+          postal_code: string
+          property_type: string
+          state: string
+          surface_m2: number
+          updated_at: string
+          user_id: string | null
+          valuation_data: Json
+          year_built: number
+        }
+        Insert: {
+          address: string
+          bathrooms: number
+          bedrooms: number
+          created_at?: string
+          estimated_price: number
+          extras?: string[] | null
+          high_range: number
+          id?: string
+          locality: string
+          low_range: number
+          postal_code: string
+          property_type: string
+          state: string
+          surface_m2: number
+          updated_at?: string
+          user_id?: string | null
+          valuation_data: Json
+          year_built: number
+        }
+        Update: {
+          address?: string
+          bathrooms?: number
+          bedrooms?: number
+          created_at?: string
+          estimated_price?: number
+          extras?: string[] | null
+          high_range?: number
+          id?: string
+          locality?: string
+          low_range?: number
+          postal_code?: string
+          property_type?: string
+          state?: string
+          surface_m2?: number
+          updated_at?: string
+          user_id?: string | null
+          valuation_data?: Json
+          year_built?: number
+        }
+        Relationships: []
+      }
       property_videos: {
         Row: {
           created_at: string

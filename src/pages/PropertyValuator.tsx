@@ -5,6 +5,8 @@ import { Footer } from "@/components/Footer";
 import { PropertyValuationForm } from "@/components/property-valuation/PropertyValuationForm";
 import { PropertyValuationResult } from "@/components/property-valuation/PropertyValuationResult";
 import { motion } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export interface PropertyValuationInput {
   address: string;
@@ -48,31 +50,36 @@ const PropertyValuator = () => {
     try {
       console.log("🏠 Iniciando valoración con datos:", data);
       
-      // TODO: Implementar llamada al edge function
-      const mockResult: PropertyValuationOutput = {
-        estimated_price_eur: 280000,
-        low_range: 260000,
-        high_range: 300000,
-        similar_links: [
-          "https://www.idealista.com/inmueble/123456",
-          "https://www.idealista.com/inmueble/789012",
-          "https://www.idealista.com/inmueble/345678",
-          "https://www.idealista.com/inmueble/901234",
-          "https://www.idealista.com/inmueble/567890"
-        ],
-        comps: [
-          { price: 275000, surface: 85, bedrooms: 3, distance: 150, url: "https://www.idealista.com/inmueble/123456" },
-          { price: 290000, surface: 90, bedrooms: 3, distance: 200, url: "https://www.idealista.com/inmueble/789012" },
-          { price: 265000, surface: 80, bedrooms: 2, distance: 300, url: "https://www.idealista.com/inmueble/345678" },
-          { price: 285000, surface: 88, bedrooms: 3, distance: 250, url: "https://www.idealista.com/inmueble/901234" },
-          { price: 270000, surface: 82, bedrooms: 3, distance: 180, url: "https://www.idealista.com/inmueble/567890" }
-        ]
-      };
+      // Obtener el token del usuario autenticado (si existe)
+      const { data: { session } } = await supabase.auth.getSession();
       
-      setResult(mockResult);
+      // Llamar a la edge function
+      const { data: functionResult, error: functionError } = await supabase.functions.invoke('valuate', {
+        body: data,
+        headers: session ? {
+          Authorization: `Bearer ${session.access_token}`
+        } : {}
+      });
+
+      if (functionError) {
+        console.error("❌ Error en edge function:", functionError);
+        throw new Error(functionError.message || "Error en el servidor");
+      }
+
+      if (functionResult.error) {
+        console.error("❌ Error en valoración:", functionResult.error);
+        throw new Error(functionResult.error);
+      }
+
+      console.log("✅ Valoración completada:", functionResult);
+      setResult(functionResult);
+      toast.success("Valoración completada exitosamente");
+      
     } catch (err) {
       console.error("❌ Error en valoración:", err);
-      setError("Error al realizar la valoración. Por favor, inténtalo de nuevo.");
+      const errorMessage = err instanceof Error ? err.message : "Error al realizar la valoración. Por favor, inténtalo de nuevo.";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -105,9 +112,13 @@ const PropertyValuator = () => {
             />
             
             {error && (
-              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <motion.div 
+                className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
                 <p className="text-red-700">{error}</p>
-              </div>
+              </motion.div>
             )}
           </div>
           
@@ -119,7 +130,7 @@ const PropertyValuator = () => {
         </div>
         
         <div className="mt-12 text-center text-sm text-gray-500">
-          <p>* Estimación orientativa. No sustituye una tasación oficial.</p>
+          <p>* Estimación orientativa basada en datos de mercado y análisis con IA. No sustituye una tasación oficial.</p>
         </div>
       </main>
       
