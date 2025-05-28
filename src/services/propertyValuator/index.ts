@@ -11,7 +11,7 @@ export async function getPropertyValuation(
 ): Promise<PropertyValuation> {
   try {
     console.log("🏠 =================================");
-    console.log("🏠 INICIANDO VALORACIÓN COMPLETA");
+    console.log("🏠 VALORACIÓN CON MAPEO MEJORADO");
     console.log("🏠 =================================");
     console.log("🏠 Datos de entrada:", JSON.stringify(propertyInfo, null, 2));
     
@@ -36,7 +36,7 @@ export async function getPropertyValuation(
     console.log(`📍 Ubicación completa: ${ubicacionCompleta}`);
     
     // 1. Get ALL comparable properties from same postal code
-    console.log(`🔍 PASO 1: Buscando propiedades comparables en CP ${propertyInfo.codigo_postal}...`);
+    console.log(`🔍 PASO 1: Buscando propiedades con MAPEO MEJORADO en CP ${propertyInfo.codigo_postal}...`);
     const comparables = await getComparableProperties(propertyInfo);
     console.log(`🔍 PASO 1 COMPLETADO: ${comparables.length} propiedades encontradas`);
     
@@ -46,17 +46,22 @@ export async function getPropertyValuation(
       console.log(`⚠️ CP buscado: ${propertyInfo.codigo_postal}`);
       console.log(`⚠️ Ubicación: ${ubicacionCompleta}`);
       
-      const message = `No se encontraron propiedades en el código postal ${propertyInfo.codigo_postal} (${ubicacionCompleta}) en nuestra base de datos de Idealista.
+      const message = `No se encontraron propiedades en el código postal ${propertyInfo.codigo_postal} (${ubicacionCompleta}) después de aplicar el mapeo mejorado de barrios.
 
-🔍 Posibles causas:
-• No hay propiedades registradas para este código postal
-• Las propiedades no tienen información suficiente (precio o superficie)
-• Problema de conexión con la base de datos
-• El código postal no coincide con los datos de Idealista
+🔍 **¿Qué hemos probado?**
+• Búsqueda directa por código postal (${propertyInfo.codigo_postal})
+• Búsqueda por nombres de barrios y distritos de Valladolid
+• Análisis de ${ubicacionCompleta}
 
-Por favor, verifica el código postal o prueba con uno diferente de Valladolid.
+📋 **Revisa la consola del navegador (F12)** para ver:
+• Qué códigos postales están disponibles en la base de datos
+• Cómo se están extrayendo los códigos postales de cada propiedad
+• Estadísticas detalladas del procesamiento
 
-📋 Revisa la consola del navegador (F12) para más información técnica.`;
+🎯 **Posibles soluciones:**
+• Verifica que el código postal ${propertyInfo.codigo_postal} sea correcto
+• Prueba con otro código postal de Valladolid
+• Revisa los logs de la consola para diagnóstico técnico`;
 
       toast.warning("No se encontraron propiedades comparables");
       
@@ -66,7 +71,7 @@ Por favor, verifica el código postal o prueba con uno diferente de Valladolid.
       };
     }
 
-    console.log(`✅ PASO 1 ÉXITO: Encontradas ${comparables.length} propiedades en ${ubicacionCompleta} para la valoración`);
+    console.log(`✅ PASO 1 ÉXITO: ${comparables.length} propiedades encontradas para valoración`);
 
     // 2. Get valuation from OpenAI
     console.log(`🤖 PASO 2: Enviando a OpenAI para valoración...`);
@@ -110,8 +115,8 @@ Por favor, verifica el código postal o prueba con uno diferente de Valladolid.
         estadisticas_comparables: valuation.estadisticas_comparables,
         comparables_destacados: valuation.comparables_destacados,
         fecha_calculo: valuation.fecha_calculo || new Date().toISOString().split('T')[0],
-        metodologia_breve: valuation.metodologia_breve || `Valoración basada en ${comparables.length} propiedades reales del código postal ${propertyInfo.codigo_postal} (${ubicacionCompleta}) obtenidas de Idealista.`,
-        disclaimer: valuation.disclaimer || `Estimación basada en ${comparables.length} propiedades de Idealista del código postal ${propertyInfo.codigo_postal} en ${ubicacionCompleta}. No sustituye a una tasación oficial.`
+        metodologia_breve: valuation.metodologia_breve || `Valoración basada en ${comparables.length} propiedades reales del código postal ${propertyInfo.codigo_postal} (${ubicacionCompleta}) obtenidas de Idealista con mapeo mejorado de barrios.`,
+        disclaimer: valuation.disclaimer || `Estimación basada en ${comparables.length} propiedades de Idealista del código postal ${propertyInfo.codigo_postal} en ${ubicacionCompleta}. Utiliza mapeo inteligente de barrios. No sustituye a una tasación oficial.`
       };
     } catch (parseError) {
       console.error("❌ ❌ ❌ ERROR CON OPENAI ❌ ❌ ❌", parseError);

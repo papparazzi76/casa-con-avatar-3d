@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { ComparableProperty, PropertyInfo } from "./types";
+import { findPostalCodeByNeighborhood } from "./neighborhoodMappingService";
 
 // Interface for Idealista Valladolid table data
 interface IdealistaProperty {
@@ -69,7 +70,7 @@ function isExterior(characteristics: string[]): boolean {
   );
 }
 
-// Function to extract postal code from description or characteristics
+// NUEVA FUNCIÓN MEJORADA: Extraer código postal desde múltiples fuentes
 function extractPostalCode(property: IdealistaProperty): string | null {
   const textToSearch = [
     property["Descripción"] || "",
@@ -79,72 +80,73 @@ function extractPostalCode(property: IdealistaProperty): string | null {
     property["Característica_3"] || ""
   ].join(" ");
   
-  console.log(`📮 Buscando código postal en: "${textToSearch.substring(0, 100)}..."`);
+  console.log(`📮 NUEVO EXTRACTOR: Analizando propiedad con título: "${property["Titulo"]}"`);
+  console.log(`📮 Descripción: "${property["Descripción"]?.substring(0, 100)}..."`);
   
-  // Look for Valladolid postal codes (47001-47017, 47153)
+  // ESTRATEGIA 1: Buscar códigos postales explícitos (47001-47017, 47153)
   const postalCodeMatch = textToSearch.match(/\b(47001|47002|47003|47004|47005|47006|47007|47008|47009|47010|47011|47012|47013|47014|47015|47016|47017|47153)\b/);
-  const extractedCode = postalCodeMatch ? postalCodeMatch[1] : null;
-  
-  if (extractedCode) {
-    console.log(`📮 Código postal extraído: ${extractedCode}`);
-  } else {
-    console.log(`📮 No se encontró código postal válido`);
+  if (postalCodeMatch) {
+    console.log(`📮 ✅ ÉXITO - Código postal explícito encontrado: ${postalCodeMatch[1]}`);
+    return postalCodeMatch[1];
   }
   
-  return extractedCode;
+  // ESTRATEGIA 2: Buscar por nombres de barrios en título y descripción
+  const neighborhoodCode = findPostalCodeByNeighborhood(textToSearch);
+  if (neighborhoodCode) {
+    console.log(`📮 ✅ ÉXITO - Código postal por barrio: ${neighborhoodCode}`);
+    return neighborhoodCode;
+  }
+  
+  console.log(`📮 ❌ FALLO - No se pudo extraer código postal`);
+  return null;
 }
 
 // Function to get real comparable properties from Supabase - filtered by postal code
 export async function getRealComparableProperties(propertyInfo: PropertyInfo): Promise<ComparableProperty[]> {
   try {
-    console.log("🔗 INICIANDO CONEXIÓN A SUPABASE");
-    console.log("🔍 Buscando propiedades en la tabla 'Idealista Valladolid' para CP:", propertyInfo.codigo_postal);
-    
-    // Test the Supabase connection first
-    console.log("🔗 Verificando conexión a Supabase...");
+    console.log("🔗 ==========================================");
+    console.log("🔗 INICIANDO BÚSQUEDA MEJORADA EN SUPABASE");
+    console.log("🔗 ==========================================");
+    console.log("🔍 Código postal objetivo:", propertyInfo.codigo_postal);
     
     // Fetch all properties from Idealista Valladolid table
     const { data: properties, error } = await supabase
       .from('Idealista Valladolid')
       .select('*')
-      .limit(1000); // Increased limit to get more data
-
-    console.log("🔗 Respuesta de Supabase recibida");
+      .limit(1000);
 
     if (error) {
       console.error("❌ ERROR EN SUPABASE:", error);
-      console.error("❌ Código de error:", error.code);
-      console.error("❌ Mensaje:", error.message);
-      console.error("❌ Detalles:", error.details);
       return [];
     }
 
-    if (!properties) {
-      console.log("⚠️ Supabase devolvió null en lugar de un array");
-      return [];
-    }
-
-    if (properties.length === 0) {
+    if (!properties || properties.length === 0) {
       console.log("⚠️ La tabla 'Idealista Valladolid' está vacía");
       return [];
     }
 
-    console.log(`📊 ÉXITO: Encontradas ${properties.length} propiedades en la tabla Supabase`);
+    console.log(`📊 DATOS CARGADOS: ${properties.length} propiedades encontradas en Supabase`);
 
-    // Log sample of data for debugging
-    console.log("📋 Muestra de los primeros 3 registros:");
-    properties.slice(0, 3).forEach((prop, index) => {
-      console.log(`Registro ${index + 1}:`, {
-        precio: prop["Precio"],
-        caracteristicas: [prop["Característica_1"], prop["Característica_2"], prop["Característica_3"]],
-        descripcion: prop["Descripción"]?.substring(0, 100) + "..."
-      });
+    // Log muestra de datos para debugging
+    console.log("📋 === MUESTRA DE DATOS ===");
+    properties.slice(0, 5).forEach((prop, index) => {
+      console.log(`📋 Propiedad ${index + 1}:`);
+      console.log(`    Título: "${prop["Titulo"]}"`);
+      console.log(`    Precio: "${prop["Precio"]}"`);
+      console.log(`    Características: [${prop["Característica_1"]}, ${prop["Característica_2"]}, ${prop["Característica_3"]}]`);
     });
 
-    // Convert Supabase data to ComparableProperty format and filter by postal code
+    // Procesar y filtrar propiedades
+    console.log("\n🏠 === PROCESANDO PROPIEDADES ===");
+    
+    let validadas = 0;
+    let rechazadas_precio = 0;
+    let rechazadas_superficie = 0;
+    let rechazadas_cp = 0;
+    
     const comparables: ComparableProperty[] = properties
       .map((property: IdealistaProperty, index: number) => {
-        console.log(`\n🏠 Procesando propiedad ${index + 1}/${properties.length}`);
+        console.log(`\n🏠 [${index + 1}/${properties.length}] Procesando: "${property["Titulo"]}"`);
         
         const characteristics = [
           property["Característica_1"] || "",
@@ -157,24 +159,27 @@ export async function getRealComparableProperties(propertyInfo: PropertyInfo): P
         const rooms = extractRooms(characteristics);
         const extractedPostalCode = extractPostalCode(property);
 
-        // Only skip properties with completely invalid data
+        // Validaciones paso a paso
         if (price === 0) {
-          console.log(`❌ Propiedad ${index + 1} omitida: precio inválido`);
+          console.log(`❌ [${index + 1}] RECHAZADA: precio inválido (${property["Precio"]})`);
+          rechazadas_precio++;
           return null;
         }
 
         if (surface === 0) {
-          console.log(`❌ Propiedad ${index + 1} omitida: superficie inválida`);
+          console.log(`❌ [${index + 1}] RECHAZADA: superficie inválida`);
+          rechazadas_superficie++;
           return null;
         }
 
-        // Only include properties from the same postal code
         if (extractedPostalCode !== propertyInfo.codigo_postal) {
-          console.log(`❌ Propiedad ${index + 1} omitida: CP ${extractedPostalCode} no coincide con ${propertyInfo.codigo_postal}`);
+          console.log(`❌ [${index + 1}] RECHAZADA: CP "${extractedPostalCode}" ≠ "${propertyInfo.codigo_postal}"`);
+          rechazadas_cp++;
           return null;
         }
 
-        console.log(`✅ Propiedad ${index + 1} VÁLIDA: CP ${extractedPostalCode}, €${price}, ${surface}m²`);
+        console.log(`✅ [${index + 1}] VALIDADA: CP ${extractedPostalCode}, €${price}, ${surface}m²`);
+        validadas++;
 
         return {
           fuente: "idealista.com",
@@ -182,60 +187,73 @@ export async function getRealComparableProperties(propertyInfo: PropertyInfo): P
           codigo_postal: extractedPostalCode,
           distrito: propertyInfo.distrito,
           superficie_m2: surface,
-          habitaciones: rooms || 1, // Default to 1 if can't extract
+          habitaciones: rooms || 1,
           precio: price,
           precio_m2: Math.round(price / surface),
           ascensor: hasElevator(characteristics),
           exterior: isExterior(characteristics),
-          estado_conservacion: "buen-estado", // Default value
-          planta: "intermedia" // Default value
+          estado_conservacion: "buen-estado",
+          planta: "intermedia"
         };
       })
       .filter((comparable): comparable is ComparableProperty => comparable !== null);
 
-    console.log(`\n🎯 RESULTADO FINAL: ${comparables.length} propiedades válidas para CP ${propertyInfo.codigo_postal}`);
+    // Estadísticas finales
+    console.log("\n📊 === ESTADÍSTICAS FINALES ===");
+    console.log(`📊 Propiedades procesadas: ${properties.length}`);
+    console.log(`✅ Validadas: ${validadas}`);
+    console.log(`❌ Rechazadas por precio: ${rechazadas_precio}`);
+    console.log(`❌ Rechazadas por superficie: ${rechazadas_superficie}`);
+    console.log(`❌ Rechazadas por código postal: ${rechazadas_cp}`);
+    console.log(`🎯 RESULTADO PARA CP ${propertyInfo.codigo_postal}: ${comparables.length} propiedades`);
     
     if (comparables.length === 0) {
-      console.log(`⚠️ No se encontraron propiedades válidas para el código postal ${propertyInfo.codigo_postal}`);
+      console.log(`⚠️ === DIAGNÓSTICO: NO HAY COMPARABLES ===`);
+      console.log(`⚠️ CP objetivo: ${propertyInfo.codigo_postal}`);
       
-      // Let's check what postal codes we do have in the database
-      console.log("🔍 Analizando códigos postales disponibles en la base de datos...");
-      const postalCodesInDB = properties
-        .map(prop => extractPostalCode(prop))
-        .filter(Boolean)
-        .filter((code, index, arr) => arr.indexOf(code) === index)
-        .sort();
+      // Analizar qué códigos postales SÍ están disponibles
+      console.log("🔍 Analizando códigos postales disponibles...");
+      const postalCodesFound = new Map<string, number>();
       
-      console.log("📍 Códigos postales encontrados en BD:", postalCodesInDB);
-      console.log("📍 Total de códigos postales únicos:", postalCodesInDB.length);
+      properties.forEach(prop => {
+        const cp = extractPostalCode(prop);
+        if (cp) {
+          postalCodesFound.set(cp, (postalCodesFound.get(cp) || 0) + 1);
+        }
+      });
+      
+      console.log("📍 Códigos postales disponibles en BD:");
+      Array.from(postalCodesFound.entries())
+        .sort(([a], [b]) => a.localeCompare(b))
+        .forEach(([cp, count]) => {
+          console.log(`   ${cp}: ${count} propiedades`);
+        });
       
       return [];
     }
 
-    // Basic price validation to avoid outliers
+    // Filtrar precios extremos
     const filteredComparables = comparables.filter(comparable => {
       const validPrice = comparable.precio_m2 >= 500 && comparable.precio_m2 <= 20000;
       if (!validPrice) {
-        console.log(`❌ Propiedad filtrada por precio/m² extremo: €${comparable.precio_m2}/m²`);
+        console.log(`🔧 Filtrada por precio extremo: €${comparable.precio_m2}/m²`);
       }
       return validPrice;
     });
 
-    console.log(`✨ Después de validación: ${filteredComparables.length} propiedades válidas para CP ${propertyInfo.codigo_postal}`);
+    console.log(`🔧 Después de filtrar precios extremos: ${filteredComparables.length} propiedades`);
     
-    // Sort by price per m2 for consistency and return top 20
+    // Ordenar y limitar resultado
     const finalResult = filteredComparables
       .sort((a, b) => a.precio_m2 - b.precio_m2)
       .slice(0, 20);
 
-    console.log(`🏆 RESULTADO DEFINITIVO: ${finalResult.length} propiedades para valoración`);
+    console.log(`🏆 RESULTADO DEFINITIVO: ${finalResult.length} propiedades para valoración en CP ${propertyInfo.codigo_postal}`);
     
     return finalResult;
 
   } catch (error) {
     console.error("💥 ERROR CRÍTICO en getRealComparableProperties:", error);
-    console.error("💥 Tipo de error:", typeof error);
-    console.error("💥 Stack trace:", error instanceof Error ? error.stack : 'No stack available');
     return [];
   }
 }
