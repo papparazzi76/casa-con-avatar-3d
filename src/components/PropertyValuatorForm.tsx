@@ -10,8 +10,7 @@ import { PropertyInfo } from "@/services/propertyValuatorService";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
-import { getPostalCodeInfo } from "@/services/propertyValuator/postalCodeService";
-import { useEffect } from "react";
+import { getAllZones } from "@/services/propertyValuator/zoneMappingService";
 
 const propertySchema = z.object({
   localidad: z.string().min(2, {
@@ -20,12 +19,8 @@ const propertySchema = z.object({
   distrito: z.string().min(1, {
     message: "El distrito o barrio es obligatorio.",
   }),
-  codigo_postal: z.string().min(5, {
-    message: "El código postal es obligatorio (5 dígitos).",
-  }).max(5, {
-    message: "El código postal debe tener exactamente 5 dígitos.",
-  }).regex(/^\d{5}$/, {
-    message: "El código postal debe contener solo números.",
+  zona_idealista: z.string({
+    required_error: "Selecciona una zona de Idealista.",
   }),
   direccion: z.string().optional(),
   tipo_vivienda: z.string({
@@ -65,9 +60,9 @@ export function PropertyValuatorForm({ onSubmit, isLoading, missingFields }: Pro
   const form = useForm<z.infer<typeof propertySchema>>({
     resolver: zodResolver(propertySchema),
     defaultValues: {
-      localidad: "",
+      localidad: "Valladolid",
       distrito: "",
-      codigo_postal: "",
+      zona_idealista: "",
       direccion: "",
       tipo_vivienda: "",
       superficie_m2: undefined,
@@ -81,25 +76,11 @@ export function PropertyValuatorForm({ onSubmit, isLoading, missingFields }: Pro
     },
   });
 
-  // Watch for postal code changes to auto-complete district
-  const watchedPostalCode = form.watch("codigo_postal");
-
-  useEffect(() => {
-    if (watchedPostalCode && watchedPostalCode.length === 5) {
-      const postalCodeInfo = getPostalCodeInfo(watchedPostalCode);
-      if (postalCodeInfo) {
-        // Auto-complete localidad and distrito
-        form.setValue("localidad", postalCodeInfo.localidad);
-        if (postalCodeInfo.distrito) {
-          form.setValue("distrito", postalCodeInfo.distrito);
-        }
-      }
-    }
-  }, [watchedPostalCode, form]);
-
   function handleSubmit(values: z.infer<typeof propertySchema>) {
     onSubmit(values as PropertyInfo);
   }
+
+  const availableZones = getAllZones();
 
   return (
     <Card className="border-2">
@@ -107,7 +88,7 @@ export function PropertyValuatorForm({ onSubmit, isLoading, missingFields }: Pro
         <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <h4 className="font-medium text-blue-800 mb-2">Servicio disponible solo para Valladolid</h4>
           <p className="text-blue-700 text-sm">
-            Este valorador utiliza datos reales de propiedades y está disponible únicamente para códigos postales de Valladolid capital (47001-47017, 47153).
+            Este valorador utiliza datos reales de propiedades de Idealista y está disponible únicamente para zonas de Valladolid capital. Selecciona la zona específica de tu propiedad.
           </p>
         </div>
         
@@ -118,15 +99,26 @@ export function PropertyValuatorForm({ onSubmit, isLoading, missingFields }: Pro
               
               <FormField
                 control={form.control}
-                name="codigo_postal"
+                name="zona_idealista"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Código Postal (solo Valladolid) <span className="text-red-500">*</span></FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ej.: 47001" maxLength={5} {...field} />
-                    </FormControl>
+                    <FormLabel>Zona de Idealista (Valladolid) <span className="text-red-500">*</span></FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona la zona" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {availableZones.map((zona) => (
+                          <SelectItem key={zona} value={zona}>
+                            {zona}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormDescription>
-                      El distrito y localidad se completarán automáticamente. Solo códigos postales de Valladolid (47001-47017, 47153).
+                      Zonas oficiales utilizadas por Idealista en Valladolid
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -141,7 +133,7 @@ export function PropertyValuatorForm({ onSubmit, isLoading, missingFields }: Pro
                     <FormItem>
                       <FormLabel>Localidad <span className="text-red-500">*</span></FormLabel>
                       <FormControl>
-                        <Input placeholder="Ej.: Madrid" {...field} />
+                        <Input placeholder="Valladolid" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -155,7 +147,7 @@ export function PropertyValuatorForm({ onSubmit, isLoading, missingFields }: Pro
                     <FormItem>
                       <FormLabel>Distrito/Barrio <span className="text-red-500">*</span></FormLabel>
                       <FormControl>
-                        <Input placeholder="Ej.: Salamanca" {...field} />
+                        <Input placeholder="Ej.: Centro" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -170,7 +162,7 @@ export function PropertyValuatorForm({ onSubmit, isLoading, missingFields }: Pro
                   <FormItem>
                     <FormLabel>Dirección (opcional)</FormLabel>
                     <FormControl>
-                      <Input placeholder="Ej.: Calle Serrano, 21" {...field} />
+                      <Input placeholder="Ej.: Calle Mayor, 21" {...field} />
                     </FormControl>
                     <FormDescription>
                       Ayuda a encontrar inmuebles más cercanos

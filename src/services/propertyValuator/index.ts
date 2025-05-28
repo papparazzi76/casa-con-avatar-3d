@@ -2,7 +2,7 @@ import { PropertyInfo, PropertyValuation } from "./types";
 import { getComparableProperties } from "./comparableService";
 import { getOpenAIValuation } from "./openaiService";
 import { generateFallbackValuation } from "./fallbackService";
-import { getPostalCodeInfo, isValidPostalCode } from "./postalCodeService";
+import { isValidZone } from "./zoneMappingService";
 import { toast } from "sonner";
 
 // Main function to get property valuation
@@ -11,56 +11,50 @@ export async function getPropertyValuation(
 ): Promise<PropertyValuation> {
   try {
     console.log("🏠 =================================");
-    console.log("🏠 VALORACIÓN CON MAPEO MEJORADO");
+    console.log("🏠 VALORACIÓN CON ZONAS IDEALISTA");
     console.log("🏠 =================================");
     console.log("🏠 Datos de entrada:", JSON.stringify(propertyInfo, null, 2));
     
-    // Validar código postal antes de proceder
-    if (!isValidPostalCode(propertyInfo.codigo_postal)) {
-      console.log(`❌ Código postal no válido: ${propertyInfo.codigo_postal}`);
-      const message = `El código postal ${propertyInfo.codigo_postal} no es válido o no está en nuestra base de datos de Valladolid`;
+    // Validar zona antes de proceder
+    if (!isValidZone(propertyInfo.zona_idealista)) {
+      console.log(`❌ Zona no válida: ${propertyInfo.zona_idealista}`);
+      const message = `La zona ${propertyInfo.zona_idealista} no es válida o no está en nuestra base de datos de zonas de Idealista Valladolid`;
       toast.error(message);
       return {
         status: "faltan_datos",
         faltan_datos: [message],
-        disclaimer: "Por favor, verifica que el código postal sea de Valladolid (47001-47017, 47153)."
+        disclaimer: "Por favor, selecciona una zona válida de Valladolid de las disponibles en el desplegable."
       };
     }
 
-    // Obtener información del código postal
-    const postalCodeInfo = getPostalCodeInfo(propertyInfo.codigo_postal);
-    const ubicacionCompleta = postalCodeInfo 
-      ? `${postalCodeInfo.localidad}, ${postalCodeInfo.distrito || postalCodeInfo.provincia}, ${postalCodeInfo.comunidad_autonoma}`
-      : `${propertyInfo.localidad}, ${propertyInfo.distrito}`;
-    
+    const ubicacionCompleta = `${propertyInfo.zona_idealista}, ${propertyInfo.localidad}`;
     console.log(`📍 Ubicación completa: ${ubicacionCompleta}`);
     
-    // 1. Get ALL comparable properties from same postal code
-    console.log(`🔍 PASO 1: Buscando propiedades con MAPEO MEJORADO en CP ${propertyInfo.codigo_postal}...`);
+    // 1. Get ALL comparable properties from same zone
+    console.log(`🔍 PASO 1: Buscando propiedades en zona ${propertyInfo.zona_idealista}...`);
     const comparables = await getComparableProperties(propertyInfo);
     console.log(`🔍 PASO 1 COMPLETADO: ${comparables.length} propiedades encontradas`);
     
     // If no comparables, return specific message with debugging info
     if (comparables.length === 0) {
       console.log(`⚠️ ⚠️ ⚠️ NO SE ENCONTRARON PROPIEDADES ⚠️ ⚠️ ⚠️`);
-      console.log(`⚠️ CP buscado: ${propertyInfo.codigo_postal}`);
+      console.log(`⚠️ Zona buscada: ${propertyInfo.zona_idealista}`);
       console.log(`⚠️ Ubicación: ${ubicacionCompleta}`);
       
-      const message = `No se encontraron propiedades en el código postal ${propertyInfo.codigo_postal} (${ubicacionCompleta}) después de aplicar el mapeo mejorado de barrios.
+      const message = `No se encontraron propiedades en la zona ${propertyInfo.zona_idealista} (${ubicacionCompleta}).
 
 🔍 **¿Qué hemos probado?**
-• Búsqueda directa por código postal (${propertyInfo.codigo_postal})
-• Búsqueda por nombres de barrios y distritos de Valladolid
+• Búsqueda directa por zona de Idealista (${propertyInfo.zona_idealista})
 • Análisis de ${ubicacionCompleta}
 
 📋 **Revisa la consola del navegador (F12)** para ver:
-• Qué códigos postales están disponibles en la base de datos
-• Cómo se están extrayendo los códigos postales de cada propiedad
+• Qué zonas están disponibles en la base de datos
+• Cómo se están extrayendo las zonas de cada propiedad
 • Estadísticas detalladas del procesamiento
 
 🎯 **Posibles soluciones:**
-• Verifica que el código postal ${propertyInfo.codigo_postal} sea correcto
-• Prueba con otro código postal de Valladolid
+• Verifica que la zona ${propertyInfo.zona_idealista} sea correcta
+• Prueba con otra zona de Valladolid
 • Revisa los logs de la consola para diagnóstico técnico`;
 
       toast.warning("No se encontraron propiedades comparables");
@@ -106,7 +100,7 @@ export async function getPropertyValuation(
         vivienda_objetivo: {
           direccion: propertyInfo.direccion || "No especificada",
           distrito: propertyInfo.distrito,
-          codigo_postal: propertyInfo.codigo_postal,
+          zona_idealista: propertyInfo.zona_idealista,
           tipo: propertyInfo.tipo_vivienda,
           superficie_m2: propertyInfo.superficie_m2,
           ubicacion_completa: ubicacionCompleta
@@ -115,8 +109,8 @@ export async function getPropertyValuation(
         estadisticas_comparables: valuation.estadisticas_comparables,
         comparables_destacados: valuation.comparables_destacados,
         fecha_calculo: valuation.fecha_calculo || new Date().toISOString().split('T')[0],
-        metodologia_breve: valuation.metodologia_breve || `Valoración basada en ${comparables.length} propiedades reales del código postal ${propertyInfo.codigo_postal} (${ubicacionCompleta}) obtenidas de Idealista con mapeo mejorado de barrios.`,
-        disclaimer: valuation.disclaimer || `Estimación basada en ${comparables.length} propiedades de Idealista del código postal ${propertyInfo.codigo_postal} en ${ubicacionCompleta}. Utiliza mapeo inteligente de barrios. No sustituye a una tasación oficial.`
+        metodologia_breve: valuation.metodologia_breve || `Valoración basada en ${comparables.length} propiedades reales de la zona ${propertyInfo.zona_idealista} (${ubicacionCompleta}) obtenidas de Idealista.`,
+        disclaimer: valuation.disclaimer || `Estimación basada en ${comparables.length} propiedades de Idealista de la zona ${propertyInfo.zona_idealista} en ${ubicacionCompleta}. No sustituye a una tasación oficial.`
       };
     } catch (parseError) {
       console.error("❌ ❌ ❌ ERROR CON OPENAI ❌ ❌ ❌", parseError);
@@ -146,4 +140,4 @@ export async function getPropertyValuation(
 
 // Re-export types for use elsewhere
 export * from "./types";
-export * from "./postalCodeService";
+export * from "./zoneMappingService";

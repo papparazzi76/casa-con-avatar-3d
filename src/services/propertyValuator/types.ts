@@ -5,7 +5,7 @@
 export interface PropertyInfo {
   localidad: string;
   distrito: string;
-  codigo_postal: string;
+  zona_idealista: string; // Cambio de codigo_postal a zona_idealista
   direccion?: string;
   tipo_vivienda: string;
   superficie_m2: number;
@@ -22,7 +22,7 @@ export interface PropertyInfo {
 export interface ComparableProperty {
   fuente: string;
   url: string;
-  codigo_postal: string;
+  zona_idealista: string; // Cambio de codigo_postal a zona_idealista
   distrito: string;
   distancia_m?: number;
   superficie_m2: number;
@@ -41,10 +41,10 @@ export interface PropertyValuation {
   vivienda_objetivo?: {
     direccion: string;
     distrito: string;
-    codigo_postal: string;
+    zona_idealista: string; // Cambio de codigo_postal a zona_idealista
     tipo: string;
     superficie_m2: number;
-    ubicacion_completa?: string; // Nueva información de ubicación completa
+    ubicacion_completa?: string;
   };
   valoracion?: {
     precio_min: number;

@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { ComparableProperty, PropertyInfo } from "./types";
-import { findPostalCodeByNeighborhood } from "./neighborhoodMappingService";
+import { findZoneByName } from "./zoneMappingService";
 
 // Interface for Idealista Valladolid table data
 interface IdealistaProperty {
@@ -19,9 +19,7 @@ interface IdealistaProperty {
 // Function to extract numeric value from price string
 function extractPrice(priceString: string): number {
   console.log(`💰 Procesando precio: "${priceString}"`);
-  // Remove all non-numeric characters except dots and commas
   const cleanPrice = priceString.replace(/[^\d.,]/g, '');
-  // Replace comma with dot for decimal parsing
   const normalizedPrice = cleanPrice.replace(',', '.');
   const price = parseFloat(normalizedPrice) || 0;
   console.log(`💰 Precio extraído: ${price}`);
@@ -70,8 +68,8 @@ function isExterior(characteristics: string[]): boolean {
   );
 }
 
-// NUEVA FUNCIÓN MEJORADA: Extraer código postal desde múltiples fuentes
-function extractPostalCode(property: IdealistaProperty): string | null {
+// NUEVA FUNCIÓN: Extraer zona de Idealista desde múltiples fuentes
+function extractZone(property: IdealistaProperty): string | null {
   const textToSearch = [
     property["Descripción"] || "",
     property["Titulo"] || "",
@@ -80,34 +78,27 @@ function extractPostalCode(property: IdealistaProperty): string | null {
     property["Característica_3"] || ""
   ].join(" ");
   
-  console.log(`📮 NUEVO EXTRACTOR: Analizando propiedad con título: "${property["Titulo"]}"`);
-  console.log(`📮 Descripción: "${property["Descripción"]?.substring(0, 100)}..."`);
+  console.log(`🏙️ EXTRACTOR DE ZONA: Analizando propiedad con título: "${property["Titulo"]}"`);
+  console.log(`🏙️ Descripción: "${property["Descripción"]?.substring(0, 100)}..."`);
   
-  // ESTRATEGIA 1: Buscar códigos postales explícitos (47001-47017, 47153)
-  const postalCodeMatch = textToSearch.match(/\b(47001|47002|47003|47004|47005|47006|47007|47008|47009|47010|47011|47012|47013|47014|47015|47016|47017|47153)\b/);
-  if (postalCodeMatch) {
-    console.log(`📮 ✅ ÉXITO - Código postal explícito encontrado: ${postalCodeMatch[1]}`);
-    return postalCodeMatch[1];
+  // Buscar por nombres de zonas en título y descripción
+  const zone = findZoneByName(textToSearch);
+  if (zone) {
+    console.log(`🏙️ ✅ ÉXITO - Zona encontrada: ${zone}`);
+    return zone;
   }
   
-  // ESTRATEGIA 2: Buscar por nombres de barrios en título y descripción
-  const neighborhoodCode = findPostalCodeByNeighborhood(textToSearch);
-  if (neighborhoodCode) {
-    console.log(`📮 ✅ ÉXITO - Código postal por barrio: ${neighborhoodCode}`);
-    return neighborhoodCode;
-  }
-  
-  console.log(`📮 ❌ FALLO - No se pudo extraer código postal`);
+  console.log(`🏙️ ❌ FALLO - No se pudo extraer zona`);
   return null;
 }
 
-// Function to get real comparable properties from Supabase - filtered by postal code
+// Function to get real comparable properties from Supabase - filtered by zone
 export async function getRealComparableProperties(propertyInfo: PropertyInfo): Promise<ComparableProperty[]> {
   try {
     console.log("🔗 ==========================================");
-    console.log("🔗 INICIANDO BÚSQUEDA MEJORADA EN SUPABASE");
+    console.log("🔗 INICIANDO BÚSQUEDA POR ZONA EN SUPABASE");
     console.log("🔗 ==========================================");
-    console.log("🔍 Código postal objetivo:", propertyInfo.codigo_postal);
+    console.log("🔍 Zona objetivo:", propertyInfo.zona_idealista);
     
     // Fetch all properties from Idealista Valladolid table
     const { data: properties, error } = await supabase
@@ -137,12 +128,12 @@ export async function getRealComparableProperties(propertyInfo: PropertyInfo): P
     });
 
     // Procesar y filtrar propiedades
-    console.log("\n🏠 === PROCESANDO PROPIEDADES ===");
+    console.log("\n🏠 === PROCESANDO PROPIEDADES POR ZONA ===");
     
     let validadas = 0;
     let rechazadas_precio = 0;
     let rechazadas_superficie = 0;
-    let rechazadas_cp = 0;
+    let rechazadas_zona = 0;
     
     const comparables: ComparableProperty[] = properties
       .map((property: IdealistaProperty, index: number) => {
@@ -157,7 +148,7 @@ export async function getRealComparableProperties(propertyInfo: PropertyInfo): P
         const price = extractPrice(property["Precio"]);
         const surface = extractSurfaceArea(characteristics);
         const rooms = extractRooms(characteristics);
-        const extractedPostalCode = extractPostalCode(property);
+        const extractedZone = extractZone(property);
 
         // Validaciones paso a paso
         if (price === 0) {
@@ -172,20 +163,20 @@ export async function getRealComparableProperties(propertyInfo: PropertyInfo): P
           return null;
         }
 
-        if (extractedPostalCode !== propertyInfo.codigo_postal) {
-          console.log(`❌ [${index + 1}] RECHAZADA: CP "${extractedPostalCode}" ≠ "${propertyInfo.codigo_postal}"`);
-          rechazadas_cp++;
+        if (extractedZone !== propertyInfo.zona_idealista) {
+          console.log(`❌ [${index + 1}] RECHAZADA: Zona "${extractedZone}" ≠ "${propertyInfo.zona_idealista}"`);
+          rechazadas_zona++;
           return null;
         }
 
-        console.log(`✅ [${index + 1}] VALIDADA: CP ${extractedPostalCode}, €${price}, ${surface}m²`);
+        console.log(`✅ [${index + 1}] VALIDADA: Zona ${extractedZone}, €${price}, ${surface}m²`);
         validadas++;
 
         return {
           fuente: "idealista.com",
           url: property["URL"] || property["URL_ingresadas"] || "#",
-          codigo_postal: extractedPostalCode,
-          distrito: propertyInfo.distrito,
+          zona_idealista: extractedZone,
+          distrito: extractedZone, // Usamos la zona como distrito temporalmente
           superficie_m2: surface,
           habitaciones: rooms || 1,
           precio: price,
@@ -204,29 +195,29 @@ export async function getRealComparableProperties(propertyInfo: PropertyInfo): P
     console.log(`✅ Validadas: ${validadas}`);
     console.log(`❌ Rechazadas por precio: ${rechazadas_precio}`);
     console.log(`❌ Rechazadas por superficie: ${rechazadas_superficie}`);
-    console.log(`❌ Rechazadas por código postal: ${rechazadas_cp}`);
-    console.log(`🎯 RESULTADO PARA CP ${propertyInfo.codigo_postal}: ${comparables.length} propiedades`);
+    console.log(`❌ Rechazadas por zona: ${rechazadas_zona}`);
+    console.log(`🎯 RESULTADO PARA ZONA ${propertyInfo.zona_idealista}: ${comparables.length} propiedades`);
     
     if (comparables.length === 0) {
       console.log(`⚠️ === DIAGNÓSTICO: NO HAY COMPARABLES ===`);
-      console.log(`⚠️ CP objetivo: ${propertyInfo.codigo_postal}`);
+      console.log(`⚠️ Zona objetivo: ${propertyInfo.zona_idealista}`);
       
-      // Analizar qué códigos postales SÍ están disponibles
-      console.log("🔍 Analizando códigos postales disponibles...");
-      const postalCodesFound = new Map<string, number>();
+      // Analizar qué zonas SÍ están disponibles
+      console.log("🔍 Analizando zonas disponibles...");
+      const zonesFound = new Map<string, number>();
       
       properties.forEach(prop => {
-        const cp = extractPostalCode(prop);
-        if (cp) {
-          postalCodesFound.set(cp, (postalCodesFound.get(cp) || 0) + 1);
+        const zone = extractZone(prop);
+        if (zone) {
+          zonesFound.set(zone, (zonesFound.get(zone) || 0) + 1);
         }
       });
       
-      console.log("📍 Códigos postales disponibles en BD:");
-      Array.from(postalCodesFound.entries())
+      console.log("🏙️ Zonas disponibles en BD:");
+      Array.from(zonesFound.entries())
         .sort(([a], [b]) => a.localeCompare(b))
-        .forEach(([cp, count]) => {
-          console.log(`   ${cp}: ${count} propiedades`);
+        .forEach(([zone, count]) => {
+          console.log(`   ${zone}: ${count} propiedades`);
         });
       
       return [];
@@ -248,7 +239,7 @@ export async function getRealComparableProperties(propertyInfo: PropertyInfo): P
       .sort((a, b) => a.precio_m2 - b.precio_m2)
       .slice(0, 20);
 
-    console.log(`🏆 RESULTADO DEFINITIVO: ${finalResult.length} propiedades para valoración en CP ${propertyInfo.codigo_postal}`);
+    console.log(`🏆 RESULTADO DEFINITIVO: ${finalResult.length} propiedades para valoración en zona ${propertyInfo.zona_idealista}`);
     
     return finalResult;
 
