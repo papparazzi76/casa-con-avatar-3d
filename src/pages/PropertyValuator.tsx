@@ -2,61 +2,80 @@
 import { useState } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { PropertyValuatorForm } from "@/components/PropertyValuatorForm";
-import { PropertyValuatorResult } from "@/components/PropertyValuatorResult";
-import { PropertyInfo, PropertyValuation, getPropertyValuation } from "@/services/propertyValuator";
-import { toast } from "sonner";
+import { PropertyValuationForm } from "@/components/property-valuation/PropertyValuationForm";
+import { PropertyValuationResult } from "@/components/property-valuation/PropertyValuationResult";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { ProfessionalValuationDialog } from "@/components/ProfessionalValuationDialog";
-import { FileTextIcon } from "lucide-react";
-import { ValuatorLoading } from "@/components/propertyValuator/ValuatorLoading";
-import { ValuatorError } from "@/components/propertyValuator/ValuatorError";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { InfoIcon } from "lucide-react";
+
+export interface PropertyValuationInput {
+  address: string;
+  cp: string;
+  locality: string;
+  propertyType: string;
+  surface_m2: number;
+  bedrooms: number;
+  bathrooms: number;
+  year_built: number;
+  state: string;
+  extras: string[];
+}
+
+export interface PropertyValuationOutput {
+  estimated_price_eur: number;
+  low_range: number;
+  high_range: number;
+  similar_links: string[];
+  comps: Array<{
+    price: number;
+    surface: number;
+    bedrooms: number;
+    distance: number;
+    url: string;
+    lat?: number;
+    lng?: number;
+  }>;
+}
 
 const PropertyValuator = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [propertyValuation, setPropertyValuation] = useState<PropertyValuation | null>(null);
-  const [missingFields, setMissingFields] = useState<string[] | undefined>(undefined);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [result, setResult] = useState<PropertyValuationOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (propertyData: PropertyInfo) => {
+  const handleSubmit = async (data: PropertyValuationInput) => {
     setIsLoading(true);
-    setMissingFields(undefined);
     setError(null);
-    
+    setResult(null);
+
     try {
-      const response = await getPropertyValuation(propertyData);
+      console.log("🏠 Iniciando valoración con datos:", data);
       
-      setPropertyValuation(response);
+      // TODO: Implementar llamada al edge function
+      const mockResult: PropertyValuationOutput = {
+        estimated_price_eur: 280000,
+        low_range: 260000,
+        high_range: 300000,
+        similar_links: [
+          "https://www.idealista.com/inmueble/123456",
+          "https://www.idealista.com/inmueble/789012",
+          "https://www.idealista.com/inmueble/345678",
+          "https://www.idealista.com/inmueble/901234",
+          "https://www.idealista.com/inmueble/567890"
+        ],
+        comps: [
+          { price: 275000, surface: 85, bedrooms: 3, distance: 150, url: "https://www.idealista.com/inmueble/123456" },
+          { price: 290000, surface: 90, bedrooms: 3, distance: 200, url: "https://www.idealista.com/inmueble/789012" },
+          { price: 265000, surface: 80, bedrooms: 2, distance: 300, url: "https://www.idealista.com/inmueble/345678" },
+          { price: 285000, surface: 88, bedrooms: 3, distance: 250, url: "https://www.idealista.com/inmueble/901234" },
+          { price: 270000, surface: 82, bedrooms: 3, distance: 180, url: "https://www.idealista.com/inmueble/567890" }
+        ]
+      };
       
-      // Check if there are missing fields
-      if (response.status === "faltan_datos" && response.faltan_datos) {
-        setMissingFields(response.faltan_datos);
-        toast.info("Se necesita información adicional para valorar tu propiedad.");
-      } else if (response.status === "ok") {
-        setMissingFields(undefined);
-        toast.success("Valoración realizada correctamente.");
-      } else if (response.sin_comparables) {
-        toast.warning("No se encontraron viviendas similares para comparar.");
-      } else {
-        toast.error("Hubo un error al valorar tu propiedad. Por favor, inténtalo de nuevo.");
-      }
-    } catch (error) {
-      console.error("Error processing property valuation:", error);
-      setError("Hubo un error al procesar la valoración. Por favor, inténtalo de nuevo más tarde.");
-      toast.error("Hubo un error al valorar tu propiedad. Por favor, inténtalo de nuevo.");
+      setResult(mockResult);
+    } catch (err) {
+      console.error("❌ Error en valoración:", err);
+      setError("Error al realizar la valoración. Por favor, inténtalo de nuevo.");
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleRetry = () => {
-    setError(null);
-    // User will need to submit the form again
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -71,84 +90,38 @@ const PropertyValuator = () => {
           transition={{ duration: 0.5 }}
         >
           <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
-            Valorador de Inmuebles - Valladolid
+            Valorador Inmobiliario Inteligente
           </h1>
           <p className="mx-auto mt-4 max-w-[700px] text-gray-500 md:text-xl dark:text-gray-400">
-            Obtén una valoración estimada de tu propiedad en Valladolid basada en datos reales de inmuebles del mismo código postal.
+            Obtén una valoración precisa de tu propiedad basada en datos reales del mercado y análisis con IA.
           </p>
-          <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg max-w-2xl mx-auto">
-            <p className="text-amber-700 font-medium">
-              ⚠️ Servicio disponible únicamente para propiedades en Valladolid capital
-            </p>
-            <p className="text-amber-600 text-sm mt-1">
-              Utilizamos todas las propiedades disponibles del mismo código postal para ofrecerte una valoración completa del mercado
-            </p>
-          </div>
-          
-          <Button 
-            onClick={() => setIsDialogOpen(true)} 
-            className="mt-6 bg-realestate-purple hover:bg-realestate-purple/90"
-          >
-            <FileTextIcon className="mr-2 h-4 w-4" />
-            Solicitar valoración profesional gratuita
-          </Button>
         </motion.div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div>
-            <PropertyValuatorForm 
+            <PropertyValuationForm 
               onSubmit={handleSubmit} 
-              isLoading={isLoading} 
-              missingFields={missingFields}
+              isLoading={isLoading}
             />
-
+            
             {error && (
-              <ValuatorError message={error} onRetry={handleRetry} />
-            )}
-
-            {missingFields && missingFields.length > 0 && (
-              <Alert className="mt-6 border-amber-200 bg-amber-50">
-                <InfoIcon className="h-4 w-4 text-amber-600" />
-                <AlertTitle className="text-amber-700">Datos adicionales requeridos</AlertTitle>
-                <AlertDescription className="text-amber-700">
-                  <p>Para obtener una valoración más precisa, por favor completa los siguientes campos:</p>
-                  <ul className="list-disc list-inside mt-2 space-y-1">
-                    {missingFields.map((field, index) => (
-                      <li key={index}>{field}</li>
-                    ))}
-                  </ul>
-                </AlertDescription>
-              </Alert>
+              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-700">{error}</p>
+              </div>
             )}
           </div>
           
           <div>
-            {isLoading && <ValuatorLoading />}
-            
-            {!isLoading && propertyValuation && propertyValuation.status === "ok" && propertyValuation.valoracion && (
-              <PropertyValuatorResult result={propertyValuation} />
-            )}
-            
-            {!isLoading && propertyValuation && propertyValuation.sin_comparables && (
-              <Alert className="border-amber-200 bg-amber-50">
-                <InfoIcon className="h-4 w-4 text-amber-600" />
-                <AlertTitle className="text-amber-700">No se encontraron comparables</AlertTitle>
-                <AlertDescription className="text-amber-700">
-                  No hemos podido encontrar propiedades similares en nuestra base de datos para realizar una 
-                  valoración precisa. Por favor, modifica algunos de los criterios e inténtalo de nuevo, 
-                  o solicita una valoración profesional personalizada.
-                </AlertDescription>
-              </Alert>
+            {result && (
+              <PropertyValuationResult result={result} />
             )}
           </div>
         </div>
+        
+        <div className="mt-12 text-center text-sm text-gray-500">
+          <p>* Estimación orientativa. No sustituye una tasación oficial.</p>
+        </div>
       </main>
-      
-      <ProfessionalValuationDialog 
-        isOpen={isDialogOpen} 
-        onClose={() => setIsDialogOpen(false)}
-        propertyValuation={propertyValuation}
-      />
       
       <Footer />
     </div>
