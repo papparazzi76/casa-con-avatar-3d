@@ -22,7 +22,7 @@ export function LocationSection({ form }: LocationSectionProps) {
         name="zona_idealista"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Zona de Idealista (Valladolid) <span className="text-red-500">*</span></FormLabel>
+            <FormLabel>Localización del Inmueble <span className="text-red-500">*</span></FormLabel>
             <Select onValueChange={field.onChange} defaultValue={field.value}>
               <FormControl>
                 <SelectTrigger>
