@@ -9,6 +9,126 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      detailed_property_valuations: {
+        Row: {
+          anno_construccion: number
+          banos: number
+          created_at: string
+          direccion_completa: string
+          email: string
+          estado_banos: string
+          estado_cocina: string
+          estado_electricidad: string
+          estado_fontaneria: string
+          estado_puertas: string
+          estado_ventanas: string
+          exterior_interior: string
+          fecha_procesamiento: string | null
+          habitaciones: number
+          id: string
+          observaciones: string | null
+          orientacion: string
+          planta: string
+          procesado: boolean | null
+          resultado_valoracion: Json | null
+          superficie_jardin: number | null
+          superficie_m2: number
+          superficie_terraza: number | null
+          tiene_aire_acondicionado: boolean | null
+          tiene_ascensor: boolean | null
+          tiene_calefaccion: boolean | null
+          tiene_garaje: boolean | null
+          tiene_jardin: boolean | null
+          tiene_piscina: boolean | null
+          tiene_terraza: boolean | null
+          tiene_trastero: boolean | null
+          tipo_vivienda: string
+          updated_at: string
+          user_id: string | null
+          zona_deportiva: boolean | null
+          zona_juegos_infantiles: boolean | null
+          zonas_comunes: string[] | null
+        }
+        Insert: {
+          anno_construccion: number
+          banos: number
+          created_at?: string
+          direccion_completa: string
+          email: string
+          estado_banos: string
+          estado_cocina: string
+          estado_electricidad: string
+          estado_fontaneria: string
+          estado_puertas: string
+          estado_ventanas: string
+          exterior_interior: string
+          fecha_procesamiento?: string | null
+          habitaciones: number
+          id?: string
+          observaciones?: string | null
+          orientacion: string
+          planta: string
+          procesado?: boolean | null
+          resultado_valoracion?: Json | null
+          superficie_jardin?: number | null
+          superficie_m2: number
+          superficie_terraza?: number | null
+          tiene_aire_acondicionado?: boolean | null
+          tiene_ascensor?: boolean | null
+          tiene_calefaccion?: boolean | null
+          tiene_garaje?: boolean | null
+          tiene_jardin?: boolean | null
+          tiene_piscina?: boolean | null
+          tiene_terraza?: boolean | null
+          tiene_trastero?: boolean | null
+          tipo_vivienda: string
+          updated_at?: string
+          user_id?: string | null
+          zona_deportiva?: boolean | null
+          zona_juegos_infantiles?: boolean | null
+          zonas_comunes?: string[] | null
+        }
+        Update: {
+          anno_construccion?: number
+          banos?: number
+          created_at?: string
+          direccion_completa?: string
+          email?: string
+          estado_banos?: string
+          estado_cocina?: string
+          estado_electricidad?: string
+          estado_fontaneria?: string
+          estado_puertas?: string
+          estado_ventanas?: string
+          exterior_interior?: string
+          fecha_procesamiento?: string | null
+          habitaciones?: number
+          id?: string
+          observaciones?: string | null
+          orientacion?: string
+          planta?: string
+          procesado?: boolean | null
+          resultado_valoracion?: Json | null
+          superficie_jardin?: number | null
+          superficie_m2?: number
+          superficie_terraza?: number | null
+          tiene_aire_acondicionado?: boolean | null
+          tiene_ascensor?: boolean | null
+          tiene_calefaccion?: boolean | null
+          tiene_garaje?: boolean | null
+          tiene_jardin?: boolean | null
+          tiene_piscina?: boolean | null
+          tiene_terraza?: boolean | null
+          tiene_trastero?: boolean | null
+          tipo_vivienda?: string
+          updated_at?: string
+          user_id?: string | null
+          zona_deportiva?: boolean | null
+          zona_juegos_infantiles?: boolean | null
+          zonas_comunes?: string[] | null
+        }
+        Relationships: []
+      }
       "Idealista Valladolid": {
         Row: {
           Característica_1: string
