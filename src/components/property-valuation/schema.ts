@@ -1,10 +1,21 @@
-
 import { z } from "zod";
 
 export const propertyValuationSchema = z.object({
   // Datos básicos obligatorios
-  direccion_completa: z.string().min(10, {
-    message: "La dirección completa es obligatoria (mínimo 10 caracteres).",
+  direccion_calle: z.string().min(5, {
+    message: "La calle es obligatoria (mínimo 5 caracteres).",
+  }),
+  direccion_numero: z.string().min(1, {
+    message: "El número es obligatorio.",
+  }),
+  es_unifamiliar: z.boolean().default(false),
+  direccion_planta: z.string().optional(),
+  direccion_puerta: z.string().optional(),
+  direccion_codigo_postal: z.string().min(5, {
+    message: "El código postal es obligatorio.",
+  }),
+  direccion_ciudad: z.string().min(2, {
+    message: "La ciudad es obligatoria.",
   }),
   email: z.string().email({
     message: "Email válido es obligatorio para recibir el resultado.",
@@ -81,6 +92,15 @@ export const propertyValuationSchema = z.object({
   
   // Observaciones adicionales
   observaciones: z.string().optional(),
+}).refine((data) => {
+  // Si no es unifamiliar, planta y puerta son obligatorias
+  if (!data.es_unifamiliar) {
+    return data.direccion_planta && data.direccion_puerta;
+  }
+  return true;
+}, {
+  message: "Para viviendas que no son unifamiliares, la planta y puerta son obligatorias",
+  path: ["direccion_planta"],
 });
 
 export type PropertyValuationFormData = z.infer<typeof propertyValuationSchema>;

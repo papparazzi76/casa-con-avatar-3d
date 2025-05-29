@@ -24,7 +24,13 @@ export function PropertyValuationForm({ onSubmit, isLoading }: PropertyValuation
   const form = useForm<PropertyValuationFormData>({
     resolver: zodResolver(propertyValuationSchema),
     defaultValues: {
-      direccion_completa: "",
+      direccion_calle: "",
+      direccion_numero: "",
+      es_unifamiliar: false,
+      direccion_planta: "",
+      direccion_puerta: "",
+      direccion_codigo_postal: "",
+      direccion_ciudad: "",
       email: "",
       tipo_vivienda: "",
       superficie_m2: undefined,
@@ -58,7 +64,22 @@ export function PropertyValuationForm({ onSubmit, isLoading }: PropertyValuation
   });
 
   function handleSubmit(values: PropertyValuationFormData) {
-    onSubmit(values);
+    // Construir dirección completa antes de enviar
+    let direccionCompleta = `${values.direccion_calle}, ${values.direccion_numero}`;
+    
+    if (!values.es_unifamiliar && values.direccion_planta && values.direccion_puerta) {
+      direccionCompleta += `, ${values.direccion_planta} ${values.direccion_puerta}`;
+    }
+    
+    direccionCompleta += `, ${values.direccion_codigo_postal} ${values.direccion_ciudad}`;
+    
+    // Enviar datos con dirección completa construida
+    const dataToSubmit = {
+      ...values,
+      direccion_completa: direccionCompleta
+    };
+    
+    onSubmit(dataToSubmit);
   }
 
   return (
