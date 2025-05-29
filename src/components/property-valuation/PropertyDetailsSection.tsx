@@ -1,81 +1,43 @@
 
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UseFormReturn } from "react-hook-form";
-import { PropertyValuationInput } from "@/pages/PropertyValuator";
+import { PropertyValuationFormData, orientacionOptions } from "./schema";
+import { Compass } from "lucide-react";
 
 interface PropertyDetailsSectionProps {
-  form: UseFormReturn<PropertyValuationInput>;
+  form: UseFormReturn<PropertyValuationFormData>;
 }
-
-const PROPERTY_STATES = [
-  { value: "nuevo", label: "Nuevo" },
-  { value: "como-nuevo", label: "Como nuevo" },
-  { value: "buen-estado", label: "Buen estado" },
-  { value: "para-reformar", label: "Para reformar" },
-  { value: "reformado", label: "Reformado" },
-];
 
 export function PropertyDetailsSection({ form }: PropertyDetailsSectionProps) {
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-medium">Detalles de la propiedad</h3>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <FormField
-          control={form.control}
-          name="surface_m2"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Superficie (m²)</FormLabel>
-              <FormControl>
-                <Input type="number" placeholder="80" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="bedrooms"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Dormitorios</FormLabel>
-              <FormControl>
-                <Input type="number" placeholder="3" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="bathrooms"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Baños</FormLabel>
-              <FormControl>
-                <Input type="number" placeholder="2" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
+      <h3 className="text-lg font-semibold flex items-center gap-2">
+        <Compass className="h-5 w-5" />
+        Detalles de la Propiedad
+      </h3>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField
           control={form.control}
-          name="year_built"
+          name="orientacion"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Año de construcción</FormLabel>
-              <FormControl>
-                <Input type="number" placeholder="2000" {...field} />
-              </FormControl>
+              <FormLabel>Orientación <span className="text-red-500">*</span></FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona la orientación" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {orientacionOptions.map((orientacion) => (
+                    <SelectItem key={orientacion.value} value={orientacion.value}>
+                      {orientacion.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}
@@ -83,22 +45,53 @@ export function PropertyDetailsSection({ form }: PropertyDetailsSectionProps) {
         
         <FormField
           control={form.control}
-          name="state"
+          name="exterior_interior"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Estado de conservación</FormLabel>
+              <FormLabel>Exterior/Interior <span className="text-red-500">*</span></FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecciona el estado" />
+                    <SelectValue placeholder="Selecciona el tipo" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {PROPERTY_STATES.map(state => (
-                    <SelectItem key={state.value} value={state.value}>
-                      {state.label}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="exterior">Exterior</SelectItem>
+                  <SelectItem value="interior">Interior</SelectItem>
+                  <SelectItem value="semi-exterior">Semi-exterior</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="planta"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Planta <span className="text-red-500">*</span></FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona la planta" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="bajo">Bajo</SelectItem>
+                  <SelectItem value="entresuelo">Entresuelo</SelectItem>
+                  <SelectItem value="1">1ª Planta</SelectItem>
+                  <SelectItem value="2">2ª Planta</SelectItem>
+                  <SelectItem value="3">3ª Planta</SelectItem>
+                  <SelectItem value="4">4ª Planta</SelectItem>
+                  <SelectItem value="5">5ª Planta</SelectItem>
+                  <SelectItem value="6">6ª Planta</SelectItem>
+                  <SelectItem value="7">7ª Planta</SelectItem>
+                  <SelectItem value="8">8ª Planta</SelectItem>
+                  <SelectItem value="9">9ª Planta</SelectItem>
+                  <SelectItem value="10+">10ª Planta o superior</SelectItem>
+                  <SelectItem value="atico">Ático</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />

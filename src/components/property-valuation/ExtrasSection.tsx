@@ -2,74 +2,112 @@
 import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
 import { UseFormReturn } from "react-hook-form";
-import { PropertyValuationInput } from "@/pages/PropertyValuator";
+import { PropertyValuationFormData } from "./schema";
+import { Plus } from "lucide-react";
 
 interface ExtrasSectionProps {
-  form: UseFormReturn<PropertyValuationInput>;
+  form: UseFormReturn<PropertyValuationFormData>;
 }
-
-const AVAILABLE_EXTRAS = [
-  { id: "ascensor", label: "Ascensor" },
-  { id: "parking", label: "Plaza de garaje" },
-  { id: "trastero", label: "Trastero" },
-  { id: "terraza", label: "Terraza" },
-  { id: "balcon", label: "Balcón" },
-  { id: "piscina", label: "Piscina" },
-  { id: "jardin", label: "Jardín" },
-  { id: "aire-acondicionado", label: "Aire acondicionado" },
-  { id: "calefaccion", label: "Calefacción" },
-  { id: "exterior", label: "Exterior" },
-];
 
 export function ExtrasSection({ form }: ExtrasSectionProps) {
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-medium">Extras y características</h3>
+      <h3 className="text-lg font-semibold flex items-center gap-2">
+        <Plus className="h-5 w-5" />
+        Extras y Servicios
+      </h3>
       
-      <FormField
-        control={form.control}
-        name="extras"
-        render={() => (
-          <FormItem>
-            <FormLabel>Selecciona las características que tiene tu propiedad:</FormLabel>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
-              {AVAILABLE_EXTRAS.map((extra) => (
-                <FormField
-                  key={extra.id}
-                  control={form.control}
-                  name="extras"
-                  render={({ field }) => {
-                    return (
-                      <FormItem
-                        key={extra.id}
-                        className="flex flex-row items-start space-x-3 space-y-0"
-                      >
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value?.includes(extra.id)}
-                            onCheckedChange={(checked) => {
-                              return checked
-                                ? field.onChange([...field.value, extra.id])
-                                : field.onChange(
-                                    field.value?.filter(
-                                      (value) => value !== extra.id
-                                    )
-                                  )
-                            }}
-                          />
-                        </FormControl>
-                        <FormLabel className="text-sm font-normal">
-                          {extra.label}
-                        </FormLabel>
-                      </FormItem>
-                    )
-                  }}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <FormField
+          control={form.control}
+          name="tiene_garaje"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
                 />
-              ))}
-            </div>
-          </FormItem>
-        )}
-      />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>Garaje</FormLabel>
+              </div>
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="tiene_trastero"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>Trastero</FormLabel>
+              </div>
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="tiene_ascensor"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>Ascensor</FormLabel>
+              </div>
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="tiene_calefaccion"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>Calefacción</FormLabel>
+              </div>
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="tiene_aire_acondicionado"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>Aire acondicionado</FormLabel>
+              </div>
+            </FormItem>
+          )}
+        />
+      </div>
     </div>
   );
 }
