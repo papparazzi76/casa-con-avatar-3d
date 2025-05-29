@@ -142,8 +142,38 @@ serve(async (req) => {
 
     console.log('✅ Solicitud guardada con ID:', savedValuation.id);
 
-    // TODO: Aquí se implementará el procesamiento de la valoración
-    // Por ahora, simplemente confirmamos que se ha guardado la solicitud
+    // Enviar notificación por email
+    try {
+      console.log('📧 Enviando notificación por email...');
+      const { error: emailError } = await supabase.functions.invoke('send-notification', {
+        body: {
+          type: 'form_submission',
+          formType: 'Valoración Detallada de Inmueble',
+          email: propertyData.email,
+          formData: {
+            direccion: propertyData.direccion_completa,
+            tipo_vivienda: propertyData.tipo_vivienda,
+            superficie_m2: propertyData.superficie_m2,
+            habitaciones: propertyData.habitaciones,
+            banos: propertyData.banos,
+            anno_construccion: propertyData.anno_construccion,
+            email_cliente: propertyData.email,
+            user_id: userId,
+            solicitud_id: savedValuation.id
+          }
+        }
+      });
+
+      if (emailError) {
+        console.error('⚠️ Error enviando notificación:', emailError);
+        // No lanzamos error aquí para no fallar todo el proceso
+      } else {
+        console.log('✅ Notificación enviada correctamente');
+      }
+    } catch (notificationError) {
+      console.error('⚠️ Error en notificación:', notificationError);
+      // No lanzamos error aquí para no fallar todo el proceso
+    }
     
     return new Response(
       JSON.stringify({

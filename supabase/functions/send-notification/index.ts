@@ -42,18 +42,38 @@ const handler = async (req: Request): Promise<Response> => {
     } else if (data.type === 'form_submission') {
       subject = `Nuevo Formulario: ${data.formType || 'Desconocido'}`;
       
-      // Crear contenido HTML para los datos del formulario
+      // Crear contenido HTML específico para valoración detallada
       let formDataHtml = '';
       if (data.formData) {
-        formDataHtml = '<h2>Datos del formulario:</h2><ul>';
-        for (const [key, value] of Object.entries(data.formData)) {
-          if (typeof value === 'object' && value !== null) {
-            formDataHtml += `<li><strong>${key}:</strong> ${JSON.stringify(value)}</li>`;
-          } else {
-            formDataHtml += `<li><strong>${key}:</strong> ${value}</li>`;
+        if (data.formType === 'Valoración Detallada de Inmueble') {
+          formDataHtml = `
+            <h2>Datos de la Valoración:</h2>
+            <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 10px 0;">
+              <h3>Información del Cliente:</h3>
+              <p><strong>Email:</strong> ${data.formData.email_cliente || 'No disponible'}</p>
+              <p><strong>ID de Solicitud:</strong> ${data.formData.solicitud_id || 'No disponible'}</p>
+              
+              <h3>Datos del Inmueble:</h3>
+              <p><strong>Dirección:</strong> ${data.formData.direccion || 'No disponible'}</p>
+              <p><strong>Tipo de Vivienda:</strong> ${data.formData.tipo_vivienda || 'No disponible'}</p>
+              <p><strong>Superficie:</strong> ${data.formData.superficie_m2 || 'No disponible'} m²</p>
+              <p><strong>Habitaciones:</strong> ${data.formData.habitaciones || 'No disponible'}</p>
+              <p><strong>Baños:</strong> ${data.formData.banos || 'No disponible'}</p>
+              <p><strong>Año de Construcción:</strong> ${data.formData.anno_construccion || 'No disponible'}</p>
+            </div>
+          `;
+        } else {
+          // Formato genérico para otros tipos de formulario
+          formDataHtml = '<h2>Datos del formulario:</h2><ul>';
+          for (const [key, value] of Object.entries(data.formData)) {
+            if (typeof value === 'object' && value !== null) {
+              formDataHtml += `<li><strong>${key}:</strong> ${JSON.stringify(value)}</li>`;
+            } else {
+              formDataHtml += `<li><strong>${key}:</strong> ${value}</li>`;
+            }
           }
+          formDataHtml += '</ul>';
         }
-        formDataHtml += '</ul>';
       }
       
       htmlContent = `
@@ -67,12 +87,12 @@ const handler = async (req: Request): Promise<Response> => {
       console.log("Processing form submission notification:", data.formType);
     }
 
-    console.log("Sending email to: carlos@arcasl.es");
+    console.log("Sending email to: inmo@arcasl.es");
     console.log("Email subject:", subject);
 
     const emailResponse = await resend.emails.send({
       from: "PropTools <onboarding@resend.dev>",
-      to: ["carlos@arcasl.es"],
+      to: ["inmo@arcasl.es"],
       subject: subject,
       html: htmlContent,
     });
