@@ -1,6 +1,7 @@
 
 export type ContractType = 
   | 'contrato_reserva'
+  | 'contrato_reserva_inmueble'
   | 'arras_penitenciales'
   | 'arras_confirmatorias'
   | 'arras_penales'
@@ -20,6 +21,8 @@ export interface ContractFormData {
   vendedor?: string;
   vendedor_dni?: string;
   vendedor_domicilio?: string;
+  vendedor_telefono?: string;
+  vendedor_email?: string;
   
   arrendador?: string;
   arrendador_dni?: string;
@@ -28,6 +31,8 @@ export interface ContractFormData {
   comprador?: string;
   comprador_dni?: string;
   comprador_domicilio?: string;
+  comprador_telefono?: string;
+  comprador_email?: string;
   
   arrendatario?: string;
   arrendatario_dni?: string;
@@ -58,6 +63,17 @@ export interface ContractFormData {
   inventario_electrodomesticos?: string;
   inventario_enseres?: string;
   estado_general?: string;
+  
+  // New fields for "Contrato de Reserva de Inmueble"
+  informacion_registro?: string;
+  cargas_gravamenes?: string;
+  porcentaje_arras?: number;
+  forma_pago?: string;
+  fecha_limite_escritura?: string;
+  sujeto_financiacion?: boolean;
+  fecha_limite_financiacion?: string;
+  muebles_incluidos?: string;
+  honorarios_agencia?: string;
 }
 
 export interface ContractResult {
