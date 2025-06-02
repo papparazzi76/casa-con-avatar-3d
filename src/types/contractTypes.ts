@@ -5,7 +5,6 @@ export type ContractType =
   | 'arras_penitenciales'
   | 'arras_confirmatorias'
   | 'arras_penales'
-  | 'contrato_alquiler_vivienda'
   | 'alquiler_particulares_amueblado'
   | 'alquiler_particulares_sin_amueblar'
   | 'alquiler_empresa_particular_amueblado'
@@ -27,6 +26,8 @@ export interface ContractFormData {
   arrendador?: string;
   arrendador_dni?: string;
   arrendador_domicilio?: string;
+  arrendador_telefono?: string;
+  arrendador_email?: string;
   
   comprador?: string;
   comprador_dni?: string;
@@ -37,6 +38,8 @@ export interface ContractFormData {
   arrendatario?: string;
   arrendatario_dni?: string;
   arrendatario_domicilio?: string;
+  arrendatario_telefono?: string;
+  arrendatario_email?: string;
   
   inmueble?: string;
   referencia_catastral?: string;
@@ -52,18 +55,6 @@ export interface ContractFormData {
   vencimiento_arras?: string;
   penalizacion?: number;
   
-  duracion?: number;
-  fianza?: number;
-  renta_mensual?: number;
-  fecha_inicio_posesion?: string;
-  cuenta_pago?: string;
-  
-  // Inventory for furnished rentals
-  inventario_muebles?: string;
-  inventario_electrodomesticos?: string;
-  inventario_enseres?: string;
-  estado_general?: string;
-  
   // New fields for "Contrato de Reserva de Inmueble"
   informacion_registro?: string;
   cargas_gravamenes?: string;
@@ -74,6 +65,47 @@ export interface ContractFormData {
   fecha_limite_financiacion?: string;
   muebles_incluidos?: string;
   honorarios_agencia?: string;
+  
+  // New fields for Arras Confirmatorias
+  clausula_arras_confirmatorias?: string;
+  
+  // New fields for Arras Penales
+  clausula_arras_penales?: string;
+  
+  // Rental contract fields
+  duracion?: number;
+  fianza?: number;
+  renta_mensual?: number;
+  fecha_inicio_posesion?: string;
+  fecha_fin_posesion?: string;
+  cuenta_pago?: string;
+  indice_actualizacion?: string;
+  garantia_adicional?: string;
+  anexos?: string;
+  
+  // Expense checkboxes for rental contracts
+  gastos_luz?: boolean;
+  gastos_agua?: boolean;
+  gastos_gas?: boolean;
+  gastos_internet?: boolean;
+  otros_gastos?: string;
+  
+  // Inventory for furnished rentals
+  inventario_muebles?: string;
+  inventario_electrodomesticos?: string;
+  inventario_enseres?: string;
+  estado_general?: string;
+  
+  // State inspection for unfurnished rentals
+  obs_pintura?: string;
+  obs_ventanas?: string;
+  obs_suelos?: string;
+  obs_electricidad?: string;
+  obs_agua?: string;
+  obs_otros?: string;
+  
+  // Additional clauses
+  clausulas_adicionales?: string;
 }
 
 export interface ContractResult {
