@@ -2,7 +2,8 @@
 export type ContractType = 
   | 'contrato_compraventa_arras_penitenciales'
   | 'alquiler_particulares_amueblado'
-  | 'alquiler_particulares_sin_amueblar';
+  | 'alquiler_particulares_sin_amueblar'
+  | 'contrato_senal_reserva';
 
 export interface ContractFormData {
   // Contract type
@@ -121,6 +122,12 @@ export interface ContractFormData {
   
   // Additional clauses
   clausulas_adicionales?: string;
+  
+  // Reservation contract fields
+  signal_amount?: number;
+  proposed_price?: number;
+  deadline_date?: string;
+  deadline_time?: string;
 }
 
 export interface ContractResult {
