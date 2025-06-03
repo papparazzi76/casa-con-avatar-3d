@@ -1,6 +1,5 @@
 
 export type ContractType = 
-  | 'contrato_reserva'
   | 'contrato_compraventa_arras_penitenciales'
   | 'alquiler_particulares_amueblado'
   | 'alquiler_particulares_sin_amueblar';
@@ -39,10 +38,6 @@ export interface ContractFormData {
   precio_total?: number;
   fecha_firma?: string;
   poblacion_firma?: string;
-  
-  // Specific data for contrato_reserva
-  importe_reserva?: number;
-  plazo_firma_escritura?: number;
   
   // New fields for "Contrato de Compraventa de Inmueble con Arras Penitenciales"
   vendedores?: Array<{
