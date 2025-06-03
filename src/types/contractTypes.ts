@@ -1,16 +1,9 @@
 
 export type ContractType = 
   | 'contrato_reserva'
-  | 'contrato_reserva_inmueble'
-  | 'arras_penitenciales'
-  | 'arras_confirmatorias'
-  | 'arras_penales'
+  | 'contrato_compraventa_arras_penitenciales'
   | 'alquiler_particulares_amueblado'
-  | 'alquiler_particulares_sin_amueblar'
-  | 'alquiler_empresa_particular_amueblado'
-  | 'alquiler_empresa_particular_sin_amueblar'
-  | 'alquiler_uso_distinto_vivienda_amueblado'
-  | 'alquiler_uso_distinto_vivienda_sin_amueblar';
+  | 'alquiler_particulares_sin_amueblar';
 
 export interface ContractFormData {
   // Contract type
@@ -47,30 +40,40 @@ export interface ContractFormData {
   fecha_firma?: string;
   poblacion_firma?: string;
   
-  // Specific data for different contract types
+  // Specific data for contrato_reserva
   importe_reserva?: number;
   plazo_firma_escritura?: number;
   
-  importe_arras?: number;
-  vencimiento_arras?: string;
-  penalizacion?: number;
-  
-  // New fields for "Contrato de Reserva de Inmueble"
-  informacion_registro?: string;
-  cargas_gravamenes?: string;
-  porcentaje_arras?: number;
-  forma_pago?: string;
-  fecha_limite_escritura?: string;
-  sujeto_financiacion?: boolean;
-  fecha_limite_financiacion?: string;
-  muebles_incluidos?: string;
-  honorarios_agencia?: string;
-  
-  // New fields for Arras Confirmatorias
-  clausula_arras_confirmatorias?: string;
-  
-  // New fields for Arras Penales
-  clausula_arras_penales?: string;
+  // New fields for "Contrato de Compraventa de Inmueble con Arras Penitenciales"
+  vendedores?: Array<{
+    name: string;
+    dni: string;
+    address: string;
+    phone: string;
+  }>;
+  compradores?: Array<{
+    name: string;
+    dni: string;
+    address: string;
+    phone: string;
+  }>;
+  property_location?: string;
+  property_registry?: string;
+  property_tomo?: string;
+  property_libro?: string;
+  property_folio?: string;
+  property_finca?: string;
+  property_charges?: string;
+  arras_amount?: number;
+  arras_percent?: number;
+  payment_method?: string;
+  escritura_date?: string;
+  days_from_mortgage?: number;
+  mortgage_deadline?: string;
+  optional_clauses?: string;
+  signing_day?: string;
+  signing_month?: string;
+  signing_year?: string;
   
   // Rental contract fields
   duracion?: number;

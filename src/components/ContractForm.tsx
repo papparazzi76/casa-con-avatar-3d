@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+
+import { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { ContractFormData, ContractType } from "@/types/contractTypes";
 import { Button } from "@/components/ui/button";
@@ -22,7 +23,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Plus, Minus } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -42,7 +43,6 @@ export function ContractForm({ onFormSubmit, missingFields }: ContractFormProps)
       precio_total: undefined,
       fecha_firma: format(new Date(), "yyyy-MM-dd"),
       poblacion_firma: "",
-      sujeto_financiacion: false,
       gastos_luz: false,
       gastos_agua: false,
       gastos_gas: false,
@@ -53,6 +53,32 @@ export function ContractForm({ onFormSubmit, missingFields }: ContractFormProps)
   const [contractType, setContractType] = useState<ContractType>("contrato_reserva");
   const watchContractType = form.watch("tipo_contrato");
 
+  // States for dynamic parties in compraventa contract
+  const emptyParty = { name: "", dni: "", address: "", phone: "" };
+  const [sellers, setSellers] = useState([{ ...emptyParty }]);
+  const [buyers, setBuyers] = useState([{ ...emptyParty }]);
+  const [compraventaData, setCompraventaData] = useState({
+    propertyLocation: "",
+    propertyRegistry: "",
+    propertyTomo: "",
+    propertyLibro: "",
+    propertyFolio: "",
+    propertyFinca: "",
+    propertyCharges: "Sin cargas",
+    arrasAmount: "",
+    arrasPercent: "",
+    paymentMethod: "Transferencia",
+    totalPrice: "",
+    escrituraDate: "",
+    daysFromMortgage: "",
+    mortgageDeadline: "",
+    optionalClauses: "",
+    place: "",
+    signingDay: "",
+    signingMonth: "",
+    signingYear: "2025",
+  });
+
   // Effect to update the contractType state when the form field changes
   useEffect(() => {
     if (watchContractType) {
@@ -61,25 +87,100 @@ export function ContractForm({ onFormSubmit, missingFields }: ContractFormProps)
   }, [watchContractType]);
 
   function onSubmit(data: ContractFormData) {
+    // Include dynamic data for compraventa contract
+    if (contractType === "contrato_compraventa_arras_penitenciales") {
+      data.vendedores = sellers;
+      data.compradores = buyers;
+      data.property_location = compraventaData.propertyLocation;
+      data.property_registry = compraventaData.propertyRegistry;
+      data.property_tomo = compraventaData.propertyTomo;
+      data.property_libro = compraventaData.propertyLibro;
+      data.property_folio = compraventaData.propertyFolio;
+      data.property_finca = compraventaData.propertyFinca;
+      data.property_charges = compraventaData.propertyCharges;
+      data.arras_amount = Number(compraventaData.arrasAmount);
+      data.arras_percent = Number(compraventaData.arrasPercent);
+      data.payment_method = compraventaData.paymentMethod;
+      data.escritura_date = compraventaData.escrituraDate;
+      data.days_from_mortgage = Number(compraventaData.daysFromMortgage);
+      data.mortgage_deadline = compraventaData.mortgageDeadline;
+      data.optional_clauses = compraventaData.optionalClauses;
+      data.signing_day = compraventaData.signingDay;
+      data.signing_month = compraventaData.signingMonth;
+      data.signing_year = compraventaData.signingYear;
+    }
     onFormSubmit(data);
   }
 
   // Define friendly labels for the contract types
   const contractTypeLabels = {
     contrato_reserva: "Contrato de reserva o señal",
-    contrato_reserva_inmueble: "Contrato Privado de Reserva de Inmueble",
-    arras_penitenciales: "Contrato de arras penitenciales",
-    arras_confirmatorias: "Contrato de arras confirmatorias",
-    arras_penales: "Contrato de arras penales",
+    contrato_compraventa_arras_penitenciales: "Contrato de Compraventa de Inmueble con Arras Penitenciales",
     alquiler_particulares_amueblado: "Contrato de arrendamiento de vivienda amueblada",
-    alquiler_particulares_sin_amueblar: "Contrato de arrendamiento de vivienda sin amueblar",
-    alquiler_empresa_particular_amueblado: "Arrendamiento empresa-particular amueblado",
-    alquiler_empresa_particular_sin_amueblar: "Arrendamiento empresa-particular sin amueblar",
-    alquiler_uso_distinto_vivienda_amueblado: "Arrendamiento uso distinto vivienda amueblado",
-    alquiler_uso_distinto_vivienda_sin_amueblar: "Arrendamiento uso distinto vivienda sin amueblar"
+    alquiler_particulares_sin_amueblar: "Contrato de arrendamiento de vivienda sin amueblar"
   };
 
   const isRentalContract = contractType.includes("alquiler");
+
+  // Helpers for dynamic parties
+  const handlePartyChange = (which: "seller" | "buyer", idx: number, field: string, value: string) => {
+    (which === "seller" ? setSellers : setBuyers)((prev) => {
+      const updated = [...prev];
+      updated[idx] = { ...updated[idx], [field]: value };
+      return updated;
+    });
+  };
+
+  const addParty = (which: "seller" | "buyer") => {
+    (which === "seller" ? setSellers : setBuyers)((prev) => [...prev, { ...emptyParty }]);
+  };
+
+  const removeParty = (which: "seller" | "buyer", idx: number) => {
+    (which === "seller" ? setSellers : setBuyers)((prev) =>
+      prev.length === 1 ? prev : prev.filter((_, i) => i !== idx)
+    );
+  };
+
+  const handleCompraventaChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    setCompraventaData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+
+  // Party fields component for compraventa contract
+  const PartyFields = ({ which, party, index }: { which: "seller" | "buyer", party: any, index: number }) => {
+    const isSeller = which === "seller";
+    const parties = isSeller ? sellers : buyers;
+    const h = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => handlePartyChange(which, index, field, e.target.value);
+
+    return (
+      <div className="space-y-2 border rounded-xl p-4 shadow-inner" key={`${which}-${index}`}>        
+        <div className="flex justify-between items-center mb-2">
+          <h3 className="font-medium text-lg">{isSeller ? "Vendedor/a" : "Comprador/a"} {index + 1}</h3>
+          {parties.length > 1 && (
+            <Button variant="ghost" size="icon" onClick={() => removeParty(which, index)}>
+              <Minus className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
+        <div className="grid lg:grid-cols-2 gap-4">
+          <div className="flex flex-col gap-1">
+            <Label>Nombre</Label>
+            <Input value={party.name} onChange={h("name")} />
+          </div>
+          <div className="flex flex-col gap-1">
+            <Label>DNI/NIE</Label>
+            <Input value={party.dni} onChange={h("dni")} />
+          </div>
+          <div className="flex flex-col gap-1">
+            <Label>Domicilio</Label>
+            <Input value={party.address} onChange={h("address")} />
+          </div>
+          <div className="flex flex-col gap-1">
+            <Label>Teléfono/Email</Label>
+            <Input value={party.phone} onChange={h("phone")} />
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <Form {...form}>
@@ -120,235 +221,441 @@ export function ContractForm({ onFormSubmit, missingFields }: ContractFormProps)
           </CardContent>
         </Card>
 
-        {/* Common Fields */}
-        <Card className="border-2 shadow">
-          <CardContent className="pt-6">
-            <h2 className="text-lg font-semibold mb-4">Datos Comunes</h2>
+        {/* Contrato de Compraventa con Arras Penitenciales */}
+        {contractType === "contrato_compraventa_arras_penitenciales" && (
+          <>
+            {/* Vendedores */}
+            <Card className="border-2 shadow">
+              <CardContent className="pt-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-lg font-semibold">Vendedores</h2>
+                  <Button type="button" variant="outline" size="sm" onClick={() => addParty("seller")}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Añadir vendedor
+                  </Button>
+                </div>
+                <div className="space-y-4">
+                  {sellers.map((seller, index) => (
+                    <PartyFields key={`seller-${index}`} which="seller" party={seller} index={index} />
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <div className="space-y-4">
-                <h3 className="font-medium">
-                  {isRentalContract ? "Arrendador" : "Vendedor"}
-                </h3>
-                
-                <FormField
-                  control={form.control}
-                  name={isRentalContract ? "arrendador" : "vendedor"}
-                  render={({ field }) => (
-                    <FormItem className={missingFields?.includes(field.name) ? "border-red-500 border-l-2 pl-2" : ""}>
-                      <FormLabel>Nombre Completo</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Nombre y apellidos" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+            {/* Compradores */}
+            <Card className="border-2 shadow">
+              <CardContent className="pt-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-lg font-semibold">Compradores</h2>
+                  <Button type="button" variant="outline" size="sm" onClick={() => addParty("buyer")}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Añadir comprador
+                  </Button>
+                </div>
+                <div className="space-y-4">
+                  {buyers.map((buyer, index) => (
+                    <PartyFields key={`buyer-${index}`} which="buyer" party={buyer} index={index} />
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
 
-                <FormField
-                  control={form.control}
-                  name={isRentalContract ? "arrendador_dni" : "vendedor_dni"}
-                  render={({ field }) => (
-                    <FormItem className={missingFields?.includes(field.name) ? "border-red-500 border-l-2 pl-2" : ""}>
-                      <FormLabel>DNI/NIE</FormLabel>
-                      <FormControl>
-                        <Input placeholder="00000000X" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name={isRentalContract ? "arrendador_domicilio" : "vendedor_domicilio"}
-                  render={({ field }) => (
-                    <FormItem className={missingFields?.includes(field.name) ? "border-red-500 border-l-2 pl-2" : ""}>
-                      <FormLabel>Domicilio</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Dirección completa" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {(contractType === "contrato_reserva_inmueble" || isRentalContract) && (
-                  <>
-                    <FormField
-                      control={form.control}
-                      name={isRentalContract ? "arrendador_telefono" : "vendedor_telefono"}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Teléfono</FormLabel>
-                          <FormControl>
-                            <Input placeholder="+34 600 000 000" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+            {/* Datos del Inmueble */}
+            <Card className="border-2 shadow">
+              <CardContent className="pt-6">
+                <h2 className="text-lg font-semibold mb-4">Datos del Inmueble</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2">
+                    <Label htmlFor="propertyLocation">Ubicación del inmueble</Label>
+                    <Input 
+                      id="propertyLocation" 
+                      name="propertyLocation" 
+                      value={compraventaData.propertyLocation} 
+                      onChange={handleCompraventaChange} 
                     />
-
-                    <FormField
-                      control={form.control}
-                      name={isRentalContract ? "arrendador_email" : "vendedor_email"}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input type="email" placeholder="email@ejemplo.com" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                  </div>
+                  <div>
+                    <Label htmlFor="propertyRegistry">Registro de la Propiedad nº</Label>
+                    <Input 
+                      id="propertyRegistry" 
+                      name="propertyRegistry" 
+                      value={compraventaData.propertyRegistry} 
+                      onChange={handleCompraventaChange} 
                     />
-                  </>
-                )}
-              </div>
-
-              <div className="space-y-4">
-                <h3 className="font-medium">
-                  {isRentalContract ? "Arrendatario" : "Comprador"}
-                </h3>
-                
-                <FormField
-                  control={form.control}
-                  name={isRentalContract ? "arrendatario" : "comprador"}
-                  render={({ field }) => (
-                    <FormItem className={missingFields?.includes(field.name) ? "border-red-500 border-l-2 pl-2" : ""}>
-                      <FormLabel>Nombre Completo</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Nombre y apellidos" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name={isRentalContract ? "arrendatario_dni" : "comprador_dni"}
-                  render={({ field }) => (
-                    <FormItem className={missingFields?.includes(field.name) ? "border-red-500 border-l-2 pl-2" : ""}>
-                      <FormLabel>DNI/NIE</FormLabel>
-                      <FormControl>
-                        <Input placeholder="00000000X" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name={isRentalContract ? "arrendatario_domicilio" : "comprador_domicilio"}
-                  render={({ field }) => (
-                    <FormItem className={missingFields?.includes(field.name) ? "border-red-500 border-l-2 pl-2" : ""}>
-                      <FormLabel>Domicilio</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Dirección completa" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {(contractType === "contrato_reserva_inmueble" || isRentalContract) && (
-                  <>
-                    <FormField
-                      control={form.control}
-                      name={isRentalContract ? "arrendatario_telefono" : "comprador_telefono"}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Teléfono</FormLabel>
-                          <FormControl>
-                            <Input placeholder="+34 600 111 111" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                  </div>
+                  <div>
+                    <Label htmlFor="propertyTomo">Tomo</Label>
+                    <Input 
+                      id="propertyTomo" 
+                      name="propertyTomo" 
+                      value={compraventaData.propertyTomo} 
+                      onChange={handleCompraventaChange} 
                     />
-
-                    <FormField
-                      control={form.control}
-                      name={isRentalContract ? "arrendatario_email" : "comprador_email"}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input type="email" placeholder="email@ejemplo.com" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                  </div>
+                  <div>
+                    <Label htmlFor="propertyLibro">Libro</Label>
+                    <Input 
+                      id="propertyLibro" 
+                      name="propertyLibro" 
+                      value={compraventaData.propertyLibro} 
+                      onChange={handleCompraventaChange} 
                     />
-                  </>
-                )}
-              </div>
-            </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="propertyFolio">Folio</Label>
+                    <Input 
+                      id="propertyFolio" 
+                      name="propertyFolio" 
+                      value={compraventaData.propertyFolio} 
+                      onChange={handleCompraventaChange} 
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="propertyFinca">Finca nº</Label>
+                    <Input 
+                      id="propertyFinca" 
+                      name="propertyFinca" 
+                      value={compraventaData.propertyFinca} 
+                      onChange={handleCompraventaChange} 
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label htmlFor="propertyCharges">Cargas y gravámenes</Label>
+                    <Textarea 
+                      id="propertyCharges" 
+                      name="propertyCharges" 
+                      value={compraventaData.propertyCharges} 
+                      onChange={handleCompraventaChange}
+                      placeholder="Sin cargas"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="inmueble"
-                render={({ field }) => (
-                  <FormItem className={missingFields?.includes(field.name) ? "border-red-500 border-l-2 pl-2" : ""}>
-                    <FormLabel>Dirección del Inmueble</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Dirección completa del inmueble"
-                        className="resize-none"
-                        {...field}
+            {/* Condiciones Económicas */}
+            <Card className="border-2 shadow">
+              <CardContent className="pt-6">
+                <h2 className="text-lg font-semibold mb-4">Condiciones Económicas</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="totalPrice">Precio total (€)</Label>
+                    <Input 
+                      id="totalPrice" 
+                      name="totalPrice" 
+                      type="number"
+                      value={compraventaData.totalPrice} 
+                      onChange={handleCompraventaChange} 
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="arrasAmount">Importe de arras (€)</Label>
+                    <Input 
+                      id="arrasAmount" 
+                      name="arrasAmount" 
+                      type="number"
+                      value={compraventaData.arrasAmount} 
+                      onChange={handleCompraventaChange} 
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="arrasPercent">Porcentaje de arras (%)</Label>
+                    <Input 
+                      id="arrasPercent" 
+                      name="arrasPercent" 
+                      type="number"
+                      step="0.01"
+                      value={compraventaData.arrasPercent} 
+                      onChange={handleCompraventaChange} 
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="paymentMethod">Forma de pago</Label>
+                    <Input 
+                      id="paymentMethod" 
+                      name="paymentMethod" 
+                      value={compraventaData.paymentMethod} 
+                      onChange={handleCompraventaChange} 
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Plazos */}
+            <Card className="border-2 shadow">
+              <CardContent className="pt-6">
+                <h2 className="text-lg font-semibold mb-4">Plazos</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="escrituraDate">Fecha límite para escritura</Label>
+                    <Input 
+                      id="escrituraDate" 
+                      name="escrituraDate" 
+                      type="date"
+                      value={compraventaData.escrituraDate} 
+                      onChange={handleCompraventaChange} 
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="daysFromMortgage">Días desde hipoteca</Label>
+                    <Input 
+                      id="daysFromMortgage" 
+                      name="daysFromMortgage" 
+                      type="number"
+                      value={compraventaData.daysFromMortgage} 
+                      onChange={handleCompraventaChange} 
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label htmlFor="mortgageDeadline">Fecha límite hipoteca</Label>
+                    <Input 
+                      id="mortgageDeadline" 
+                      name="mortgageDeadline" 
+                      type="date"
+                      value={compraventaData.mortgageDeadline} 
+                      onChange={handleCompraventaChange} 
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Otros datos */}
+            <Card className="border-2 shadow">
+              <CardContent className="pt-6">
+                <h2 className="text-lg font-semibold mb-4">Otros datos</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="place">Lugar de firma</Label>
+                    <Input 
+                      id="place" 
+                      name="place" 
+                      value={compraventaData.place} 
+                      onChange={handleCompraventaChange} 
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="signingDay">Día</Label>
+                    <Input 
+                      id="signingDay" 
+                      name="signingDay" 
+                      value={compraventaData.signingDay} 
+                      onChange={handleCompraventaChange} 
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="signingMonth">Mes</Label>
+                    <Input 
+                      id="signingMonth" 
+                      name="signingMonth" 
+                      value={compraventaData.signingMonth} 
+                      onChange={handleCompraventaChange} 
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="signingYear">Año</Label>
+                    <Input 
+                      id="signingYear" 
+                      name="signingYear" 
+                      value={compraventaData.signingYear} 
+                      onChange={handleCompraventaChange} 
+                    />
+                  </div>
+                  <div className="md:col-span-3">
+                    <Label htmlFor="optionalClauses">Cláusulas opcionales</Label>
+                    <Textarea 
+                      id="optionalClauses" 
+                      name="optionalClauses" 
+                      rows={4}
+                      value={compraventaData.optionalClauses} 
+                      onChange={handleCompraventaChange} 
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
+
+        {/* Common Fields for other contract types */}
+        {contractType !== "contrato_compraventa_arras_penitenciales" && (
+          <Card className="border-2 shadow">
+            <CardContent className="pt-6">
+              <h2 className="text-lg font-semibold mb-4">Datos Comunes</h2>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div className="space-y-4">
+                  <h3 className="font-medium">
+                    {isRentalContract ? "Arrendador" : "Vendedor"}
+                  </h3>
+                  
+                  <FormField
+                    control={form.control}
+                    name={isRentalContract ? "arrendador" : "vendedor"}
+                    render={({ field }) => (
+                      <FormItem className={missingFields?.includes(field.name) ? "border-red-500 border-l-2 pl-2" : ""}>
+                        <FormLabel>Nombre Completo</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Nombre y apellidos" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name={isRentalContract ? "arrendador_dni" : "vendedor_dni"}
+                    render={({ field }) => (
+                      <FormItem className={missingFields?.includes(field.name) ? "border-red-500 border-l-2 pl-2" : ""}>
+                        <FormLabel>DNI/NIE</FormLabel>
+                        <FormControl>
+                          <Input placeholder="00000000X" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name={isRentalContract ? "arrendador_domicilio" : "vendedor_domicilio"}
+                    render={({ field }) => (
+                      <FormItem className={missingFields?.includes(field.name) ? "border-red-500 border-l-2 pl-2" : ""}>
+                        <FormLabel>Domicilio</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Dirección completa" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {isRentalContract && (
+                    <>
+                      <FormField
+                        control={form.control}
+                        name={isRentalContract ? "arrendador_telefono" : "vendedor_telefono"}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Teléfono</FormLabel>
+                            <FormControl>
+                              <Input placeholder="+34 600 000 000" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
 
-              {(contractType === "contrato_reserva_inmueble" || contractType === "arras_confirmatorias" || contractType === "arras_penales") && (
-                <FormField
-                  control={form.control}
-                  name="informacion_registro"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Registro de la Propiedad</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Ej.: Registro nº 4, tomo ___, folio ___, finca ___" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                      <FormField
+                        control={form.control}
+                        name={isRentalContract ? "arrendador_email" : "vendedor_email"}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Email</FormLabel>
+                            <FormControl>
+                              <Input type="email" placeholder="email@ejemplo.com" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </>
                   )}
-                />
-              )}
+                </div>
 
-              <FormField
-                control={form.control}
-                name="referencia_catastral"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Referencia Catastral (opcional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="0000000XX0000X0000XX" {...field} />
-                    </FormControl>
-                    <FormDescription>
-                      20 caracteres alfanuméricos
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <div className="space-y-4">
+                  <h3 className="font-medium">
+                    {isRentalContract ? "Arrendatario" : "Comprador"}
+                  </h3>
+                  
+                  <FormField
+                    control={form.control}
+                    name={isRentalContract ? "arrendatario" : "comprador"}
+                    render={({ field }) => (
+                      <FormItem className={missingFields?.includes(field.name) ? "border-red-500 border-l-2 pl-2" : ""}>
+                        <FormLabel>Nombre Completo</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Nombre y apellidos" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              {(contractType === "contrato_reserva_inmueble" || contractType === "arras_confirmatorias" || contractType === "arras_penales") && (
+                  <FormField
+                    control={form.control}
+                    name={isRentalContract ? "arrendatario_dni" : "comprador_dni"}
+                    render={({ field }) => (
+                      <FormItem className={missingFields?.includes(field.name) ? "border-red-500 border-l-2 pl-2" : ""}>
+                        <FormLabel>DNI/NIE</FormLabel>
+                        <FormControl>
+                          <Input placeholder="00000000X" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name={isRentalContract ? "arrendatario_domicilio" : "comprador_domicilio"}
+                    render={({ field }) => (
+                      <FormItem className={missingFields?.includes(field.name) ? "border-red-500 border-l-2 pl-2" : ""}>
+                        <FormLabel>Domicilio</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Dirección completa" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {isRentalContract && (
+                    <>
+                      <FormField
+                        control={form.control}
+                        name={isRentalContract ? "arrendatario_telefono" : "comprador_telefono"}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Teléfono</FormLabel>
+                            <FormControl>
+                              <Input placeholder="+34 600 111 111" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name={isRentalContract ? "arrendatario_email" : "comprador_email"}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Email</FormLabel>
+                            <FormControl>
+                              <Input type="email" placeholder="email@ejemplo.com" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="cargas_gravamenes"
+                  name="inmueble"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Cargas / Gravámenes</FormLabel>
+                    <FormItem className={missingFields?.includes(field.name) ? "border-red-500 border-l-2 pl-2" : ""}>
+                      <FormLabel>Dirección del Inmueble</FormLabel>
                       <FormControl>
                         <Textarea 
-                          placeholder="Hipoteca, servidumbre, etc. Si está libre, escriba 'Libre de cargas'."
+                          placeholder="Dirección completa del inmueble"
                           className="resize-none"
                           {...field}
                         />
@@ -357,108 +664,120 @@ export function ContractForm({ onFormSubmit, missingFields }: ContractFormProps)
                     </FormItem>
                   )}
                 />
-              )}
 
-              {isRentalContract && (
                 <FormField
                   control={form.control}
-                  name="anexos"
+                  name="referencia_catastral"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Anexos (garaje, trastero)</FormLabel>
+                      <FormLabel>Referencia Catastral (opcional)</FormLabel>
                       <FormControl>
-                        <Input placeholder="Plaza garaje nº, trastero nº" {...field} />
+                        <Input placeholder="0000000XX0000X0000XX" {...field} />
                       </FormControl>
+                      <FormDescription>
+                        20 caracteres alfanuméricos
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-              )}
 
-              {!isRentalContract && (
+                {isRentalContract && (
+                  <FormField
+                    control={form.control}
+                    name="anexos"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Anexos (garaje, trastero)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Plaza garaje nº, trastero nº" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+
+                {!isRentalContract && (
+                  <FormField
+                    control={form.control}
+                    name="precio_total"
+                    render={({ field }) => (
+                      <FormItem className={missingFields?.includes("precio_total") ? "border-red-500 border-l-2 pl-2" : ""}>
+                        <FormLabel>Precio Total (€)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            placeholder="0"
+                            {...field}
+                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+
                 <FormField
                   control={form.control}
-                  name="precio_total"
+                  name="fecha_firma"
                   render={({ field }) => (
-                    <FormItem className={missingFields?.includes("precio_total") ? "border-red-500 border-l-2 pl-2" : ""}>
-                      <FormLabel>Precio Total (€)</FormLabel>
+                    <FormItem className={missingFields?.includes("fecha_firma") ? "border-red-500 border-l-2 pl-2" : ""}>
+                      <FormLabel>Fecha de Firma</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "w-full pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value ? (
+                                format(new Date(field.value), "PPP", { locale: es })
+                              ) : (
+                                <span>Selecciona una fecha</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value ? new Date(field.value) : undefined}
+                            onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : undefined)}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="poblacion_firma"
+                  render={({ field }) => (
+                    <FormItem className={missingFields?.includes("poblacion_firma") ? "border-red-500 border-l-2 pl-2" : ""}>
+                      <FormLabel>Población de Firma</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="number" 
-                          placeholder="0"
-                          {...field}
-                          onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                        />
+                        <Input placeholder="Ciudad donde se firma" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-              )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
-              <FormField
-                control={form.control}
-                name="fecha_firma"
-                render={({ field }) => (
-                  <FormItem className={missingFields?.includes("fecha_firma") ? "border-red-500 border-l-2 pl-2" : ""}>
-                    <FormLabel>Fecha de Firma</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(new Date(field.value), "PPP", { locale: es })
-                            ) : (
-                              <span>Selecciona una fecha</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value ? new Date(field.value) : undefined}
-                          onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : undefined)}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="poblacion_firma"
-                render={({ field }) => (
-                  <FormItem className={missingFields?.includes("poblacion_firma") ? "border-red-500 border-l-2 pl-2" : ""}>
-                    <FormLabel>Población de Firma</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ciudad donde se firma" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Contract-specific fields */}
-        {(contractType === "contrato_reserva" || 
-          contractType === "contrato_reserva_inmueble" || 
-          contractType === "arras_penitenciales" || 
-          contractType === "arras_confirmatorias" ||
-          contractType === "arras_penales" ||
-          isRentalContract) && (
+        {/* Contract-specific fields for other types */}
+        {(contractType === "contrato_reserva" || isRentalContract) && (
           <Card className="border-2 shadow">
             <CardContent className="pt-6">
               <h2 className="text-lg font-semibold mb-4">
@@ -501,478 +820,6 @@ export function ContractForm({ onFormSubmit, missingFields }: ContractFormProps)
                               onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
                             />
                           </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </>
-                )}
-
-                {/* Campos específicos para Contrato de Reserva de Inmueble */}
-                {contractType === "contrato_reserva_inmueble" && (
-                  <>
-                    <FormField
-                      control={form.control}
-                      name="importe_arras"
-                      render={({ field }) => (
-                        <FormItem className={missingFields?.includes("importe_arras") ? "border-red-500 border-l-2 pl-2" : ""}>
-                          <FormLabel>Importe de las arras (€)</FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="number"
-                              placeholder="0"
-                              {...field}
-                              onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="porcentaje_arras"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Porcentaje de arras sobre el precio (%)</FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="number"
-                              placeholder="3.33"
-                              step="0.01"
-                              {...field}
-                              onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="forma_pago"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Forma de pago</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecciona forma de pago" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="transferencia">Transferencia bancaria</SelectItem>
-                              <SelectItem value="cheque">Cheque bancario</SelectItem>
-                              <SelectItem value="otro">Otro</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="fecha_limite_escritura"
-                      render={({ field }) => (
-                        <FormItem className={missingFields?.includes("fecha_limite_escritura") ? "border-red-500 border-l-2 pl-2" : ""}>
-                          <FormLabel>Fecha límite para la escritura</FormLabel>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant={"outline"}
-                                  className={cn(
-                                    "w-full pl-3 text-left font-normal",
-                                    !field.value && "text-muted-foreground"
-                                  )}
-                                >
-                                  {field.value ? (
-                                    format(new Date(field.value), "PPP", { locale: es })
-                                  ) : (
-                                    <span>Selecciona una fecha</span>
-                                  )}
-                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar
-                                mode="single"
-                                selected={field.value ? new Date(field.value) : undefined}
-                                onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : undefined)}
-                                initialFocus
-                              />
-                            </PopoverContent>
-                          </Popover>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="sujeto_financiacion"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                          <div className="space-y-1 leading-none">
-                            <FormLabel>
-                              ¿Sujeto a financiación?
-                            </FormLabel>
-                            <FormDescription>
-                              Marcar si la compra depende de obtener financiación hipotecaria
-                            </FormDescription>
-                          </div>
-                        </FormItem>
-                      )}
-                    />
-
-                    {form.watch("sujeto_financiacion") && (
-                      <FormField
-                        control={form.control}
-                        name="fecha_limite_financiacion"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Fecha límite para obtener financiación</FormLabel>
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <FormControl>
-                                  <Button
-                                    variant={"outline"}
-                                    className={cn(
-                                      "w-full pl-3 text-left font-normal",
-                                      !field.value && "text-muted-foreground"
-                                    )}
-                                  >
-                                    {field.value ? (
-                                      format(new Date(field.value), "PPP", { locale: es })
-                                    ) : (
-                                      <span>Selecciona una fecha</span>
-                                    )}
-                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                  </Button>
-                                </FormControl>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar
-                                  mode="single"
-                                  selected={field.value ? new Date(field.value) : undefined}
-                                  onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : undefined)}
-                                  initialFocus
-                                />
-                              </PopoverContent>
-                            </Popover>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    )}
-
-                    <FormField
-                      control={form.control}
-                      name="muebles_incluidos"
-                      render={({ field }) => (
-                        <FormItem className="md:col-span-2">
-                          <FormLabel>Muebles / Enseres incluidos</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Describa los muebles que se incluyen, si procede."
-                              className="resize-none"
-                              rows={3}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="honorarios_agencia"
-                      render={({ field }) => (
-                        <FormItem className="md:col-span-2">
-                          <FormLabel>Intermediación / Honorarios de agencia</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Ej.: 3% más IVA a cargo del comprador."
-                              className="resize-none"
-                              rows={2}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </>
-                )}
-
-                {/* Campos para Contratos de Arras Confirmatorias */}
-                {contractType === "arras_confirmatorias" && (
-                  <>
-                    <FormField
-                      control={form.control}
-                      name="importe_arras"
-                      render={({ field }) => (
-                        <FormItem className={missingFields?.includes("importe_arras") ? "border-red-500 border-l-2 pl-2" : ""}>
-                          <FormLabel>Importe entregado en concepto de arras (€)</FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="number"
-                              placeholder="0"
-                              {...field}
-                              onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="forma_pago"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Forma de pago</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecciona forma de pago" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="transferencia">Transferencia bancaria</SelectItem>
-                              <SelectItem value="cheque">Cheque bancario</SelectItem>
-                              <SelectItem value="otro">Otro</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="fecha_limite_escritura"
-                      render={({ field }) => (
-                        <FormItem className={missingFields?.includes("fecha_limite_escritura") ? "border-red-500 border-l-2 pl-2" : ""}>
-                          <FormLabel>Fecha límite para otorgar escritura</FormLabel>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant={"outline"}
-                                  className={cn(
-                                    "w-full pl-3 text-left font-normal",
-                                    !field.value && "text-muted-foreground"
-                                  )}
-                                >
-                                  {field.value ? (
-                                    format(new Date(field.value), "PPP", { locale: es })
-                                  ) : (
-                                    <span>Selecciona una fecha</span>
-                                  )}
-                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar
-                                mode="single"
-                                selected={field.value ? new Date(field.value) : undefined}
-                                onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : undefined)}
-                                initialFocus
-                              />
-                            </PopoverContent>
-                          </Popover>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="clausula_arras_confirmatorias"
-                      render={({ field }) => (
-                        <FormItem className="md:col-span-2">
-                          <FormLabel>Cláusula de arras confirmatorias</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              rows={4}
-                              defaultValue="La cantidad entregada se configura como ARRAS CONFIRMATORIAS según lo dispuesto en el art. 1124 del Código Civil. Dicha suma se imputará al precio final. En caso de incumplimiento, la parte perjudicada podrá optar entre exigir el cumplimiento o la resolución del contrato con indemnización de daños y perjuicios, sin que exista derecho de desistimiento unilateral."
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </>
-                )}
-
-                {/* Campos para Contratos de Arras Penales */}
-                {contractType === "arras_penales" && (
-                  <>
-                    <FormField
-                      control={form.control}
-                      name="importe_arras"
-                      render={({ field }) => (
-                        <FormItem className={missingFields?.includes("importe_arras") ? "border-red-500 border-l-2 pl-2" : ""}>
-                          <FormLabel>Importe de arras penales (€)</FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="number"
-                              placeholder="0"
-                              {...field}
-                              onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="forma_pago"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Forma de pago</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecciona forma de pago" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="transferencia">Transferencia bancaria</SelectItem>
-                              <SelectItem value="cheque">Cheque bancario</SelectItem>
-                              <SelectItem value="otro">Otro</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="fecha_limite_escritura"
-                      render={({ field }) => (
-                        <FormItem className={missingFields?.includes("fecha_limite_escritura") ? "border-red-500 border-l-2 pl-2" : ""}>
-                          <FormLabel>Fecha límite para la escritura</FormLabel>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant={"outline"}
-                                  className={cn(
-                                    "w-full pl-3 text-left font-normal",
-                                    !field.value && "text-muted-foreground"
-                                  )}
-                                >
-                                  {field.value ? (
-                                    format(new Date(field.value), "PPP", { locale: es })
-                                  ) : (
-                                    <span>Selecciona una fecha</span>
-                                  )}
-                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar
-                                mode="single"
-                                selected={field.value ? new Date(field.value) : undefined}
-                                onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : undefined)}
-                                initialFocus
-                              />
-                            </PopoverContent>
-                          </Popover>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="clausula_arras_penales"
-                      render={({ field }) => (
-                        <FormItem className="md:col-span-2">
-                          <FormLabel>Cláusula de arras penales</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              rows={4}
-                              defaultValue="La cantidad entregada se pacta como ARRAS PENALES, al amparo de los arts. 1152 y 1153 del Código Civil. En caso de incumplimiento imputable al comprador, éste perderá las arras entregadas y responderá de los daños adicionales si los hubiere. En caso de incumplimiento imputable al vendedor, deberá devolver el doble de la cantidad recibida y, en su caso, indemnizar daños. La parte cumplidora podrá optar entre exigir el cumplimiento del contrato o su resolución con la penalización pactada y daños complementarios."
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </>
-                )}
-
-                {/* Campos para Contratos de Arras Penitenciales */}
-                {contractType === "arras_penitenciales" && (
-                  <>
-                    <FormField
-                      control={form.control}
-                      name="importe_arras"
-                      render={({ field }) => (
-                        <FormItem className={missingFields?.includes("importe_arras") ? "border-red-500 border-l-2 pl-2" : ""}>
-                          <FormLabel>Importe de las Arras (€)</FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="number"
-                              placeholder="0"
-                              {...field}
-                              onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="vencimiento_arras"
-                      render={({ field }) => (
-                        <FormItem className={missingFields?.includes("vencimiento_arras") ? "border-red-500 border-l-2 pl-2" : ""}>
-                          <FormLabel>Fecha de Vencimiento de las Arras</FormLabel>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant={"outline"}
-                                  className={cn(
-                                    "w-full pl-3 text-left font-normal",
-                                    !field.value && "text-muted-foreground"
-                                  )}
-                                >
-                                  {field.value ? (
-                                    format(new Date(field.value), "PPP", { locale: es })
-                                  ) : (
-                                    <span>Selecciona una fecha</span>
-                                  )}
-                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar
-                                mode="single"
-                                selected={field.value ? new Date(field.value) : undefined}
-                                onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : undefined)}
-                                initialFocus
-                              />
-                            </PopoverContent>
-                          </Popover>
                           <FormMessage />
                         </FormItem>
                       )}
