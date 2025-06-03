@@ -1,5 +1,4 @@
-
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { ContractFormData, ContractType } from "@/types/contractTypes";
 import { Button } from "@/components/ui/button";
@@ -22,13 +21,22 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RentalPartyFields } from "./RentalPartyFields";
+
+interface RentalParty {
+  name: string;
+  dni: string;
+  address: string;
+  phone: string;
+  email?: string;
+}
 
 interface RentalFormProps {
   contractType: ContractType;
@@ -37,6 +45,10 @@ interface RentalFormProps {
 }
 
 export function RentalForm({ contractType, onFormSubmit, missingFields }: RentalFormProps) {
+  const emptyParty: RentalParty = { name: "", dni: "", address: "", phone: "", email: "" };
+  const [landlords, setLandlords] = useState<RentalParty[]>([{ ...emptyParty }]);
+  const [tenants, setTenants] = useState<RentalParty[]>([{ ...emptyParty }]);
+
   const form = useForm<ContractFormData>({
     defaultValues: {
       tipo_contrato: contractType,
@@ -48,15 +60,88 @@ export function RentalForm({ contractType, onFormSubmit, missingFields }: Rental
     },
   });
 
-  const isRentalContract = contractType.includes("alquiler");
+  const handlePartyChange = (which: "landlord" | "tenant", idx: number, field: string, value: string) => {
+    (which === "landlord" ? setLandlords : setTenants)((prev) => {
+      const updated = [...prev];
+      updated[idx] = { ...updated[idx], [field]: value };
+      return updated;
+    });
+  };
+
+  const addParty = (which: "landlord" | "tenant") => {
+    (which === "landlord" ? setLandlords : setTenants)((prev) => [...prev, { ...emptyParty }]);
+  };
+
+  const removeParty = (which: "landlord" | "tenant", idx: number) => {
+    (which === "landlord" ? setLandlords : setTenants)((prev) =>
+      prev.length === 1 ? prev : prev.filter((_, i) => i !== idx)
+    );
+  };
 
   function onSubmit(data: ContractFormData) {
-    onFormSubmit(data);
+    const formData: ContractFormData = {
+      ...data,
+      arrendadores: landlords,
+      arrendatarios: tenants,
+    };
+    onFormSubmit(formData);
   }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        {/* Arrendadores */}
+        <Card className="border-2 shadow">
+          <CardContent className="pt-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold">Arrendadores</h2>
+              <Button type="button" variant="outline" size="sm" onClick={() => addParty("landlord")}>
+                <Plus className="w-4 h-4 mr-2" />
+                Añadir arrendador
+              </Button>
+            </div>
+            <div className="space-y-4">
+              {landlords.map((landlord, index) => (
+                <RentalPartyFields 
+                  key={`landlord-${index}`} 
+                  which="landlord" 
+                  party={landlord} 
+                  index={index}
+                  parties={landlords}
+                  onPartyChange={handlePartyChange}
+                  onRemoveParty={removeParty}
+                />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Arrendatarios */}
+        <Card className="border-2 shadow">
+          <CardContent className="pt-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold">Arrendatarios</h2>
+              <Button type="button" variant="outline" size="sm" onClick={() => addParty("tenant")}>
+                <Plus className="w-4 h-4 mr-2" />
+                Añadir arrendatario
+              </Button>
+            </div>
+            <div className="space-y-4">
+              {tenants.map((tenant, index) => (
+                <RentalPartyFields 
+                  key={`tenant-${index}`} 
+                  which="tenant" 
+                  party={tenant} 
+                  index={index}
+                  parties={tenants}
+                  onPartyChange={handlePartyChange}
+                  onRemoveParty={removeParty}
+                />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Common Fields */}
         <Card className="border-2 shadow">
           <CardContent className="pt-6">

@@ -52,6 +52,23 @@ export interface ContractFormData {
     address: string;
     phone: string;
   }>;
+  
+  // New fields for rental contracts with multiple parties
+  arrendadores?: Array<{
+    name: string;
+    dni: string;
+    address: string;
+    phone: string;
+    email?: string;
+  }>;
+  arrendatarios?: Array<{
+    name: string;
+    dni: string;
+    address: string;
+    phone: string;
+    email?: string;
+  }>;
+  
   property_location?: string;
   property_registry?: string;
   property_tomo?: string;
