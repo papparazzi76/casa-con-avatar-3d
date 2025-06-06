@@ -22,6 +22,7 @@ import { useForm } from "react-hook-form";
 import { CompraventaArrasForm } from "./contract-form/CompraventaArrasForm";
 import { RentalForm } from "./contract-form/RentalForm";
 import { ReservationForm } from "./contract-form/ReservationForm";
+import { CommercialLeaseForm } from "./contract-form/CommercialLeaseForm";
 
 interface ContractFormProps {
   onFormSubmit: (data: ContractFormData) => void;
@@ -50,10 +51,11 @@ export function ContractForm({ onFormSubmit, missingFields }: ContractFormProps)
     contrato_compraventa_arras_penitenciales: "Contrato de Compraventa de Inmueble con Arras Penitenciales",
     alquiler_particulares_amueblado: "Contrato de arrendamiento de vivienda amueblada",
     alquiler_particulares_sin_amueblar: "Contrato de arrendamiento de vivienda sin amueblar",
-    contrato_senal_reserva: "Contrato de señal o reserva (con o sin oferta)"
+    contrato_senal_reserva: "Contrato de señal o reserva (con o sin oferta)",
+    alquiler_comercial: "Contrato de arrendamiento para uso distinto al de vivienda"
   };
 
-  const isRentalContract = contractType.includes("alquiler");
+  const isRentalContract = contractType.includes("alquiler") && contractType !== "alquiler_comercial";
 
   return (
     <div className="space-y-8">
@@ -105,6 +107,13 @@ export function ContractForm({ onFormSubmit, missingFields }: ContractFormProps)
 
       {contractType === "contrato_senal_reserva" && (
         <ReservationForm 
+          onFormSubmit={onFormSubmit}
+          missingFields={missingFields}
+        />
+      )}
+
+      {contractType === "alquiler_comercial" && (
+        <CommercialLeaseForm 
           onFormSubmit={onFormSubmit}
           missingFields={missingFields}
         />

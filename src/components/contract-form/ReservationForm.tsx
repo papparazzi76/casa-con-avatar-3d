@@ -1,13 +1,11 @@
-
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { ContractFormData } from "@/types/contractTypes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { CalendarIcon, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -74,6 +72,68 @@ export function ReservationForm({
   const removeParty = (which: "seller" | "buyer", idx: number) => {
     (which === "seller" ? setSellers : setBuyers)(prev => prev.length === 1 ? prev : prev.filter((_, i) => i !== idx));
   };
+
+  // Contract preview generation
+  const watchedValues = form.watch();
+
+  const sellersBlock = useMemo(
+    () =>
+      sellers
+        .map(
+          (s) =>
+            `D./Dª ${s.name}, mayor de edad, con DNI/NIE nº ${s.dni}, domicilio en ${s.address}, y teléfono/e-mail ${s.phone}.`
+        )
+        .join("\n"),
+    [sellers]
+  );
+
+  const buyersBlock = useMemo(
+    () =>
+      buyers
+        .map(
+          (b) =>
+            `D./Dª ${b.name}, mayor de edad, con DNI/NIE nº ${b.dni}, domicilio en ${b.address}, y teléfono/e-mail ${b.phone}.`
+        )
+        .join("\n"),
+    [buyers]
+  );
+
+  const contractPreview = useMemo(() => {
+    const d = watchedValues;
+    return `MODELO DE CONTRATO PRIVADO DE RESERVA / SEÑALIZACIÓN
+(No configura arras penitenciales - solo expresa intención de compra)
+
+REUNIDOS
+|   | Vendedor/a | Comprador/a |
+|---|------------|-------------|
+— Bloque Vendedores —
+${sellersBlock}
+
+— Bloque Compradores —
+${buyersBlock}
+
+Ambas partes se reconocen capacidad legal y EXPONEN:
+1. Que el/la Vendedor/a es propietario/a del inmueble sito en ${d.property_location || "_______"}, inscrito en el Registro de la Propiedad nº ${d.property_registry || "_______"}, finca ${d.property_finca || "_______"}.
+2. Que el/la Comprador/a manifiesta su intención de adquirir el citado inmueble.
+3. Que la presente reserva no conlleva arras penitenciales.
+
+PACTAN
+1. Objeto: El/la Vendedor/a retira el inmueble del mercado hasta la fecha y hora indicadas en la cláusula 3.
+2. Señal de reserva: El/la Comprador/a entrega hoy ${d.signal_amount || "_______"} € que se imputará al precio final.
+3. Plazo de formalización: Las partes firmarán contrato privado de compraventa antes de las ${d.deadline_time || "_______"} horas del día ${d.deadline_date || "_______"}.
+4. Precio propuesto: ${d.proposed_price || "_______"} €.
+5. Destino de la señal: Si se firma la compraventa, se descuenta; si el/la Vendedor/a rechaza, la devuelve; si el/la Comprador/a desiste, la pierde.
+6. Documentación, gastos e impuestos: según ley.
+7. Protección de datos y fuero: RGPD y legislación civil española.
+
+OTROS PACTOS (opcional)
+${d.optional_clauses || ""}
+
+Y en prueba de conformidad, firman en ${d.poblacion_firma || "_______"}, a ${d.signing_day || "_______"} de ${d.signing_month || "_______"} de ${d.signing_year || "2025"}.
+
+______________________________                     ______________________________
+VENDEDOR/ES                                         COMPRADOR/AS`;
+  }, [sellersBlock, buyersBlock, watchedValues]);
 
   function onSubmit(data: ContractFormData) {
     const formData: ContractFormData = {
@@ -377,6 +437,28 @@ export function ReservationForm({
                 )}
               />
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Vista previa del contrato */}
+        <Card className="border-2 shadow">
+          <CardHeader>
+            <h2 className="text-xl font-semibold">Vista previa del contrato</h2>
+          </CardHeader>
+          <CardContent>
+            <pre className="whitespace-pre-wrap bg-gray-100 p-4 rounded-lg max-h-96 overflow-y-auto text-xs">
+              {contractPreview}
+            </pre>
+            <Button
+              type="button"
+              className="mt-4"
+              onClick={() => {
+                navigator.clipboard.writeText(contractPreview);
+                alert("Contrato copiado al portapapeles");
+              }}
+            >
+              Copiar contrato
+            </Button>
           </CardContent>
         </Card>
 

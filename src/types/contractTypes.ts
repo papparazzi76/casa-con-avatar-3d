@@ -3,7 +3,8 @@ export type ContractType =
   | 'contrato_compraventa_arras_penitenciales'
   | 'alquiler_particulares_amueblado'
   | 'alquiler_particulares_sin_amueblar'
-  | 'contrato_senal_reserva';
+  | 'contrato_senal_reserva'
+  | 'alquiler_comercial';
 
 export interface ContractFormData {
   // Contract type
@@ -128,6 +129,14 @@ export interface ContractFormData {
   proposed_price?: number;
   deadline_date?: string;
   deadline_time?: string;
+
+  // Commercial lease fields
+  property_use?: string;
+  term_years?: number;
+  term_months?: number;
+  payment_day?: number;
+  expenses?: string;
+  tax_clause?: string;
 }
 
 export interface ContractResult {
