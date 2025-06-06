@@ -14,9 +14,14 @@ export const propertyFormSchema = z.object({
   location: z.string().min(3, { message: "La localidad debe tener al menos 3 caracteres" }),
   address: z.string().min(5, { message: "La dirección debe tener al menos 5 caracteres" }),
   postal_code: z.string().optional(),
-  features: z.string().optional().transform(val => 
+  features: z.string().optional().transform(val =>
     val ? val.split(",").map(item => item.trim()) : []
   ),
+  acceptedTerms: z.literal(true, {
+    errorMap: () => ({
+      message: "Debes aceptar los Términos y la Política de Privacidad",
+    }),
+  }),
 });
 
 export type PropertyFormValues = z.infer<typeof propertyFormSchema>;

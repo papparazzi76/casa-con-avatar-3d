@@ -19,6 +19,7 @@ import { ContactField } from "./social-media-form/ContactField";
 import { PhotoUploader } from "./social-media-form/PhotoUploader";
 import { ToneField } from "./social-media-form/ToneField";
 import { SubmitButton } from "./social-media-form/SubmitButton";
+import { TermsCheckboxField } from "@/components/TermsCheckboxField";
 
 interface SocialMediaPostFormProps {
   onSubmit: (data: SocialMediaPostFormData) => void;
@@ -34,7 +35,8 @@ export function SocialMediaPostForm({ onSubmit, isGenerating }: SocialMediaPostF
       caracteristicas_destacadas: [],
       extras: [],
       fotos: [],
-      idioma: "ES"
+      idioma: "ES",
+      acceptedTerms: false,
     },
   });
   
@@ -87,6 +89,7 @@ export function SocialMediaPostForm({ onSubmit, isGenerating }: SocialMediaPostF
         <ContactField form={form} />
         <PhotoUploader form={form} handleFileChange={handleFileChange} />
         <ToneField form={form} />
+        <TermsCheckboxField control={form.control} />
         <SubmitButton form={form} onSubmit={handleSubmit} isGenerating={isGenerating} />
       </form>
     </Form>

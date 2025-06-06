@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 import { propertySchema, PropertyFormData } from "./property-valuator-form/FormSchema";
 import { LocationSection } from "./property-valuator-form/LocationSection";
 import { CharacteristicsSection } from "./property-valuator-form/CharacteristicsSection";
+import { TermsCheckboxField } from "@/components/TermsCheckboxField";
 
 interface PropertyValuatorFormProps {
   onSubmit: (data: PropertyInfo) => void;
@@ -34,6 +35,7 @@ export function PropertyValuatorForm({ onSubmit, isLoading, missingFields }: Pro
       ascensor: false,
       exterior: false,
       anno_construccion: undefined,
+      acceptedTerms: false,
     },
   });
 
@@ -57,7 +59,7 @@ export function PropertyValuatorForm({ onSubmit, isLoading, missingFields }: Pro
             <CharacteristicsSection form={form} />
             
             {missingFields && missingFields.length > 0 && (
-              <motion.div 
+              <motion.div
                 className="bg-amber-50 border border-amber-200 p-4 rounded-lg"
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -70,9 +72,11 @@ export function PropertyValuatorForm({ onSubmit, isLoading, missingFields }: Pro
                 </ul>
               </motion.div>
             )}
-            
-            <Button 
-              type="submit" 
+
+            <TermsCheckboxField control={form.control} />
+
+            <Button
+              type="submit"
               disabled={isLoading}
               className="w-full bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90"
             >

@@ -12,6 +12,11 @@ export const formSchema = z.object({
   previousPurchasePrice: z.number().min(1, "El valor debe ser mayor que 0").optional(),
   includeAgencyFees: z.boolean().default(false),
   includeLegalFees: z.boolean().default(false),
+  acceptedTerms: z.literal(true, {
+    errorMap: () => ({
+      message: "Debes aceptar los Términos y la Política de Privacidad",
+    }),
+  }),
 });
 
 export type FormValues = z.infer<typeof formSchema>;

@@ -30,6 +30,7 @@ export function ProfessionalValuationDialog({
     codigoPostal: "",
     comentarios: ""
   });
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -179,11 +180,25 @@ export function ProfessionalValuationDialog({
             * Campos obligatorios
           </div>
 
+          <div className="flex items-start space-x-2 border p-4 rounded-md">
+            <input
+              type="checkbox"
+              id="professional-terms"
+              className="mt-1"
+              checked={acceptedTerms}
+              onChange={(e) => setAcceptedTerms(e.target.checked)}
+            />
+            <label htmlFor="professional-terms" className="text-sm">
+              He leído y acepto los <a href="/terminos" className="underline">Términos y Condiciones</a> y la{' '}
+              <a href="/privacidad" className="underline">Política de Privacidad</a>
+            </label>
+          </div>
+
           <DialogFooter className="pt-4">
             <Button variant="outline" type="button" onClick={onClose} disabled={isSubmitting}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting || !acceptedTerms}>
               {isSubmitting ? "Enviando..." : "Solicitar valoración"}
             </Button>
           </DialogFooter>

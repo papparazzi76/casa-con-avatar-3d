@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { TermsCheckboxField } from "@/components/TermsCheckboxField";
 import { Separator } from "@/components/ui/separator";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,6 +17,12 @@ import { motion } from "framer-motion";
 const authSchema = z.object({
   email: z.string().email("Ingresa un correo electrónico válido"),
   password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
+  acceptedTerms: z.literal(true, {
+    errorMap: () => ({
+      message:
+        "Debes aceptar los Términos y la Política de Privacidad",
+    }),
+  }),
 });
 
 type AuthFormValues = z.infer<typeof authSchema>;
@@ -38,6 +45,7 @@ export default function Auth() {
     defaultValues: {
       email: "",
       password: "",
+      acceptedTerms: false,
     },
   });
 
@@ -119,21 +127,24 @@ export default function Auth() {
                     <FormItem>
                       <FormLabel>Contraseña</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="••••••••" 
-                          type="password" 
+                        <Input
+                          placeholder="••••••••"
+                          type="password"
                           autoComplete={authType === "login" ? "current-password" : "new-password"}
-                          disabled={isLoading} 
-                          {...field} 
+                          disabled={isLoading}
+                          {...field}
                         />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <Button 
+                {authType === "register" && (
+                  <TermsCheckboxField control={form.control} />
+                )}
+                <Button
                   className="w-full bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90"
-                  type="submit" 
+                  type="submit"
                   disabled={isLoading}
                 >
                   {isLoading ? "Procesando..." : (authType === "login" ? "Iniciar Sesión" : "Crear Cuenta")}

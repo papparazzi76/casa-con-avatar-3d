@@ -37,6 +37,11 @@ export const propertySchema = z.object({
   }).max(new Date().getFullYear(), {
     message: "El año no puede ser futuro",
   }),
+  acceptedTerms: z.literal(true, {
+    errorMap: () => ({
+      message: "Debes aceptar los Términos y la Política de Privacidad",
+    }),
+  }),
 });
 
 export type PropertyFormData = z.infer<typeof propertySchema>;

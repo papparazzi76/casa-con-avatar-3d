@@ -16,6 +16,11 @@ export const formSchema = z.object({
   description: z.string().optional(),
   tone: z.string().default("profesional"),
   useEmojis: z.boolean().default(false),
+  acceptedTerms: z.literal(true, {
+    errorMap: () => ({
+      message: "Debes aceptar los Términos y la Política de Privacidad",
+    }),
+  }),
 });
 
 export type FormData = z.infer<typeof formSchema>;

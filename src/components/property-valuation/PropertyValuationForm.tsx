@@ -14,6 +14,7 @@ import { ContactSection } from "./ContactSection";
 import { ConservationStateSection } from "./ConservationStateSection";
 import { ExteriorAreasSection } from "./ExteriorAreasSection";
 import { CommunityAreasSection } from "./CommunityAreasSection";
+import { TermsCheckboxField } from "@/components/TermsCheckboxField";
 
 interface PropertyValuationFormProps {
   onSubmit: (data: PropertyValuationFormData) => void;
@@ -60,6 +61,7 @@ export function PropertyValuationForm({ onSubmit, isLoading }: PropertyValuation
       zona_deportiva: false,
       zona_juegos_infantiles: false,
       observaciones: "",
+      acceptedTerms: false,
     },
   });
 
@@ -132,9 +134,11 @@ export function PropertyValuationForm({ onSubmit, isLoading }: PropertyValuation
             
             {/* Zonas comunitarias */}
             <CommunityAreasSection form={form} />
-            
-            <Button 
-              type="submit" 
+
+            <TermsCheckboxField control={form.control} />
+
+            <Button
+              type="submit"
               disabled={isLoading}
               className="w-full bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90 text-lg py-6"
             >

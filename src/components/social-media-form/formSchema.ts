@@ -23,6 +23,11 @@ export const formSchema = z.object({
   titulo_anuncio: z.string().optional(),
   idioma: z.string().default("ES"),
   tono: z.string().optional(),
+  acceptedTerms: z.literal(true, {
+    errorMap: () => ({
+      message: "Debes aceptar los Términos y la Política de Privacidad",
+    }),
+  }),
 });
 
 // Ensure this matches the type from socialMediaService.ts

@@ -89,9 +89,14 @@ export const propertyValuationSchema = z.object({
   zonas_comunes: z.array(z.string()).default([]),
   zona_deportiva: z.boolean().default(false),
   zona_juegos_infantiles: z.boolean().default(false),
-  
+
   // Observaciones adicionales
   observaciones: z.string().optional(),
+  acceptedTerms: z.literal(true, {
+    errorMap: () => ({
+      message: "Debes aceptar los Términos y la Política de Privacidad",
+    }),
+  }),
 }).refine((data) => {
   // Si no es unifamiliar, planta y puerta son obligatorias
   if (!data.es_unifamiliar) {

@@ -45,6 +45,7 @@ export function CompraventaArrasForm({ onFormSubmit, missingFields }: Compravent
     signingDay: "",
     signingMonth: "",
     signingYear: "2025",
+    acceptedTerms: false,
   });
 
   const handlePartyChange = (which: "seller" | "buyer", idx: number, field: string, value: string) => {
@@ -460,10 +461,30 @@ VENDEDOR/ES                                         COMPRADOR/AS
         </CardContent>
       </Card>
 
+      <div className="flex items-start space-x-2 border p-4 rounded-md">
+        <input
+          type="checkbox"
+          id="terms"
+          className="mt-1"
+          checked={compraventaData.acceptedTerms}
+          onChange={(e) =>
+            setCompraventaData((prev) => ({
+              ...prev,
+              acceptedTerms: e.target.checked,
+            }))
+          }
+        />
+        <label htmlFor="terms" className="text-sm">
+          He leído y acepto los <a href="/terminos" className="underline">Términos y Condiciones</a> y la{' '}
+          <a href="/privacidad" className="underline">Política de Privacidad</a>
+        </label>
+      </div>
+
       <div className="flex justify-end">
-        <Button 
+        <Button
           type="submit"
           className="bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90"
+          disabled={!compraventaData.acceptedTerms}
         >
           Generar Contrato
         </Button>

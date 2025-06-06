@@ -14,6 +14,7 @@ import { ToneAndEmojiFields } from "./ToneAndEmojiFields";
 import { SubmitButton } from "./SubmitButton";
 import { formSchema, FormData } from "./formSchema";
 import { PropertyAdFormData } from "@/utils/openaiService";
+import { TermsCheckboxField } from "@/components/TermsCheckboxField";
 
 interface PropertyAdFormProps {
   onSubmit: (data: PropertyAdFormData) => void;
@@ -27,6 +28,7 @@ export function PropertyAdForm({ onSubmit, isGenerating }: PropertyAdFormProps) 
       operation: "venta",
       tone: "profesional",
       useEmojis: false,
+      acceptedTerms: false,
     },
   });
 
@@ -66,6 +68,7 @@ export function PropertyAdForm({ onSubmit, isGenerating }: PropertyAdFormProps) 
         <FeaturesField form={form} />
         <DescriptionField form={form} />
         <ToneAndEmojiFields form={form} />
+        <TermsCheckboxField control={form.control} />
         <SubmitButton isGenerating={isGenerating} />
       </form>
     </Form>
