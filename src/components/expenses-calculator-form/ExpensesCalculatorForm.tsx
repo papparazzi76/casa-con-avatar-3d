@@ -16,6 +16,7 @@ import { RegionField } from "./RegionField";
 import { BuyerAgeField } from "./BuyerAgeField";
 import { SellerFieldsSection } from "./SellerFieldsSection";
 import { FeesSection } from "./FeesSection";
+import { TermsCheckboxField } from "@/components/TermsCheckboxField";
 
 export function ExpensesCalculatorForm({
   onCalculationComplete,
@@ -35,6 +36,7 @@ export function ExpensesCalculatorForm({
       previousPurchasePrice: undefined,
       includeAgencyFees: false,
       includeLegalFees: false,
+      acceptedTerms: false,
     },
   });
 
@@ -110,6 +112,8 @@ export function ExpensesCalculatorForm({
         <Separator />
 
         <FeesSection form={form} />
+
+        <TermsCheckboxField control={form.control} />
 
         <Button type="submit" className="w-full" disabled={isCalculating}>
           {isCalculating ? "Calculando..." : "Calcular gastos e impuestos"}

@@ -9,6 +9,7 @@ import { RentalPartiesSection } from "./rental/RentalPartiesSection";
 import { RentalPropertyFields } from "./rental/RentalPropertyFields";
 import { RentalTermsFields } from "./rental/RentalTermsFields";
 import { RentalContractPreview } from "./rental/RentalContractPreview";
+import { TermsCheckboxField } from "@/components/TermsCheckboxField";
 
 interface RentalParty {
   name: string;
@@ -51,7 +52,8 @@ export function RentalForm({
       gastos_luz: false,
       gastos_agua: false,
       gastos_gas: false,
-      gastos_internet: false
+      gastos_internet: false,
+      acceptedTerms: false
     }
   });
 
@@ -126,6 +128,8 @@ export function RentalForm({
             </ul>
           </div>
         )}
+
+        <TermsCheckboxField control={form.control} />
 
         <div className="flex justify-end">
           <Button type="submit" className="bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90">

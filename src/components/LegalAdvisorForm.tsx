@@ -15,6 +15,7 @@ interface LegalAdvisorFormProps {
 export function LegalAdvisorForm({ onSubmit, isLoading, missingFields }: LegalAdvisorFormProps) {
   const [question, setQuestion] = useState("");
   const [context, setContext] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,6 +53,20 @@ export function LegalAdvisorForm({ onSubmit, isLoading, missingFields }: LegalAd
                 required
               />
             </div>
+
+            <div className="flex items-start space-x-2 border p-4 rounded-md">
+              <input
+                type="checkbox"
+                id="legal-terms"
+                className="mt-1"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+              />
+              <label htmlFor="legal-terms" className="text-sm">
+                He leído y acepto los <a href="/terminos" className="underline">Términos y Condiciones</a> y la{' '}
+                <a href="/privacidad" className="underline">Política de Privacidad</a>
+              </label>
+            </div>
             
             <div className="space-y-2">
               <label htmlFor="context" className="block text-sm font-medium">
@@ -82,7 +97,7 @@ export function LegalAdvisorForm({ onSubmit, isLoading, missingFields }: LegalAd
             <Button 
               type="submit" 
               className="w-full bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90"
-              disabled={isLoading || !question.trim()}
+              disabled={isLoading || !question.trim() || !acceptedTerms}
             >
               {isLoading ? "Consultando..." : "Consultar"}
             </Button>

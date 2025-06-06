@@ -13,6 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { PartyFields } from "./PartyFields";
+import { TermsCheckboxField } from "@/components/TermsCheckboxField";
 
 interface Party {
   name: string;
@@ -48,8 +49,9 @@ export function ReservationForm({
     defaultValues: {
       tipo_contrato: "contrato_senal_reserva",
       fecha_firma: format(new Date(), "yyyy-MM-dd"),
-      signing_year: "2025"
-    }
+      signing_year: "2025",
+      acceptedTerms: false,
+    },
   });
 
   const handlePartyChange = (which: "seller" | "buyer", idx: number, field: string, value: string) => {
@@ -472,6 +474,8 @@ VENDEDOR/ES                                         COMPRADOR/AS`;
             </ul>
           </div>
         )}
+
+        <TermsCheckboxField control={form.control} />
 
         <div className="flex justify-end">
           <Button type="submit" className="bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90">

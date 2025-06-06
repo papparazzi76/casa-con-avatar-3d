@@ -23,6 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { AlertCircle } from "lucide-react";
+import { TermsCheckboxField } from "@/components/TermsCheckboxField";
 
 interface PropertyFormProps {
   property?: Property;
@@ -54,6 +55,7 @@ export function PropertyForm({ property, isEditing = false, onSuccess }: Propert
       address: property?.address || "",
       postal_code: property?.postal_code || "",
       features: property?.features || [],
+      acceptedTerms: false,
     },
   });
 
@@ -184,6 +186,7 @@ export function PropertyForm({ property, isEditing = false, onSuccess }: Propert
             <LocationFields control={form.control} />
             <FeaturesField control={form.control} />
             <DescriptionField control={form.control} />
+            <TermsCheckboxField control={form.control} />
 
             <FormActions isSubmitting={isSubmitting} isEditing={isEditing} />
           </TabsContent>
