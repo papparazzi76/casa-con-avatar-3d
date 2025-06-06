@@ -1,32 +1,13 @@
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { PropertyValuation } from "@/services/propertyValuator";
 import { toast } from "sonner";
 import { sendProfessionalValuationRequest } from "@/services/professionalValuationService";
-import { TermsAcceptanceField } from "./TermsAcceptanceField";
-
-const professionalValuationSchema = z.object({
-  nombre: z.string().min(1, "El nombre es obligatorio"),
-  email: z.string().email("Email inválido"),
-  telefono: z.string().min(1, "El teléfono es obligatorio"),
-  direccion: z.string().min(1, "La dirección es obligatoria"),
-  ciudad: z.string().min(1, "La ciudad es obligatoria"),
-  codigoPostal: z.string().min(1, "El código postal es obligatorio"),
-  comentarios: z.string().optional(),
-  acceptTerms: z.boolean().refine(val => val === true, {
-    message: "Debe aceptar los términos y condiciones"
-  })
-});
-
-type ProfessionalValuationFormData = z.infer<typeof professionalValuationSchema>;
 
 interface ProfessionalValuationDialogProps {
   isOpen: boolean;
@@ -40,37 +21,54 @@ export function ProfessionalValuationDialog({
   propertyValuation
 }: ProfessionalValuationDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  const form = useForm<ProfessionalValuationFormData>({
-    resolver: zodResolver(professionalValuationSchema),
-    defaultValues: {
-      nombre: "",
-      email: "",
-      telefono: "",
-      direccion: "",
-      ciudad: "",
-      codigoPostal: "",
-      comentarios: "",
-      acceptTerms: false
-    }
+  const [formData, setFormData] = useState({
+    nombre: "",
+    email: "",
+    telefono: "",
+    direccion: "",
+    ciudad: "",
+    codigoPostal: "",
+    comentarios: ""
   });
 
-  const handleSubmit = async (data: ProfessionalValuationFormData) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setIsSubmitting(true);
 
     try {
-      const { acceptTerms, ...requestData } = data;
-      
+      // Validate form
+      if (!formData.nombre || !formData.email || !formData.telefono || !formData.direccion || !formData.ciudad || !formData.codigoPostal) {
+        toast.error("Por favor, completa todos los campos obligatorios");
+        setIsSubmitting(false);
+        return;
+      }
+
       // Send the request
       await sendProfessionalValuationRequest({
-        ...requestData,
+        ...formData,
         valoracionActual: propertyValuation,
         notifyEmail: "carlos@arcasl.es"
       });
 
       toast.success("¡Solicitud enviada correctamente! Un experto se pondrá en contacto contigo en breve.");
       onClose();
-      form.reset();
+      setFormData({
+        nombre: "",
+        email: "",
+        telefono: "",
+        direccion: "",
+        ciudad: "",
+        codigoPostal: "",
+        comentarios: ""
+      });
     } catch (error) {
       console.error("Error sending professional valuation request:", error);
       toast.error("Hubo un error al enviar la solicitud. Por favor, inténtalo de nuevo más tarde.");
@@ -89,131 +87,107 @@ export function ProfessionalValuationDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 py-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
+        <form onSubmit={handleSubmit} className="space-y-4 py-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="nombre">Nombre completo *</Label>
+              <Input
+                id="nombre"
                 name="nombre"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nombre completo *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Tu nombre y apellidos" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                placeholder="Tu nombre y apellidos"
+                value={formData.nombre}
+                onChange={handleChange}
+                required
               />
+            </div>
 
-              <FormField
-                control={form.control}
+            <div className="space-y-2">
+              <Label htmlFor="email">Email *</Label>
+              <Input
+                id="email"
                 name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email *</FormLabel>
-                    <FormControl>
-                      <Input type="email" placeholder="tu@email.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                type="email"
+                placeholder="tu@email.com"
+                value={formData.email}
+                onChange={handleChange}
+                required
               />
+            </div>
 
-              <FormField
-                control={form.control}
+            <div className="space-y-2">
+              <Label htmlFor="telefono">Teléfono *</Label>
+              <Input
+                id="telefono"
                 name="telefono"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Teléfono *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="600 000 000" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                placeholder="600 000 000"
+                value={formData.telefono}
+                onChange={handleChange}
+                required
               />
+            </div>
 
-              <FormField
-                control={form.control}
+            <div className="space-y-2">
+              <Label htmlFor="codigoPostal">Código Postal *</Label>
+              <Input
+                id="codigoPostal"
                 name="codigoPostal"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Código Postal *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="28001" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                placeholder="28001"
+                value={formData.codigoPostal}
+                onChange={handleChange}
+                required
               />
             </div>
+          </div>
 
-            <FormField
-              control={form.control}
+          <div className="space-y-2">
+            <Label htmlFor="direccion">Dirección completa del inmueble *</Label>
+            <Input
+              id="direccion"
               name="direccion"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Dirección completa del inmueble *</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Calle, número, planta, puerta..." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              placeholder="Calle, número, planta, puerta..."
+              value={formData.direccion}
+              onChange={handleChange}
+              required
             />
+          </div>
 
-            <FormField
-              control={form.control}
+          <div className="space-y-2">
+            <Label htmlFor="ciudad">Ciudad *</Label>
+            <Input
+              id="ciudad"
               name="ciudad"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Ciudad *</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Madrid, Barcelona, etc." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              placeholder="Madrid, Barcelona, etc."
+              value={formData.ciudad}
+              onChange={handleChange}
+              required
             />
+          </div>
 
-            <FormField
-              control={form.control}
+          <div className="space-y-2">
+            <Label htmlFor="comentarios">Comentarios adicionales</Label>
+            <Textarea
+              id="comentarios"
               name="comentarios"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Comentarios adicionales</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Información adicional sobre el inmueble que consideres relevante..."
-                      rows={3}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              placeholder="Información adicional sobre el inmueble que consideres relevante..."
+              value={formData.comentarios}
+              onChange={handleChange}
+              rows={3}
             />
+          </div>
 
-            <TermsAcceptanceField 
-              control={form.control} 
-              name="acceptTerms" 
-            />
+          <div className="text-sm text-gray-500">
+            * Campos obligatorios
+          </div>
 
-            <div className="text-sm text-gray-500">
-              * Campos obligatorios
-            </div>
-
-            <DialogFooter className="pt-4">
-              <Button variant="outline" type="button" onClick={onClose} disabled={isSubmitting}>
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Enviando..." : "Solicitar valoración"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+          <DialogFooter className="pt-4">
+            <Button variant="outline" type="button" onClick={onClose} disabled={isSubmitting}>
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Enviando..." : "Solicitar valoración"}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );
