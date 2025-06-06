@@ -6,7 +6,8 @@ import { Form } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Home, Mail, Info } from "lucide-react";
 import { motion } from "framer-motion";
-import { propertyValuationSchema, PropertyValuationFormData } from "./schema";
+import { z } from "zod";
+import { propertyValuationSchema } from "./schema";
 import { BasicInfoSection } from "./BasicInfoSection";
 import { PropertyDetailsSection } from "./PropertyDetailsSection";
 import { ExtrasSection } from "./ExtrasSection";
@@ -14,15 +15,25 @@ import { ContactSection } from "./ContactSection";
 import { ConservationStateSection } from "./ConservationStateSection";
 import { ExteriorAreasSection } from "./ExteriorAreasSection";
 import { CommunityAreasSection } from "./CommunityAreasSection";
+import { TermsAcceptanceField } from "../TermsAcceptanceField";
+
+// Extend the existing schema to include terms acceptance
+const extendedPropertyValuationSchema = propertyValuationSchema.extend({
+  acceptTerms: z.boolean().refine(val => val === true, {
+    message: "Debe aceptar los términos y condiciones"
+  })
+});
+
+type ExtendedPropertyValuationFormData = z.infer<typeof extendedPropertyValuationSchema>;
 
 interface PropertyValuationFormProps {
-  onSubmit: (data: PropertyValuationFormData) => void;
+  onSubmit: (data: any) => void;
   isLoading: boolean;
 }
 
 export function PropertyValuationForm({ onSubmit, isLoading }: PropertyValuationFormProps) {
-  const form = useForm<PropertyValuationFormData>({
-    resolver: zodResolver(propertyValuationSchema),
+  const form = useForm<ExtendedPropertyValuationFormData>({
+    resolver: zodResolver(extendedPropertyValuationSchema),
     defaultValues: {
       direccion_calle: "",
       direccion_numero: "",
@@ -60,22 +71,26 @@ export function PropertyValuationForm({ onSubmit, isLoading }: PropertyValuation
       zona_deportiva: false,
       zona_juegos_infantiles: false,
       observaciones: "",
+      acceptTerms: false,
     },
   });
 
-  function handleSubmit(values: PropertyValuationFormData) {
-    // Construir dirección completa antes de enviar
-    let direccionCompleta = `${values.direccion_calle}, ${values.direccion_numero}`;
+  function handleSubmit(values: ExtendedPropertyValuationFormData) {
+    // Remove acceptTerms from the data sent to the service
+    const { acceptTerms, ...valuationData } = values;
     
-    if (!values.es_unifamiliar && values.direccion_planta && values.direccion_puerta) {
-      direccionCompleta += `, ${values.direccion_planta} ${values.direccion_puerta}`;
+    // Construir dirección completa antes de enviar
+    let direccionCompleta = `${valuationData.direccion_calle}, ${valuationData.direccion_numero}`;
+    
+    if (!valuationData.es_unifamiliar && valuationData.direccion_planta && valuationData.direccion_puerta) {
+      direccionCompleta += `, ${valuationData.direccion_planta} ${valuationData.direccion_puerta}`;
     }
     
-    direccionCompleta += `, ${values.direccion_codigo_postal} ${values.direccion_ciudad}`;
+    direccionCompleta += `, ${valuationData.direccion_codigo_postal} ${valuationData.direccion_ciudad}`;
     
     // Enviar datos con dirección completa construida
     const dataToSubmit = {
-      ...values,
+      ...valuationData,
       direccion_completa: direccionCompleta
     };
     
@@ -132,6 +147,12 @@ export function PropertyValuationForm({ onSubmit, isLoading }: PropertyValuation
             
             {/* Zonas comunitarias */}
             <CommunityAreasSection form={form} />
+            
+            {/* Terms acceptance */}
+            <TermsAcceptanceField 
+              control={form.control} 
+              name="acceptTerms" 
+            />
             
             <Button 
               type="submit" 

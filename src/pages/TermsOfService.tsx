@@ -23,7 +23,7 @@ const TermsOfService = () => {
               <h2 className="text-xl font-semibold mb-4">1. Objeto</h2>
               <p className="mb-4">
                 Estos Términos de Servicio (en adelante, los «Términos») regulan el acceso y uso de la plataforma Suite Inmobiliaria 
-                (la «Plataforma») y de los servicios gratuitos ofrecidos a través de www.suiteinmobiliaria.com, así como las relaciones 
+                (la «Plataforma») y de los servicios gratuitos ofrecidos a través de proptools.iadomus.com, así como las relaciones 
                 entre la Plataforma y los usuarios particulares registrados (el «Usuario»).
               </p>
             </section>
@@ -173,8 +173,8 @@ const TermsOfService = () => {
               <h2 className="text-xl font-semibold mb-4">17. Contacto</h2>
               <p className="mb-4">
                 Para cualquier consulta relacionada con estos Términos, puede contactarnos en 
-                <a href="mailto:legal@suiteinmobiliaria.com" className="text-primary hover:underline ml-1">
-                  legal@suiteinmobiliaria.com
+                <a href="mailto:proptools@iadomus.com" className="text-primary hover:underline ml-1">
+                  proptools@iadomus.com
                 </a>.
               </p>
             </section>

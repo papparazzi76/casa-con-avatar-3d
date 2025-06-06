@@ -7,9 +7,20 @@ import { PropertyInfo } from "@/services/propertyValuatorService";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
-import { propertySchema, PropertyFormData } from "./property-valuator-form/FormSchema";
+import { z } from "zod";
+import { propertySchema } from "./property-valuator-form/FormSchema";
 import { LocationSection } from "./property-valuator-form/LocationSection";
 import { CharacteristicsSection } from "./property-valuator-form/CharacteristicsSection";
+import { TermsAcceptanceField } from "./TermsAcceptanceField";
+
+// Extend the existing schema to include terms acceptance
+const extendedPropertySchema = propertySchema.extend({
+  acceptTerms: z.boolean().refine(val => val === true, {
+    message: "Debe aceptar los términos y condiciones"
+  })
+});
+
+type ExtendedPropertyFormData = z.infer<typeof extendedPropertySchema>;
 
 interface PropertyValuatorFormProps {
   onSubmit: (data: PropertyInfo) => void;
@@ -18,8 +29,8 @@ interface PropertyValuatorFormProps {
 }
 
 export function PropertyValuatorForm({ onSubmit, isLoading, missingFields }: PropertyValuatorFormProps) {
-  const form = useForm<PropertyFormData>({
-    resolver: zodResolver(propertySchema),
+  const form = useForm<ExtendedPropertyFormData>({
+    resolver: zodResolver(extendedPropertySchema),
     defaultValues: {
       localidad: "Valladolid",
       distrito: "",
@@ -34,11 +45,14 @@ export function PropertyValuatorForm({ onSubmit, isLoading, missingFields }: Pro
       ascensor: false,
       exterior: false,
       anno_construccion: undefined,
+      acceptTerms: false,
     },
   });
 
-  function handleSubmit(values: PropertyFormData) {
-    onSubmit(values as PropertyInfo);
+  function handleSubmit(values: ExtendedPropertyFormData) {
+    // Remove acceptTerms from the data sent to the service
+    const { acceptTerms, ...propertyData } = values;
+    onSubmit(propertyData as PropertyInfo);
   }
 
   return (
@@ -55,6 +69,11 @@ export function PropertyValuatorForm({ onSubmit, isLoading, missingFields }: Pro
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
             <LocationSection form={form} />
             <CharacteristicsSection form={form} />
+            
+            <TermsAcceptanceField 
+              control={form.control} 
+              name="acceptTerms" 
+            />
             
             {missingFields && missingFields.length > 0 && (
               <motion.div 
