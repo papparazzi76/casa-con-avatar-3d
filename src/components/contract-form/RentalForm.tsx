@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { ContractFormData, ContractType } from "@/types/contractTypes";
@@ -53,7 +52,7 @@ export function RentalForm({
       gastos_agua: false,
       gastos_gas: false,
       gastos_internet: false,
-      acceptedTerms: false
+      acceptedTerms: undefined
     }
   });
 

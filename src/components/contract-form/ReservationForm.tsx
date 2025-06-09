@@ -50,7 +50,7 @@ export function ReservationForm({
       tipo_contrato: "contrato_senal_reserva",
       fecha_firma: format(new Date(), "yyyy-MM-dd"),
       signing_year: "2025",
-      acceptedTerms: false,
+      acceptedTerms: undefined,
     },
   });
 

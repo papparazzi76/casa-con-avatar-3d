@@ -137,6 +137,9 @@ export interface ContractFormData {
   payment_day?: number;
   expenses?: string;
   tax_clause?: string;
+  
+  // Terms acceptance field
+  acceptedTerms?: boolean;
 }
 
 export interface ContractResult {

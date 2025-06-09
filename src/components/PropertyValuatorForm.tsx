@@ -35,7 +35,7 @@ export function PropertyValuatorForm({ onSubmit, isLoading, missingFields }: Pro
       ascensor: false,
       exterior: false,
       anno_construccion: undefined,
-      acceptedTerms: false,
+      acceptedTerms: undefined,
     },
   });
 

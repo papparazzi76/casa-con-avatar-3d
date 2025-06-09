@@ -28,7 +28,7 @@ export function PropertyAdForm({ onSubmit, isGenerating }: PropertyAdFormProps) 
       operation: "venta",
       tone: "profesional",
       useEmojis: false,
-      acceptedTerms: false,
+      acceptedTerms: undefined,
     },
   });
 

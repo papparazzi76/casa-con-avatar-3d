@@ -36,7 +36,7 @@ export function ExpensesCalculatorForm({
       previousPurchasePrice: undefined,
       includeAgencyFees: false,
       includeLegalFees: false,
-      acceptedTerms: false,
+      acceptedTerms: undefined,
     },
   });
 

@@ -61,7 +61,7 @@ export function PropertyValuationForm({ onSubmit, isLoading }: PropertyValuation
       zona_deportiva: false,
       zona_juegos_infantiles: false,
       observaciones: "",
-      acceptedTerms: false,
+      acceptedTerms: undefined,
     },
   });
 

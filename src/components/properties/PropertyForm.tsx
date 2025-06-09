@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -55,7 +54,7 @@ export function PropertyForm({ property, isEditing = false, onSuccess }: Propert
       address: property?.address || "",
       postal_code: property?.postal_code || "",
       features: property?.features || [],
-      acceptedTerms: false,
+      acceptedTerms: undefined,
     },
   });
 

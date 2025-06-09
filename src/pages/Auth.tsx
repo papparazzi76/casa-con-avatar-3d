@@ -45,7 +45,7 @@ export default function Auth() {
     defaultValues: {
       email: "",
       password: "",
-      acceptedTerms: false,
+      acceptedTerms: undefined,
     },
   });
 

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
@@ -36,7 +35,7 @@ export function SocialMediaPostForm({ onSubmit, isGenerating }: SocialMediaPostF
       extras: [],
       fotos: [],
       idioma: "ES",
-      acceptedTerms: false,
+      acceptedTerms: undefined,
     },
   });
   
