@@ -1,3 +1,4 @@
+
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
 import { ServiceGrid } from "@/components/ServiceGrid";
@@ -8,28 +9,17 @@ import { Button } from "@/components/ui/button";
 import { FileText, Home } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { toast } from "sonner";
 import { isAdminUser } from "@/utils/adminUtils";
-const Index = () => {
-  const {
-    user
-  } = useAuth();
-  const navigate = useNavigate();
-  const handleVirtualAgentClick = () => {
-    // Allow admin user unrestricted access
-    if (isAdminUser(user)) {
-      navigate("/agente-virtual-inmobiliario");
-      return;
-    }
 
-    // Regular users need to be authenticated
-    if (!user) {
-      toast.error("Debes iniciar sesión para acceder a la guía completa");
-      navigate("/auth");
-      return;
-    }
+const Index = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  
+  const handleVirtualAgentClick = () => {
+    // Remove authentication requirement - allow all users to access
     navigate("/agente-virtual-inmobiliario");
   };
+  
   return <div className="flex min-h-screen flex-col">
       <Header />
       
@@ -153,4 +143,5 @@ const Index = () => {
       <Footer />
     </div>;
 };
+
 export default Index;

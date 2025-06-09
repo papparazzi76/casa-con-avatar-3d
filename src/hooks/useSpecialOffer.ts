@@ -25,84 +25,35 @@ export const useSpecialOffer = () => {
   };
 
   useEffect(() => {
-    // Verificar si el usuario ya vio la oferta en esta sesión
-    const hasSeenOffer = sessionStorage.getItem('special-offer-seen');
+    // No mostrar más el popup automáticamente
+    // const hasSeenOffer = sessionStorage.getItem('special-offer-seen');
     
-    if (!hasSeenOffer) {
-      // Mostrar popup después de 2 segundos
-      const timer = setTimeout(() => {
-        setShowOffer(true);
-      }, 2000);
+    // if (!hasSeenOffer) {
+    //   const timer = setTimeout(() => {
+    //     setShowOffer(true);
+    //   }, 2000);
 
-      return () => clearTimeout(timer);
-    }
+    //   return () => clearTimeout(timer);
+    // }
   }, []);
 
   useEffect(() => {
-    // Fetch initial count
+    // Fetch initial count but don't set up realtime subscription
     fetchRemainingSpots();
-
-    // Set up real-time subscription with proper error handling
-    let channel: any = null;
-    
-    const setupRealtimeSubscription = () => {
-      try {
-        channel = supabase
-          .channel('special-offer-updates')
-          .on(
-            'postgres_changes',
-            {
-              event: 'INSERT',
-              schema: 'public',
-              table: 'special_offer_registrations'
-            },
-            (payload) => {
-              console.log('New registration detected:', payload);
-              // Refresh the count when someone registers
-              fetchRemainingSpots();
-            }
-          )
-          .subscribe((status) => {
-            console.log('Realtime subscription status:', status);
-            if (status === 'SUBSCRIBED') {
-              console.log('Successfully subscribed to special offer updates');
-            }
-          });
-      } catch (error) {
-        console.error('Error setting up realtime subscription:', error);
-        // If realtime fails, we can still function with manual refresh
-      }
-    };
-
-    // Set up the subscription
-    setupRealtimeSubscription();
-
-    return () => {
-      if (channel) {
-        try {
-          supabase.removeChannel(channel);
-        } catch (error) {
-          console.error('Error removing channel:', error);
-        }
-      }
-    };
   }, []);
 
   const closeOffer = () => {
     setShowOffer(false);
-    // Marcar como visto en esta sesión
     sessionStorage.setItem('special-offer-seen', 'true');
   };
 
   const acceptOffer = async () => {
     if (!user) {
-      // Si no hay usuario, redirigir a registro con parámetro especial
       window.location.href = '/auth?special-offer=true';
       return;
     }
 
     try {
-      // Registrar al usuario actual en la oferta especial
       const { error } = await supabase
         .from('special_offer_registrations')
         .insert({
@@ -112,18 +63,15 @@ export const useSpecialOffer = () => {
 
       if (error) {
         console.error('Error registering for special offer:', error);
-        // Si hay error (ej: usuario ya registrado), continuar con el flujo normal
       }
 
       setShowOffer(false);
       sessionStorage.setItem('special-offer-seen', 'true');
       
-      // Refresh the count after registration
       fetchRemainingSpots();
       
     } catch (error) {
       console.error('Error in acceptOffer:', error);
-      // En caso de error, cerrar el popup y continuar
       setShowOffer(false);
       sessionStorage.setItem('special-offer-seen', 'true');
     }
