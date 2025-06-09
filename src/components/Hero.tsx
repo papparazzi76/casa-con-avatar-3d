@@ -17,7 +17,7 @@ export function Hero() {
               <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl">
                 Herramientas profesionales para vender tu <span className="gradient-text">inmueble</span>
               </h1>
-              <p className="max-w-[700px] text-gray-500 md:text-xl dark:text-gray-400">Todos los servicios de una agencia inmobiliaria, potenciados por IA y diseñados para particulares. Vende tu casa sin intermediarios, POR SOLO 99 €!</p>
+              <p className="max-w-[700px] text-gray-500 md:text-xl dark:text-gray-400">Todos los servicios de una agencia inmobiliaria, potenciados por IA y diseñados para particulares. Vende tu casa sin intermediarios, TOTALMENTE GRATIS! (por tiempo limitado)</p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
               <Button className="bg-gradient-to-r from-realestate-purple to-realestate-turquoise hover:opacity-90 text-lg py-6 px-8" size="lg" onClick={() => window.scrollTo({
