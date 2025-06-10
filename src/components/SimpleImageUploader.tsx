@@ -13,6 +13,7 @@ import { uploadImage, checkUserUploadLimits, getUserUploadedImages, ImageType, R
 export const SimpleImageUploader = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [email, setEmail] = useState<string>("");
   const [imageType, setImageType] = useState<ImageType>('enhancement');
   const [roomType, setRoomType] = useState<RoomType>('salon');
   const [furnitureStyle, setFurnitureStyle] = useState<FurnitureStyle>('moderno');
@@ -39,6 +40,11 @@ export const SimpleImageUploader = () => {
   useState(() => {
     loadUserLimits();
   });
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -82,6 +88,24 @@ export const SimpleImageUploader = () => {
       return;
     }
 
+    if (!email.trim()) {
+      toast({
+        title: "Email requerido",
+        description: "Por favor introduce tu email para continuar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      toast({
+        title: "Email no válido",
+        description: "Por favor introduce un email válido.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsUploading(true);
 
     try {
@@ -95,12 +119,13 @@ export const SimpleImageUploader = () => {
 
       toast({
         title: "¡Imagen subida correctamente!",
-        description: "En 24 horas recibirás tus imágenes procesadas en tu email.",
+        description: `En 24 horas recibirás tus imágenes procesadas en ${email}`,
       });
 
       // Reset form
       setSelectedFile(null);
       setPreview(null);
+      setEmail("");
       
       // Update counts
       if (imageType === 'enhancement') {
@@ -134,6 +159,19 @@ export const SimpleImageUploader = () => {
         </CardHeader>
         
         <CardContent className="space-y-6">
+          {/* Email field */}
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-base font-medium">Email* (para recibir las imágenes procesadas)</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="tu@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+
           {/* Tipo de procesamiento */}
           <div className="space-y-3">
             <Label className="text-base font-medium">Tipo de procesamiento</Label>
@@ -245,7 +283,7 @@ export const SimpleImageUploader = () => {
           {/* Botón de subida */}
           <Button 
             onClick={handleUpload}
-            disabled={!selectedFile || isUploading}
+            disabled={!selectedFile || !email.trim() || !validateEmail(email) || isUploading}
             className="w-full"
             size="lg"
           >
