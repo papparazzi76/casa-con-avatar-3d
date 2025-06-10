@@ -457,6 +457,7 @@ export type Database = {
           image_url: string
           processed: boolean
           room_type: string | null
+          user_email: string | null
           user_id: string
         }
         Insert: {
@@ -467,6 +468,7 @@ export type Database = {
           image_url: string
           processed?: boolean
           room_type?: string | null
+          user_email?: string | null
           user_id: string
         }
         Update: {
@@ -477,6 +479,7 @@ export type Database = {
           image_url?: string
           processed?: boolean
           room_type?: string | null
+          user_email?: string | null
           user_id?: string
         }
         Relationships: []
