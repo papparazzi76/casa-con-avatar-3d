@@ -115,7 +115,7 @@ export const SimpleImageUploader = () => {
         furnitureStyle: imageType === 'homestaging' ? furnitureStyle : undefined,
       };
 
-      await uploadImage(selectedFile, uploadData);
+      await uploadImage(selectedFile, uploadData, email);
 
       toast({
         title: "¡Imagen subida correctamente!",

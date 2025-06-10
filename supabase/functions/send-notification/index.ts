@@ -11,10 +11,14 @@ const corsHeaders = {
 };
 
 interface NotificationRequest {
-  type: 'registration' | 'form_submission';
+  type: 'registration' | 'form_submission' | 'image_upload';
   email?: string;
   formType?: string;
   formData?: Record<string, any>;
+  imageType?: string;
+  roomType?: string;
+  furnitureStyle?: string;
+  imageUrl?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -39,6 +43,21 @@ const handler = async (req: Request): Promise<Response> => {
         <p><strong>Fecha:</strong> ${new Date().toLocaleString('es-ES')}</p>
       `;
       console.log("Processing registration notification for:", data.email);
+    } else if (data.type === 'image_upload') {
+      subject = 'Nueva Imagen Subida en PropTools';
+      htmlContent = `
+        <h1>Nueva Imagen Subida</h1>
+        <p>Se ha subido una nueva imagen en PropTools.</p>
+        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 10px 0;">
+          <p><strong>Email del Usuario:</strong> ${data.email || 'No disponible'}</p>
+          <p><strong>Tipo de Procesamiento:</strong> ${data.imageType === 'enhancement' ? 'Edición de mejora' : 'Homestaging virtual'}</p>
+          ${data.roomType ? `<p><strong>Tipo de Estancia:</strong> ${data.roomType}</p>` : ''}
+          ${data.furnitureStyle ? `<p><strong>Estilo de Mobiliario:</strong> ${data.furnitureStyle}</p>` : ''}
+          <p><strong>URL de la Imagen:</strong> <a href="${data.imageUrl}">${data.imageUrl}</a></p>
+          <p><strong>Fecha:</strong> ${new Date().toLocaleString('es-ES')}</p>
+        </div>
+      `;
+      console.log("Processing image upload notification for:", data.email);
     } else if (data.type === 'form_submission') {
       subject = `Nuevo Formulario: ${data.formType || 'Desconocido'}`;
       
@@ -87,12 +106,12 @@ const handler = async (req: Request): Promise<Response> => {
       console.log("Processing form submission notification:", data.formType);
     }
 
-    console.log("Sending email to: inmo@arcasl.es");
+    console.log("Sending email to: carlos@arcasl.es");
     console.log("Email subject:", subject);
 
     const emailResponse = await resend.emails.send({
       from: "PropTools <onboarding@resend.dev>",
-      to: ["inmo@arcasl.es"],
+      to: ["carlos@arcasl.es"],
       subject: subject,
       html: htmlContent,
     });

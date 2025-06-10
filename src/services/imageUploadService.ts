@@ -22,22 +22,21 @@ export interface UploadedImage {
   created_at: string;
 }
 
-export const uploadImage = async (file: File, data: ImageUploadData): Promise<string> => {
+export const uploadImage = async (file: File, data: ImageUploadData, userEmail: string): Promise<string> => {
   const { data: { user } } = await supabase.auth.getUser();
   
-  if (!user) {
-    throw new Error("Debes estar autenticado para subir imágenes");
-  }
-
-  // Check user limits
-  const canUpload = await checkUserUploadLimits(data.imageType);
-  if (!canUpload.allowed) {
-    throw new Error(canUpload.message);
+  // Check user limits (allow anonymous users for now)
+  if (user) {
+    const canUpload = await checkUserUploadLimits(data.imageType);
+    if (!canUpload.allowed) {
+      throw new Error(canUpload.message);
+    }
   }
 
   // Generate unique filename
   const fileExt = file.name.split('.').pop();
-  const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+  const userId = user?.id || 'anonymous';
+  const fileName = `${userId}/${Date.now()}.${fileExt}`;
 
   // Upload to Supabase Storage
   const { data: uploadData, error: uploadError } = await supabase.storage
@@ -57,15 +56,33 @@ export const uploadImage = async (file: File, data: ImageUploadData): Promise<st
   const { error: dbError } = await supabase
     .from('user_uploaded_images')
     .insert({
-      user_id: user.id,
+      user_id: userId,
       image_url: publicUrl,
       image_type: data.imageType,
       room_type: data.roomType,
-      furniture_style: data.furnitureStyle
+      furniture_style: data.furnitureStyle,
+      user_email: userEmail
     });
 
   if (dbError) {
     throw new Error(`Error al guardar en base de datos: ${dbError.message}`);
+  }
+
+  // Send notification email
+  try {
+    await supabase.functions.invoke('send-notification', {
+      body: {
+        type: 'image_upload',
+        email: userEmail,
+        imageType: data.imageType,
+        roomType: data.roomType,
+        furnitureStyle: data.furnitureStyle,
+        imageUrl: publicUrl
+      }
+    });
+  } catch (error) {
+    console.error('Error sending notification email:', error);
+    // Don't throw error here as the upload was successful
   }
 
   return publicUrl;
