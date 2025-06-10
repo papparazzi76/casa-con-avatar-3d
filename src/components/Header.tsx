@@ -25,7 +25,7 @@ export function Header() {
           transition={{ duration: 0.5 }}
         >
           <Link to="/" className="flex items-center gap-2">
-            <span className="text-2xl font-bold font-heading gradient-text">PropTools</span>
+            <img src="/lovable-uploads/0fbc7fae-31c8-4f70-9344-89ce8f6cecee.png" alt="PropTools Logo" className="h-8" />
           </Link>
         </motion.div>
         
