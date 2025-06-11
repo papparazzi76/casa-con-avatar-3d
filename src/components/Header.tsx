@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -22,7 +23,7 @@ export function Header() {
         duration: 0.5
       }}>
           <Link to="/" className="flex items-center gap-2">
-            <img src="/lovable-uploads/0fbc7fae-31c8-4f70-9344-89ce8f6cecee.png" alt="PropTools Logo" className="h-8 object-contain" />
+            <img src="/lovable-uploads/0fbc7fae-31c8-4f70-9344-89ce8f6cecee.png" alt="PropTools Logo" className="h-16 md:h-20 object-contain" />
           </Link>
         </motion.div>
         

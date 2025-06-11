@@ -15,14 +15,14 @@ export function Footer() {
           <img 
             src="/lovable-uploads/85a8b51f-c876-4980-ac9f-c27ef2ecb43a.png" 
             alt="Iadomus Logo" 
-            className="h-12 md:h-10" 
+            className="h-16 md:h-20" 
           />
         </div>
         
         <div className="flex items-center justify-center">
           <img 
             alt="PropTools Logo" 
-            className="h-10 md:h-8" 
+            className="h-16 md:h-20" 
             src="/lovable-uploads/0fbc7fae-31c8-4f70-9344-89ce8f6cecee.png" 
           />
         </div>

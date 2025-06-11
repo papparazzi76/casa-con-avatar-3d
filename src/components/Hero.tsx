@@ -38,8 +38,8 @@ export function Hero() {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <div className="h-[400px] w-full max-w-[400px] overflow-hidden rounded-2xl bg-gradient-to-br from-realestate-purple to-realestate-turquoise p-1 shadow-lg flex flex-col">
-              <div className="flex justify-center items-center bg-white dark:bg-gray-950 p-2 rounded-t-xl">
-                <img src="/lovable-uploads/0fbc7fae-31c8-4f70-9344-89ce8f6cecee.png" alt="PropTools Logo" className="h-12" />
+              <div className="flex justify-center items-center bg-white dark:bg-gray-950 p-4 rounded-t-xl">
+                <img src="/lovable-uploads/0fbc7fae-31c8-4f70-9344-89ce8f6cecee.png" alt="PropTools Logo" className="h-20 md:h-24" />
               </div>
               <div className="h-full w-full rounded-b-xl bg-white dark:bg-gray-950 flex items-center justify-center overflow-hidden">
                 <img 
